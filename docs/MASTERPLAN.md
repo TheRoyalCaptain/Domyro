@@ -31,7 +31,7 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | ID | Decision |
 |---|---|
 | D-01 | Build a serious public alternative from inception. |
-| D-02 | Copyleft: changes to distributed/network-served modified versions remain open; proposed AGPL-3.0-or-later for Domyro-owned code. |
+| D-02 | Domyro-owned code is licensed under GNU **AGPL-3.0-only**; forks/modifications are permitted under AGPL terms. Only @TheRoyalCaptain authorizes changes and releases of official upstream. |
 | D-03 | First official installation targets: Docker, native Linux, Umbrel. |
 | D-04 | Modern simple resident interface plus advanced admin views. |
 | D-05 | Zigbee, MQTT, Matter are the first protocol families to support robustly. |
@@ -133,9 +133,10 @@ Test baseline: reference Linux x86_64 mini PC with 4 vCPU, 4 GiB RAM, SSD; 250 e
 ## 8. Governance and publication
 
 - Public repository; design and code developed transparently.
-- Copyleft recommendation: AGPL-3.0-or-later for Domyro-owned code, pending component compatibility review. This applies to covered derivatives and modified network deployments; independent programs and plugins require separate legal analysis.
+- **Confirmed source license:** GNU Affero General Public License version 3 only (SPDX `AGPL-3.0-only`), full standard text in repository `LICENSE`. License compatibility of dependencies remains under review. Covered derivatives and modified network deployments must honor AGPLv3 requirements; independently developed programs/plugins require legal analysis.
+- **Official maintainer control:** sole merge/release authority belongs to `@TheRoyalCaptain`. Community forks are fully allowed. All official files are assigned to this owner in `.github/CODEOWNERS`; enforce review through GitHub branch rules before external contributions are merged. See `docs/GITHUB-GOVERNANCE.md`.
 - Signed releases, dependency provenance, SBOM, update notes and vulnerability disclosure policy before 1.0.
-- Maintainer review on all contributions; code ownership and community conduct policy.
+- Only `@TheRoyalCaptain` can approve changes entering the official repository and publish official releases. Community PRs are proposals, not approvals. No other person, automation or app receives an unrestricted merge/bypass role. GitHub web protection activation remains a required security setup task.
 - All significant technical changes documented with ADRs and rationale.
 - SemVer releases with stable API versioning rules and deprecation windows.
 - Dutch and English maintained together for public-facing functionality.
@@ -167,5 +168,6 @@ G5: 1.0 security, accessibility, restore, update and regression gates pass.
 - Matter networking: https://www.home-assistant.io/integrations/matter
 - Umbrel store template: https://github.com/getumbrel/umbrel-community-app-store
 - AGPL/GPL FAQ: https://www.gnu.org/licenses/gpl-faq.en.html
+- Official contribution governance and GitHub protection instructions: `docs/GITHUB-GOVERNANCE.md`
 
 The detailed contracts are split into the adjoining architecture, integration, security, product, roadmap and test documents. These documents supersede informal preliminary technology suggestions when there is a conflict.
