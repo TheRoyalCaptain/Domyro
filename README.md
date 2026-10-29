@@ -10,7 +10,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 
 - Independent automation and device platform: not a Home Assistant frontend.
 - Fully functional local control without mandatory cloud subscription.
-- Public, copyleft open source, with AGPLv3 proposed for Domyro-owned code, pending dependency and legal review.
+- Public free and open-source software under **GNU AGPL-3.0-only**. Forks are allowed, but **only @TheRoyalCaptain** approves changes and releases in official upstream. Dependency-license review remains a release gate.
 - Installation targets from first supported release: Docker Compose, native Linux (Debian/Ubuntu), and Umbrel.
 - Initial protocol priorities: MQTT, Zigbee2MQTT and Matter.
 - Progressive web app first, later native mobile apps.
@@ -29,9 +29,14 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 6. [Delivery roadmap and backlog](docs/ROADMAP-BACKLOG.md): phases, epics, concrete tasks and definition of done.
 7. [Quality and release strategy](docs/TEST-RELEASE.md): validation, release gates, benchmarks, incidents.
 8. [Decisions and sign-off](docs/DECISIONS.md): architecture decisions and approvals required before coding.
+9. [Repository governance and owner-only approvals](docs/GITHUB-GOVERNANCE.md): licensing, CODEOWNERS, branch protection and explicit GitHub setup steps.
+
+### Licensing and contributions
+
+The official license is [GNU AGPL version 3 only](LICENSE) (SPDX: `AGPL-3.0-only`). Others may inspect, fork, modify and redistribute under its terms. **Only @TheRoyalCaptain** has authority to accept contributions and publish official Domyro versions. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CODEOWNERS](.github/CODEOWNERS). GitHub's web settings must still activate required code-owner review: CODEOWNERS by itself is not branch protection.
 
 ## Rules during planning
 
-Only changes to planning documents are allowed. Do not initialize an application, provision services, publish containers or implement source code. Do not migrate, reset or claim ownership of the user's active smart-home devices.
+Only changes to planning, governance and licensing documents are allowed. Do not initialize an application, provision services, publish containers or implement source code. Do not migrate, reset or claim ownership of the user's active smart-home devices.
 
 Reference material is recorded in the relevant documents. Trademark and name clearance, dependency license review and a first real hardware inventory remain explicit pre-release checkpoints.
