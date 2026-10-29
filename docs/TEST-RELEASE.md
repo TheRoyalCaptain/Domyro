@@ -84,6 +84,6 @@ No remote service/customer SLA promised before staffing, monitoring and incident
 - [ ] Docker, native Linux and Umbrel installs upgraded and restored.
 - [ ] PWA accessible; Dutch/English strings reviewed.
 - [ ] Security, plugin isolation, privacy and backup gates passed.
-- [ ] Source/license notices, image signatures and SBOM published.
+- [ ] Original Domyro source licensed under AGPL-3.0-only, all third-party licenses compatible/noticed, image signatures and SBOM published.
 - [ ] Reproducible benchmark/test results and known limits published.
-- [ ] Maintainer approval recorded.
+- [ ] Official release authorization recorded specifically from @TheRoyalCaptain; no other account or bot may approve an official Domyro release.
