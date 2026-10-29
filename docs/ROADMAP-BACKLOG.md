@@ -29,9 +29,9 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 
 - **DOM-001 P0 S:** Review and approve this masterplan, product boundaries and version contract. Accept: signed decision record, no unresolved G0 blockers.
 - **DOM-002 P0 S:** Produce and verify the architecture diagram, module boundaries, data lifecycle and network topology. Accept: no hidden Home Assistant dependency.
-- **DOM-003 P0 M:** Dependency/license inventory and AGPL choice review. Accept: compatible proposed stack, third-party notices, exact license identifier decision.
+- **DOM-003 P0 M:** Audit dependencies against confirmed AGPL-3.0-only, including plugins and redistributed binaries. Accept: vetted compatibility list and third-party notices; choice of license itself is already final.
 - **DOM-004 P0 S:** Establish tested hardware matrix and network diagram. Accept: at least real Zigbee2MQTT lamp/plug, sensor, broker and Matter Wi-Fi/Thread candidate identified.
-- **DOM-005 P0 S:** Trademark/name clearance and governance policy. Accept: documented checks, risk log, maintainers/review rights.
+- **DOM-005 P0 S:** Trademark/name clearance and GitHub official-upstream protection. Accept: risks documented, all CODEOWNERS paths covered by @TheRoyalCaptain, active `main` PR/codeowner ruleset verified with a test PR; no unauthorized bypass actor.
 - **DOM-006 P0 S:** Finalize API schema and data migration policy ADRs. Accept: reviewed resource and error envelopes.
 
 ### EPIC DEV — Development foundation
@@ -111,7 +111,7 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 - **DOM-081 P0 M:** Auth/MFA, CSRF, trusted proxy hardening and secret storage. Accept: negative security tests pass.
 - **DOM-082 P0 M:** Audit trail, log redaction and privacy retention UI. Accept: no password/token leaks.
 - **DOM-083 P0 L:** Secure plugin runtime foundation and permissions model. Accept: plugin crash and forbidden access contained.
-- **DOM-084 P0 M:** Dependency/SBOM/image signature and disclosure pipeline. Accept: integrity verified before release.
+- **DOM-084 P0 M:** Dependency/SBOM/image signature and disclosure pipeline. Accept: integrity verified before release, and only @TheRoyalCaptain authorizes official release publication.
 - **DOM-085 P0 L:** Soak, chaos/reconnect and backup/restore reliability suite. Accept: published reproducible test reports.
 
 ### EPIC ECO — Open ecosystem (P1)
@@ -151,7 +151,7 @@ Code and tests, security/permission checks, error handling, usability/accessibil
 
 ## 7. Key deliverables by gate
 
-- G0: project plan + decisions signed; **no code**.
+- G0: project plan + decisions signed, branch protection and owner-only approvals validated; **no code until then**.
 - G1: trustworthy scaffold, local auth, DB, one frontend view, tests.
 - G2: real Zigbee2MQTT and generic MQTT flows with observable truth.
 - G3: independent Matter devices commissioned and controlled.
