@@ -1,0 +1,8 @@
+# Official Domyro upstream: exclusive maintainer approval.
+# All changed paths, including the CODEOWNERS file itself, belong to @TheRoyalCaptain.
+# Enforcement requires GitHub Settings > Rules > Rulesets or branch protection
+# with "Require review from Code Owners". This file alone is NOT enforcement.
+
+* @TheRoyalCaptain
+/.github/ @TheRoyalCaptain
+/.github/CODEOWNERS @TheRoyalCaptain
