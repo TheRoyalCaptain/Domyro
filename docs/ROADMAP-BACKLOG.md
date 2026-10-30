@@ -102,7 +102,9 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 - **DOM-073 P0 L:** Umbrel app-store package and browser-based setup. Accept: install/update/restore without Portainer or SSH.
 - **DOM-074 P0 M:** Integration-specific network/USB/mDNS preflight and docs. Accept: actionable error rather than silent failure.
 - **DOM-075 P0 M:** Backups, integrity validation and restore wizard. Accept: clean restore on each supported platform.
-- **DOM-076 P0 M:** Release-channel/update checker, preflight and rollback procedure. Accept: failed migration does not corrupt production.
+- **DOM-076 P0 M:** Signed GitHub-release discovery with independent auto-check, optional auto-download and delay policy (0h/12h/24h/72h/7d/custom), safe staging, explicit owner-controlled install, preflight and rollback. Accept: no release is ever automatically installed or causes a restart; all compatibility and failed-migration cases preserve production. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
+- **DOM-078 P0 M:** Native Debian/Ubuntu download-only systemd timer and restricted staging. Accept: signed artifact download at delay eligibility; zero automatic dpkg/apt installation and zero automatic service restart.
+- **DOM-079 P0 M:** Docker/umbrelOS-specific update UX and capability detection. Accept: Docker pull-only never recreates containers; Umbrel update/install remains owned by App Store with unsupported staging controls hidden.
 - **DOM-077 P0 S:** Multiarch compatibility matrix, platform version pinning and support policy. Accept: published pass/fail data.
 
 ### EPIC SEC — Security, privacy, reliability
@@ -165,7 +167,7 @@ No target dates are promised before the scope is sized by actual prototype/hardw
 - DOM-012/020–026 → [DATABASE.md](DATABASE.md): tables, indexes, migration and state integrity.
 - DOM-014–017/022–024 → [API-CONTRACT.md](API-CONTRACT.md): authorized HTTP/WS behavior.
 - DOM-060–066 → [AUTOMATION-ENGINE.md](AUTOMATION-ENGINE.md): deterministic graph, schedules, power-loss rules.
-- DOM-070–077 → [DEPLOYMENT.md](DEPLOYMENT.md): three platforms, networking, packages, backup.
+- DOM-070–079 → [DEPLOYMENT.md](DEPLOYMENT.md) and [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md): three platforms, networking, packages, manual-only installation and user-controlled downloads.
 - DOM-030–045 → [HARDWARE-PILOT.md](HARDWARE-PILOT.md): non-disruptive hardware validation.
 - DOM-001–006 → [G0-READINESS.md](G0-READINESS.md): actual approval and repository-branch protection gates.
 
