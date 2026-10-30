@@ -120,7 +120,11 @@ Never indicate “ready” when a protocol backend has not been provisioned. Off
 ## 7. Update policy and risk boundaries
 
 - Stable and beta channels; prerelease optional.
-- Updates are proposed to owner; production auto-updates are opt-in only after restore/rollback tests.
+- **Owner-approved requirement:** never automatically install a Domyro update or restart the service. Users control automatic release checks/downloads only, with 0h/12h/24h/72h/7d/custom release-age delay; install always requires fresh explicit owner/admin confirmation.
+- Native Linux: nonprivileged service/timer checks for new signed GitHub releases and may stage verified packages; the timer cannot call package installation or restart services. The user starts a separate confirmed install operation.
+- Docker: a safe pull-only workflow may stage immutable images without recreating containers or altering running versions; no privileged Docker socket mounted merely to provide this feature.
+- Umbrel: the Umbrel App Store owns app update installation. Domyro does not bypass Umbrel to install or pre-download app images; custom download delay is only offered if an official supported Umbrel download-only mechanism exists.
+- Domyro update settings never manage Linux/umbrelOS system updates, or other apps.
 - A code update does not automatically change Zigbee firmware, coordinator data or Matter device firmware.
 - DB migrations are versioned and checked before processing real device events.
 - Integration version compatibility check before upgrade; incompatible plugin quarantined.
@@ -179,4 +183,4 @@ Sources:
 - https://umbrel.com/support/apps/how-to-install-an-app
 - https://github.com/matter-js/matterjs-server
 
-Related: [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), [INTEGRATIONS.md](INTEGRATIONS.md), [TEST-RELEASE.md](TEST-RELEASE.md).
+Related: [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md), [INTEGRATIONS.md](INTEGRATIONS.md), [TEST-RELEASE.md](TEST-RELEASE.md).
