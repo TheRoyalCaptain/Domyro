@@ -11,7 +11,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 - Independent automation and device platform: not a Home Assistant frontend.
 - Fully functional local control without mandatory cloud subscription.
 - Public free and open-source software under **GNU AGPL-3.0-only**. Forks are allowed, but **only @TheRoyalCaptain** approves changes and releases in official upstream. Dependency-license review remains a release gate.
-- Installation targets from first supported release: Docker Compose, native Linux (Debian/Ubuntu), and Umbrel.
+- Installation targets from first supported release: Docker Compose, native Linux (Debian/Ubuntu), and Umbrel. **Ubuntu Server ISO bare-metal and VM installs get a verified one-command installer, with a native admin UI for managing optional required local services.**
 - Initial protocol priorities: MQTT, Zigbee2MQTT and Matter.
 - Progressive web app first, later native mobile apps.
 - Domyro updates: optional automatic **checking and downloading** with user-controlled delay (12h/24h/72h/7d/custom), but **NEVER automatic installation or restart**. Underlying OS updates are out of scope.
@@ -38,6 +38,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 14. [Hardware pilot](docs/HARDWARE-PILOT.md): safe non-disruptive Zigbee2MQTT/Matter testing on real devices.
 15. [Approval and readiness register](docs/G0-READINESS.md): exact blockers and owner decisions before coding.
 16. [Software-update policy](docs/SOFTWARE-UPDATES.md): download-only automation, manual installation, native Linux and Umbrel limitations.
+17. [Ubuntu native services and backup targets](docs/PLATFORM-SERVICES-BACKUPS.md): one-command installer, managed services, Matter readiness, local/SMB/FTP/USB backups.
 
 **Current project gate: G0 not yet approved.** License and official maintainership are confirmed; stack details, pilot hardware, dependency review and GitHub branch protection remain to be signed off.
 
