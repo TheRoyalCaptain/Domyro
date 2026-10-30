@@ -14,7 +14,7 @@ Matter/Thread is not identical to Zigbee; Thread devices need an existing Thread
 
 ## 2. Generic MQTT adapter
 
-- Reuse an existing broker or package a documented optional Mosquitto broker.
+- Reuse an existing broker or **offer native Ubuntu admin UI installation/configuration/management of an optional local Mosquitto broker** with explicit permissions. In containers connect to existing broker/service or opt-in hosted sidecar as platform allows. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 - MQTT 3.1.1 and MQTT 5 subject to tested capability matrix, TLS+client authentication, broker reconnect and retained message handling.
 - Configurable topics and typed value mappings: state, command, availability, attributes; JSON/boolean/numeric/text parsing and normalization.
 - Validate topic patterns, wildcards, values, payload sizes, allowed action values and ranges.
