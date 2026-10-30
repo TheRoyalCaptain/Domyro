@@ -28,6 +28,29 @@ D-20 **Approved:** local, SMB/NAS, FTP and removable USB backup support, with se
 D-21 **Approved:** specification-first, no application code before comprehensive planning and formal G0 sign-off.
 See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 
+### Additional owner-approved product decisions (2026-10-30)
+
+D-22 **Approved:** Dashboard templates, full drag/drop editing, custom widgets, dedicated tablet/wall mode.  
+D-23 **Approved:** Floor and room grouping, interactive 2D floorplans.  
+D-24 **Approved:** Multi-device scenes, schedules, conditions/exceptions, capture actual current states.  
+D-25 **Approved:** Advanced automation: typed variables/calculations, conditions, branching, loops, waits, reusable scripts/subflows, live tests/simulations/traces.  
+D-26 **Approved:** Every plugin installation requires explicit manual approval. Plugin update checking/download policy remains undecided.  
+D-27 **Approved:** Live electricity/gas/water, cost and dynamic tariffs, solar+battery, smart EV charging.  
+D-28 **Approved:** Camera live view, recordings/playback, motion detection/alerts, ONVIF/RTSP.  
+D-29 **Approved:** Phone push, email, webhooks, critical priorities and notification rules.  
+D-30 **Approved:** German alongside Dutch and English. Launch scope pending localization QA decision.  
+D-31 **Approved:** Live CPU/RAM/disk/network telemetry, device/integration logs, error export, proactive faults/storage alerts.  
+D-32 **Approved:** Presence from motion/manual status, GPS/mobile, BLE, Wi-Fi/network.  
+D-33 **Approved:** Eventually, fully local voice assistant.  
+D-34 **Approved:** Unified protocol UI, native Zigbee long-term, keep external Zigbee2MQTT, make external services optional when native alternatives proven stable.  
+D-35 **Approved:** Three top differentiators: polished fast dashboards; more powerful automations; local independence.  
+D-36 **Approved:** Compact, highly reliable 1.0; full product vision to be phased.  
+D-37 **Approved:** TOTP, passkeys/biometrics where supported, high-risk reauthentication and active-session management.  
+D-38 **Approved:** Daily/weekly/monthly backup schedules, automatic retention, several destinations, automated integrity validation.  
+D-39 **Approved:** Anyone may propose feature requests via GitHub Issues; official changes require @TheRoyalCaptain approval.  
+
+**Detailed acceptance and proposed milestones:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Multiple selected items within each question are cumulative. Unselected items remain undecided, not disallowed.
+
 ## B. Proposed technical ADRs for project owner sign-off
 
 | ADR | Decision | Rationale | Alternative / tradeoff |
@@ -57,8 +80,10 @@ These are intentionally explicit; they are *not* reasons to start implementation
 6. Approve threat model and the release gate that remote service/marketplace will follow core stability.
 7. Confirm initial hardware acceptance criteria and the rule that existing HA/Zigbee mesh remains untouched without explicit consent.
 8. Confirm trademark/name investigation before public brand launch.
+9. Approve the proposed **compact 1.0 release allocation** for D-22..D-39, including full drag/drop vs basic layout, German localization, advanced subflows, MFA/passkeys, cameras/energy and backup verification. Long-term functional requirements themselves are already approved.
+10. Decide plugin update **checking/downloading** rules separately; manual confirmation for every plugin installation is already approved.
 
-**Decision status:** A-01 (AGPL-3.0-only) is accepted. Governance rule for sole official maintainer approval is accepted. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending formal G0 project-wide sign-off. External forks and contributions remain allowed under the AGPL, and GitHub CODEOWNERS must be backed by active branch rules.
+**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-39 are accepted. Governance rule for sole official maintainer approval is accepted. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending formal G0 project-wide sign-off. External forks and contributions remain allowed under the AGPL, and GitHub CODEOWNERS must be backed by active branch rules.
 
 ## D. Decision record template
 
