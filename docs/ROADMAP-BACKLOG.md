@@ -159,3 +159,14 @@ Code and tests, security/permission checks, error handling, usability/accessibil
 - G5: Docker+Linux+Umbrel verified, backups+security+accessibility, public 1.0.
 
 No target dates are promised before the scope is sized by actual prototype/hardware work. M2 is the first objective proof that Domyro is a smart-home platform rather than a static UI.
+
+## 8. Detailed specifications for work items
+
+- DOM-012/020–026 → [DATABASE.md](DATABASE.md): tables, indexes, migration and state integrity.
+- DOM-014–017/022–024 → [API-CONTRACT.md](API-CONTRACT.md): authorized HTTP/WS behavior.
+- DOM-060–066 → [AUTOMATION-ENGINE.md](AUTOMATION-ENGINE.md): deterministic graph, schedules, power-loss rules.
+- DOM-070–077 → [DEPLOYMENT.md](DEPLOYMENT.md): three platforms, networking, packages, backup.
+- DOM-030–045 → [HARDWARE-PILOT.md](HARDWARE-PILOT.md): non-disruptive hardware validation.
+- DOM-001–006 → [G0-READINESS.md](G0-READINESS.md): actual approval and repository-branch protection gates.
+
+**Important:** backlog tasks are definitions only, not GitHub Issues. No executable work has started.
