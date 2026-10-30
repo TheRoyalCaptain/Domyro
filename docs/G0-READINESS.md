@@ -21,6 +21,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [x] First measurable success is actual physical device control.
 - [x] No executable application code before project-wide plan sign-off.
 - [x] **D-13:** Users control Domyro release checking/downloading and an optional download delay; installation is ALWAYS manually approved, never automatically scheduled. No Domyro control of Linux/umbrelOS system updates.
+- [x] **D-14..D-21:** Ubuntu Server ISO native bare metal/VM; native UI-managed dependent services + container external services; Matter readiness without local test hardware; reliability/performance-led tech evaluation; secure one-command installer; multisite granular RBAC; local/SMB/NAS/FTP/USB backups; extensive specifications before implementation. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 
 ## 2. Proposed technical ADRs still needing an explicit yes/no
 
@@ -40,13 +41,15 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 
 ## 3. Practical prerequisites (must resolve before G0)
 
-- [ ] Confirm first test host, Linux distro/architecture and ability to run separate test services.
+- [ ] Confirm first test host: **Ubuntu Server ISO native install** (physical or VM), exact supported LTS version, CPU architecture, virtualization networking and ability to run isolated test services.
 - [ ] Identify exact harmless Zigbee lamp/plug and a sensor; never publish credentials/device IDs.
 - [ ] Identify a genuinely available Matter Wi-Fi/Thread test device and network preflight strategy; a separate hardware purchase is not automatically authorized.
-- [ ] Choose existing vs managed optional MQTT broker, admin credentials, initial read-only access.
-- [ ] Select query builder/migration tool, Node LTS version, PostgreSQL support range after documented compatibility review.
+- [ ] Determine first managed services (native Mosquitto, Zigbee2MQTT, Matter.js, DB) and service administration permission model; preserve external broker/service mode and no ownership changes without explicit consent.
+- [ ] Compare candidate runtimes, language and database choices with explicit reliability/performance/maintainability scorecard; choose a stack, query builder/migration tool and supported versions with evidence.
 - [ ] Review third-party AGPL/GPL/other dependency license obligations; confirm separate plugin licensing policy.
-- [ ] Review safety and privacy threat model and retention settings.
+- [ ] Review safety and privacy threat model, multi-site permissions and retention settings.
+- [ ] Validate encrypted backups against local paths, USB disks, SMB/NAS and secure FTP variants; decide plaintext FTP restrictions and managed-dependency update confirmation policy.
+- [ ] Approve verified one-command native installer (preflight, prompts, reversible failures, narrow service management helper).
 - [ ] Confirm tested native Ubuntu/Debian and umbrelOS minimum versions, x86_64/ARM64 release commitments.
 - [ ] Select secure, nonprivileged native release-check/download timer and separately authorized manual install helper; validate Umbrel App Store limitations without making false download/upgrade promises. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - [ ] Verify brand clearance for Domyro before public trademark/promotional launch.
@@ -114,3 +117,4 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - [TEST-RELEASE.md](TEST-RELEASE.md)
 - [ROADMAP-BACKLOG.md](ROADMAP-BACKLOG.md)
 - [DECISIONS.md](DECISIONS.md)
+- [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
