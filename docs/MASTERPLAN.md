@@ -42,6 +42,7 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | D-10 | Temporary Home Assistant bridge and later migration tools. |
 | D-11 | AI and speech after the reliable baseline. |
 | D-12 | First milestone: genuinely functioning hardware and control, not a mockup. |
+| D-13 | Domyro application updates are **never installed or restarted automatically**. Users control automatic release checks/downloads and delay (0h/12h/24h/72h/7d/custom); installing every release remains an explicit manual action. Underlying operating-system updates are out of scope. |
 
 ## 3. Scope and version contracts
 
@@ -74,7 +75,7 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 
 **Advanced automation:** select trigger > configure conditions > add actions/waits > simulate or validate flow > save version > enable > review execution trace > fix failed node.
 
-**Maintenance:** admin sees service health > pending compatible updates > change notes and backup prompt > update > run post-upgrade health check > recover safely on failure.
+**Maintenance:** admin sees service health > checks for official releases (if enabled) > optionally downloads verified artifacts after a user-chosen delay > displays release notes and backup requirements > waits indefinitely for an explicitly confirmed manual installation > runs post-install health checks and offers documented recovery. Automatic checking/downloading must never install, restart or upgrade the running version. On Umbrel, app installation/upgrading remains under Umbrel's App Store control.
 
 **Migration:** admin enables a separate restricted Home Assistant bridge > reads HA entities/events via supported APIs > tests candidate mappings > marks transferred devices > prevents duplicate actuation or loops > disconnects the bridge when migration is complete.
 
@@ -180,5 +181,6 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Three-platform packaging:** [DEPLOYMENT.md](DEPLOYMENT.md)
 - **Supervised real-hardware pilot:** [HARDWARE-PILOT.md](HARDWARE-PILOT.md)
 - **Formal planning-to-code approval gate:** [G0-READINESS.md](G0-READINESS.md)
+- **Owner-controlled updates and manual installation:** [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md)
 
 These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites, dependency licensing and GitHub rules remains outstanding.
