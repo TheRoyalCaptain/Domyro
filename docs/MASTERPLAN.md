@@ -171,3 +171,14 @@ G5: 1.0 security, accessibility, restore, update and regression gates pass.
 - Official contribution governance and GitHub protection instructions: `docs/GITHUB-GOVERNANCE.md`
 
 The detailed contracts are split into the adjoining architecture, integration, security, product, roadmap and test documents. These documents supersede informal preliminary technology suggestions when there is a conflict.
+
+### Detailed implementation contract references (documents, not implemented features)
+
+- **Storage:** [DATABASE.md](DATABASE.md)
+- **HTTP and realtime protocols:** [API-CONTRACT.md](API-CONTRACT.md)
+- **Automation execution:** [AUTOMATION-ENGINE.md](AUTOMATION-ENGINE.md)
+- **Three-platform packaging:** [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Supervised real-hardware pilot:** [HARDWARE-PILOT.md](HARDWARE-PILOT.md)
+- **Formal planning-to-code approval gate:** [G0-READINESS.md](G0-READINESS.md)
+
+These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites, dependency licensing and GitHub rules remains outstanding.
