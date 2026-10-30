@@ -71,6 +71,10 @@ Use per-class retention policies, DB partition pruning and storage pressure warn
 
 ## 7. Backup, restore and disaster recovery
 
+Owner-required targets: **local disk, directly attached USB/external drives, SMB/CIFS NAS, and FTP**; offer secure FTPS and SFTP. Plain FTP, if enabled, must have an explicit warning and never be default. Encrypted backups must be verified after writing to each destination. External/missing media cannot be formatted or silently deleted. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
+
+Native Ubuntu's privileged dependency-service manager must use tightly scoped allowlisted operations, signed artifacts, authenticated explicit admin confirmation and audit logs; it must not expose arbitrary system shell access through Domyro.
+
 Backup scope: DB consistent snapshot, installation config, integration settings, encrypted secrets, automation revisions, dashboard definitions, protocol-specific matter controller credentials and recovery metadata. Zigbee2MQTT coordinator backup is a separate optional operation and may not be supported by every adapter; do not silently imply it is included.
 
 Format: versioned manifest with schema/app versions, platform, encryption method, checksums and portable archive. Default backups encrypted using owner-held passphrase or well-documented recoverable mechanism. Restore must validate archive, hashes, versions, resources and permissions before replacing live state.
