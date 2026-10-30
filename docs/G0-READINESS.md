@@ -20,6 +20,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [x] AI/voice after the reliable first release.
 - [x] First measurable success is actual physical device control.
 - [x] No executable application code before project-wide plan sign-off.
+- [x] **D-13:** Users control Domyro release checking/downloading and an optional download delay; installation is ALWAYS manually approved, never automatically scheduled. No Domyro control of Linux/umbrelOS system updates.
 
 ## 2. Proposed technical ADRs still needing an explicit yes/no
 
@@ -47,6 +48,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [ ] Review third-party AGPL/GPL/other dependency license obligations; confirm separate plugin licensing policy.
 - [ ] Review safety and privacy threat model and retention settings.
 - [ ] Confirm tested native Ubuntu/Debian and umbrelOS minimum versions, x86_64/ARM64 release commitments.
+- [ ] Select secure, nonprivileged native release-check/download timer and separately authorized manual install helper; validate Umbrel App Store limitations without making false download/upgrade promises. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - [ ] Verify brand clearance for Domyro before public trademark/promotional launch.
 - [ ] Activate **main** branch protection and code-owner review in GitHub; confirm only owner can approve upstream merges.
 - [ ] Confirm project owner review and release responsibilities, and what external help may do without approval.
