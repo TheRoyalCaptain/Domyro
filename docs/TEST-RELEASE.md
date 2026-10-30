@@ -81,7 +81,8 @@ No remote service/customer SLA promised before staffing, monitoring and incident
 - [ ] True live Zigbee2MQTT + MQTT + Matter tests passed.
 - [ ] State/command truth, reconnect and idempotency correct.
 - [ ] Resident+admin UX and both automation editors tested.
-- [ ] Docker, native Linux and Umbrel installs upgraded and restored.
+- [ ] Docker, native Linux and Umbrel installs upgraded and restored through explicit owner-initiated installation, never through automatic download; verify native timer cannot invoke package installs or restarts.
+- [ ] Auto-check off sends no scheduled release requests; download delay (12h/24h/72h/7d/custom) stages only; invalid signatures/low disk/offline/critical security release never trigger silent install; Umbrel App Store remains authoritative. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - [ ] PWA accessible; Dutch/English strings reviewed.
 - [ ] Security, plugin isolation, privacy and backup gates passed.
 - [ ] Original Domyro source licensed under AGPL-3.0-only, all third-party licenses compatible/noticed, image signatures and SBOM published.
