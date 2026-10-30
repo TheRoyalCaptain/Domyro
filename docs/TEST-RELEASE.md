@@ -56,6 +56,24 @@ Every release:
 
 Release candidate must remain unaltered except by new RC release tags; do not silently overwrite artifacts.
 
+## 4A. Acceptance planning for D-22..D-39
+
+The owner approved all selected capabilities in the full product roadmap but chose a **compact, highly reliable 1.0**. Apply these checks before release commitments:
+
+- Dashboard: 1.0 must have responsive templates, true-state device control, accessible layout editing; later full DnD and custom widgets require validation/sandboxing.
+- Scenes: test multi-device execution, current-state capture, scheduling and partial failure; condition-heavy scenes follow approved milestone.
+- Automation: test graph validation, bounded loops, waits/restart, variables, trace and zero-actuation simulations; reusable subflows/live debugging receive a dedicated release gate.
+- Plugins: all installations require explicit admin confirmation; do not invent any automatic plugin-download policy.
+- Energy/EV and cameras: keep future modules out of stable 1.0 until their security, hardware and storage tests pass.
+- Notifications/presence: do not imply PWA push or GPS background tracking is guaranteed across mobile platforms.
+- Diagnostics: tests cover redacted logs, access-controlled exports, resource pressure and storage alerts.
+- Backup: daily/weekly/monthly scheduling, multiple targets, independent results, retention and encrypted archive validation must not erase good backups after another target fails.
+- Identity: TOTP and step-up are foundational; passkey QA covers recovery and compatible browsers before release.
+- Languages: English, Dutch and desired German tracked as distinct localization QA targets; German's exact first shipping milestone remains an owner decision.
+- Public Issues accept proposals only; protected main and official release approval remain owner-only.
+
+Reference: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+
 ## 5. QA gates
 
 **Alpha:** real end-to-end device control, no dangerous automatic retries, first auth and state reliability.  
@@ -76,15 +94,15 @@ No remote service/customer SLA promised before staffing, monitoring and incident
 
 ## 7. Go/no-go checklist for version 1.0
 
-- [ ] All 12 owner decisions preserved in released design.
+- [ ] All **39 owner product decisions (D-01..D-39)** preserved in the product design; 1.0 remains deliberately compact and reliable under D-36. Long-term planned features are not misrepresented as already implemented.
 - [ ] No hidden Home Assistant or proprietary-cloud runtime dependency.
 - [ ] True live Zigbee2MQTT + MQTT + Matter tests passed.
 - [ ] State/command truth, reconnect and idempotency correct.
 - [ ] Resident+admin UX and both automation editors tested.
 - [ ] Docker, native Linux and Umbrel installs upgraded and restored through explicit owner-initiated installation, never through automatic download; verify native timer cannot invoke package installs or restarts.
 - [ ] Auto-check off sends no scheduled release requests; download delay (12h/24h/72h/7d/custom) stages only; invalid signatures/low disk/offline/critical security release never trigger silent install; Umbrel App Store remains authoritative. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
-- [ ] PWA accessible; Dutch/English strings reviewed.
-- [ ] Security, plugin isolation, privacy and backup gates passed.
+- [ ] PWA accessible; Dutch/English screens reviewed and German (de-DE) scope explicitly quality-approved for stable 1.0 or scheduled as an acknowledged follow-up. Localization user decision D-30 remains binding.
+- [ ] Security, plugin isolation, privacy and backup gates passed, including **manual confirmation of every plugin installation**, TOTP/step-up/session controls, and integrity checks of multi-destination backups.
 - [ ] Original Domyro source licensed under AGPL-3.0-only, all third-party licenses compatible/noticed, image signatures and SBOM published.
 - [ ] Reproducible benchmark/test results and known limits published.
 - [ ] Official release authorization recorded specifically from @TheRoyalCaptain; no other account or bot may approve an official Domyro release.
