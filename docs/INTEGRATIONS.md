@@ -94,6 +94,18 @@ Reference: https://developers.home-assistant.io/docs/api/websocket/
 
 **Updates:** version lock, compatibility negotiation, rollback plan, signed catalog release, reapproval for expanded permissions. A failed third-party plugin must not block startup or unrelated integrations.
 
+## 7A. Owner decisions on third-party installation and protocol direction
+
+**D-26:** Every plugin installation requires a new, explicit authorized administrator confirmation, regardless of source. The UI displays publisher/origin, version, relevant permissions, potential network/device access and trust checks. Enabling a catalog does NOT authorize unattended plugin installs. The user did not decide policies for plugin auto-checking/downloading or optional extra features in the questionnaire: keep those open, separate from the mandatory manual installation rule.
+
+**D-34:** Keep external Zigbee2MQTT support permanently available while developing a **native Zigbee coordinator** in a later phase. Show all protocols together in one Domyro UI and allow the owner to choose internal vs external protocol services once proven stable. Never concurrently claim the same radio, change mesh ownership without consent or assume every Zigbee device can migrate without repair. This is a long-term interoperability commitment, not a requirement to create a direct Zigbee stack in compact 1.0.
+
+**D-28 / D-27:** Document ONVIF/RTSP camera adapters and energy/solar/battery/EV adapter contracts as approved extensions. Camera streams, local recording and EV actuation require separate permissions, media storage and safety policy. Specific device/charger support must be confirmed in a compatibility matrix.
+
+**D-33:** Fully local voice is a later integration target. Voice processing and local-device permissions cannot depend on a mandatory hosted AI provider.
+
+See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+
 ## 8. Compatibility matrix minimum
 
 Track per device: manufacturer, model, firmware, protocol, transport adapter, feature list, tested date, commissioning method, result (supported/partial/unsupported), caveats, test environment, regression fixture. CI exercises recorded fixture data; real-device hardware verification complements it.
