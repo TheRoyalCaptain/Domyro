@@ -104,6 +104,26 @@ Policy: daily local backup configurable, rolling 7/30-day retention, owner-manag
 - Critical real-world safety functions must not rely exclusively on this hobbyist/community software.
 - Cloud/AI-driven commands never bypass local permissions or step-up controls.
 
+## 9A. Additional owner-approved security and privacy requirements
+
+**D-37:** Support TOTP authenticator MFA, passkeys using platform authenticators/biometrics when available, step-up authentication for unlock, alarm disarm, backups/restores and other sensitive actions, plus viewing and revoking active sessions/devices. Server verifies credentials and authorization. The application must not store or receive raw biometric data. Scope, recovery and minimum viable release timing for passkeys remain design decisions; a compact 1.0 cannot omit effective security safeguards.
+
+**D-38:** Automated backup schedules (daily/weekly/monthly), controlled retention cleanup, **multiple backup targets**, and automatic integrity verification are all required. Backups to USB/NAS/FTP destinations already specified by D-20 must remain encrypted and tracked per destination. A failed backup to one destination may not corrupt/delete a successful copy elsewhere. An integrity check verifies archive/checksum/decryption when configured, but does not replace full clean-restore testing.
+
+**D-32:** GPS, Wi-Fi and Bluetooth presence are potentially sensitive information; store only minimally required locations/identifiers, require per-person consent, support removal and recording periods, and prevent guests from reading other household members' presence. Manual home/away and motion events must not be treated as proof of personal identity or life safety.
+
+**D-28:** Camera streaming/recording requires authenticated authorized access, encryption in transport where supported, camera-specific retention/recording schedules, bounded disk storage and redacted URLs/credentials. Recording and detection are planned post-1.0 unless separately approved.
+
+**D-26:** **Every plugin installation needs explicit administrator confirmation.** Do not infer that any user's choice authorizes automatic plugin installation. Plug-in update metadata checks/downloads remain open technical/product questions; Domyro core's D-13 manual-only application update rule remains unchanged.
+
+**D-29:** Notifications support configurable priorities, retry policy and privacy scopes; a "critical" label is not a guarantee of push/email delivery.
+
+**D-31:** Machine and device logs/resource metrics and diagnostic exports must be strictly permissioned and redact credentials, secrets, presence history and personally identifying camera/location data.
+
+**D-39:** Public GitHub Issues may accept feature suggestions, but must never substitute for private vulnerability reporting or owner-only official merge approval.
+
+**D-36:** Phase advanced features after the compact 1.0 where needed for stability; minimum security/restore protections are not optional. Full approved feature definitions: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+
 ## 10. Security release gates
 
 Before public beta: run threat model workshop, auth tests, access-control integration tests, secret-redaction tests, SAST/DAST/dependency scans, plugin isolation tests and backup-encryption validation.
