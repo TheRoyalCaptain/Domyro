@@ -83,9 +83,11 @@ Policy: daily local backup configurable, rolling 7/30-day retention, owner-manag
 
 - Semantic versions, signed release assets/image digests, verified dependency and installer sources.
 - Release channels: stable and beta (later nightly); beta requires opt-in.
+- **No automatic Domyro installation or restart**, including for security releases. Auto-check and auto-download are distinct user controls; download delay choices include immediate, 12h, 24h, 72h, 7d and a custom delay. Installing is a new privileged user action, never implied by a downloaded file.
+- Native systemd periodic job may only check signed metadata and download/verify artifacts as unprivileged process; cannot launch package installs or restarts. OS updates remain outside Domyro's control.
 - Preflight checks: free disk, DB version, protocol server compatibility, backup age, plugin API versions, migration strategy.
 - Health gate after restart; safe rollback using backup if data migration incompatible.
-- Native Linux package and Umbrel app upgrades follow platform support rules; no silent permission escalations.
+- Native Linux package and Umbrel app upgrades follow platform support rules; no silent permission escalations. Umbrel's App Store remains authoritative for upgrades, without unsafe bypass for a custom Domyro downloader; see [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - Versioned logs and support packages with secrets redacted.
 - Administrative screen shows integration status, uptime, last backup, last successful update, disk and DB health.
 
