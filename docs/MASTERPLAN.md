@@ -51,6 +51,26 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | D-19 | Multiple households/sites and granular user, room and entity/action permissions are required. |
 | D-20 | Backup targets include local storage, SMB/NAS, FTP and removable USB drives; add secure FTPS/SFTP, encryption and plaintext-FTP warnings. |
 | D-21 | Work out the most complete feasible specifications **before programming**; project G0 gate remains closed. |
+| D-22 | Dashboard templates, full drag-and-drop, user-created widgets, tablet/wall-panel mode. |
+| D-23 | Floors and room groups plus interactive 2D floorplans. |
+| D-24 | Scenes: multiple devices, scheduling, conditions/exceptions and snapshots from actual states. |
+| D-25 | Advanced automations: variables/calculations, branches/loops/waits, reusable scripts/subflows, live tests/simulation/debugging. |
+| D-26 | Every plugin installation needs explicit manual administrator confirmation; plugin update checking/downloading still undecided. |
+| D-27 | Electricity/gas/water, dynamic tariffs/costs, solar/batteries and smart EV charging. |
+| D-28 | Camera live views, recordings/playback, motion alerts, ONVIF and RTSP. |
+| D-29 | Phone push, email, webhooks and prioritized/critical notification rules. |
+| D-30 | German de-DE alongside previously selected Dutch and English. |
+| D-31 | Live CPU/RAM/disk/network metrics, device/integration logs, diagnostic export, proactive faults/storage alerts. |
+| D-32 | Presence via motion/manual home-away, mobile GPS, Bluetooth and Wi-Fi/network. |
+| D-33 | A fully local voice assistant in a later release. |
+| D-34 | Continue Zigbee2MQTT compatibility, build native Zigbee, one unified protocol UI, optional external services once native alternatives are stable. |
+| D-35 | Three key differentiators: beautiful/fast/clear dashboards; stronger automations; local independence. |
+| D-36 | A compact, highly reliable 1.0 release; advanced features remain promised long-term but can ship later. |
+| D-37 | TOTP, passkeys/biometrics where supported, step-up authorization and management of active sessions. |
+| D-38 | Daily/weekly/monthly backup scheduling, retention cleanup, multiple targets, automated integrity checks. |
+| D-39 | Public GitHub Issues for feature requests; @TheRoyalCaptain retains sole official merge/release authority. |
+
+All D-22..D-39 choices are cumulative, approved **product requirements**. The proposed version split is separately documented in [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md); unchecked options are not silently accepted or forbidden.
 
 ## 3. Scope and version contracts
 
@@ -60,7 +80,7 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 
 **Public beta (0.8):** robust end-to-end MQTT/Zigbee2MQTT/Matter, two automation editors, backup/restore, basic role-based permissions, PWA installability, logs and diagnostics, Dutch/English, reliable install targets, security review and compatibility matrix.
 
-**1.0 stable:** trustworthy local daily use on the three installation targets; documented device compatibility and limitations; reproducible release; critical safety controls, update/restore tests; public documentation; automated build/test/security pipelines. No guarantee of support for every brand or all Matter device types.
+**1.0 stable:** the owner explicitly wants a **compact, very reliable** release. Prioritize tested MQTT/Zigbee2MQTT/Matter functionality, local-first dashboards/templates, essential scenes/automations and three installation targets; protect security, backups, user control over manually installed updates and data integrity. The full dashboard editor, energy optimization, cameras, native Zigbee controller and local voice assistant remain long-term requirements, but are not necessarily 1.0 blockers. German is a required additional language; precise launch timing subject to translation quality and scope review.
 
 **After 1.0:** native mobile apps; remote-access product if security gates completed; full ecosystem catalog and sandbox hardening; direct Zigbee coordinator without Zigbee2MQTT; extensive energy, camera and AI features; Domyro OS; enhanced migration.
 
@@ -98,11 +118,11 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 |---|---|---|---|
 | Device/state/command | real Zigbee+MQTT | robust registry, history, errors | complex diagnostics |
 | Matter | lab proof targeted | commissioning, state, commands for tested types | expanded device classes |
-| UI | responsive device list | dashboards, rooms, scenes, accessibility | floor plans / sophisticated layouts |
+| UI | responsive device list | dashboard templates, basic layout editor, rooms, scenes, accessibility | full drag-and-drop, custom widgets, tablet/wall mode, 2D floorplans |
 | Rules | one trigger-one action | triggers, conditions, waits, schedules and traces | AI suggestions |
 | Advanced automation | architecture ready | visual editor for safe subset | reusable subflows/scripts |
 | Deployment | Compose dev/proof | Docker, native Linux, Umbrel | bespoke OS |
-| Identity | single admin | roles, session/audit, trusted local onboarding | stronger SSO/federation |
+| Identity | single admin | roles, TOTP, session control, step-up for risky actions | passkeys if not verified for 1.0, stronger SSO/federation |
 | Backups | export prototype | encrypted backup/restore verified | remote vault destinations |
 | Remote | none | secure reverse proxy/VPN docs | optional Domyro relay |
 | Catalog | bundled adapters | safe curated installation mechanism or documented restricted beta | expanded community marketplace |
@@ -110,6 +130,8 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | HA migration | research | optional read-only bridge for discovery if robust | state/config import tools |
 
 A \"post-1.0\" feature is not promised by the 1.0 date. A marketplace is not the same as allowing arbitrary code to execute: catalog certification and executable plugin hosting have separate release gates.
+
+**Delivery rule:** D-36 requires us to distinguish *features intended for Domyro* from *features shipped in Domyro 1.0*. See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Do not silently remove accepted long-term requirements.
 
 ## 6. Product-level reliability requirements
 
@@ -191,5 +213,6 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Formal planning-to-code approval gate:** [G0-READINESS.md](G0-READINESS.md)
 - **Owner-controlled updates and manual installation:** [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md)
 - **Native Ubuntu installation, managed services and complete backup targets:** [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
+- **Cumulative owner-approved features D-22 to D-39, release phasing and open decisions:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
 
 These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites, dependency licensing and GitHub rules remains outstanding.
