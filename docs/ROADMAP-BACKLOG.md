@@ -106,6 +106,11 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 - **DOM-078 P0 M:** Native Debian/Ubuntu download-only systemd timer and restricted staging. Accept: signed artifact download at delay eligibility; zero automatic dpkg/apt installation and zero automatic service restart.
 - **DOM-079 P0 M:** Docker/umbrelOS-specific update UX and capability detection. Accept: Docker pull-only never recreates containers; Umbrel update/install remains owned by App Store with unsupported staging controls hidden.
 - **DOM-077 P0 S:** Multiarch compatibility matrix, platform version pinning and support policy. Accept: published pass/fail data.
+- **DOM-107 P0 L:** Verified single-command Ubuntu Server ISO installation on bare metal and VM. Accept: clean install with dependency preflight, secure prompts, rollback and browser onboarding, no Docker requirement.
+- **DOM-108 P0 L:** Native Ubuntu UI service manager (PostgreSQL, Mosquitto, Zigbee2MQTT, Matter.js) with privileged allowlist, service ownership detection, health/logs and admin-confirmed installation/update/removal. Accept: existing services unaffected, no arbitrary root actions.
+- **DOM-109 P0 L:** Encrypted local/USB/SMB/NAS/FTP+FTPS backup adapters and restore validation. Accept: correctly tested live and disconnected destinations, security warnings and restore success.
+- **DOM-110 P0 M:** Matter-ready simulated test harness and hardware-compatibility gate. Accept: commissioning flow and contract tests without hardware; no unverified compatibility claims.
+- **DOM-111 P0 M:** Evaluate runtime/database stack based on reliability, fault isolation, performance, security and maintainability. Accept: measurement-backed ADR for G0 before app implementation.
 
 ### EPIC SEC — Security, privacy, reliability
 
@@ -170,5 +175,6 @@ No target dates are promised before the scope is sized by actual prototype/hardw
 - DOM-070–079 → [DEPLOYMENT.md](DEPLOYMENT.md) and [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md): three platforms, networking, packages, manual-only installation and user-controlled downloads.
 - DOM-030–045 → [HARDWARE-PILOT.md](HARDWARE-PILOT.md): non-disruptive hardware validation.
 - DOM-001–006 → [G0-READINESS.md](G0-READINESS.md): actual approval and repository-branch protection gates.
+- DOM-107–111 → [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md): Ubuntu Server ISO native/VM, managed services, backups, Matter readiness and evidence-based stack choice.
 
 **Important:** backlog tasks are definitions only, not GitHub Issues. No executable work has started.
