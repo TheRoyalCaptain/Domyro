@@ -147,6 +147,21 @@ Use declarative operators only; no eval, arbitrary JS, Python injection or netwo
 11. Cycle without bounded repeat is rejected with visual location of offending edge.
 12. Dry-run reports every planned physical effect but makes zero real MQTT/Matter calls.
 
+## 10A. Owner-approved advanced editor extensions (D-24/D-25)
+
+D-25 approves **all** of: typed variables and calculations, complex conditions, explicit branches, bounded loops/waits, reusable scripts/subflows and both live testing and simulation/debugging. D-24 scenes add optional conditional execution, schedules and captured observed values.
+
+Required architecture constraints:
+- Expression evaluator is bounded, deterministic, typed and unit-aware. Do not run arbitrary user-supplied JavaScript/shell in core.
+- A reusable subflow publishes an immutable version and has explicit typed input/output contracts. Execution must detect recursion and constrain nesting.
+- Wait/delay nodes persist only safe continuation points; on crash, never blindly repeat non-idempotent physical actions.
+- Live debugging against real devices requires an explicit consent action; ordinary simulation **never sends physical commands**.
+- Scenes and flows share scheduling, condition evaluation, permission checks, rate limiting and event correlation.
+- Graph editor has a keyboard-accessible list alternative and trace highlighting; pause/step behavior may not freeze real-world safety operations.
+- **1.0 scope:** stable execution substrate and a safe advanced subset; reusable subflows and step-through may ship later based on G0 approved milestones, but their contracts must be planned before code.
+
+Detailed requirements and acceptance gates: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+
 ## 11. Implementation sequencing and proof
 
 1. Type schema + validation + immutable revision storage.
