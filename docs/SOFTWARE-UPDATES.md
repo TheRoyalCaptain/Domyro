@@ -124,6 +124,10 @@ Changing check/download preferences is an admin operation; initiating an install
 
 The GitHub release pipeline publishes immutable signed assets/manifests and a version feed; only @TheRoyalCaptain authorizes official releases. Native package and optional Docker download-only adapter must verify publisher and digest; Umbrel packaging follows the current compatible app-store publication process.
 
+## 8A. Distinction from plugin installation (D-26)
+
+The owner additionally requires **manual confirmation of every plugin installation**. This is a separate product decision from Domyro core software update checking/downloading (D-13). Do not assume the core's optional automatic downloader grants permission to download or install plugin updates. Policies for plugin-update checking/downloads remain **unanswered**, while plugin installations are explicitly manual. See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+
 ## 9. Decisions fixed vs. still to validate
 
 **Fixed by product owner:** no automatically executed installation/restart, control over check/download, delayed downloads and manual install authority.
