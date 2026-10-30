@@ -22,6 +22,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [x] No executable application code before project-wide plan sign-off.
 - [x] **D-13:** Users control Domyro release checking/downloading and an optional download delay; installation is ALWAYS manually approved, never automatically scheduled. No Domyro control of Linux/umbrelOS system updates.
 - [x] **D-14..D-21:** Ubuntu Server ISO native bare metal/VM; native UI-managed dependent services + container external services; Matter readiness without local test hardware; reliability/performance-led tech evaluation; secure one-command installer; multisite granular RBAC; local/SMB/NAS/FTP/USB backups; extensive specifications before implementation. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
+- [x] **D-22..D-39:** owner-approved cumulative dashboard, building, scene, advanced automation, plugin confirmation, energy, camera, notification, German, diagnostics, presence, local voice, protocol, top-three differentiation, compact v1, security, backup and GitHub Ideas choices. See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
 
 ## 2. Proposed technical ADRs still needing an explicit yes/no
 
@@ -55,6 +56,9 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [ ] Verify brand clearance for Domyro before public trademark/promotional launch.
 - [ ] Activate **main** branch protection and code-owner review in GitHub; confirm only owner can approve upstream merges.
 - [ ] Confirm project owner review and release responsibilities, and what external help may do without approval.
+- [ ] Approve the proposed **compact 1.0 scope**, as distinct from the complete long-term feature list D-22..D-39; resolve staging of full dashboard editing, advanced subflows/live debugger, German and passkeys.
+- [ ] Decide plugin-update checking/downloading and UI policy separately: only **manual confirmation of every plugin installation** is approved under D-26.
+- [ ] Specify camera retention/privacy, GPS data and phone background permission behavior, energy tariff/EV safety, speech computing requirements, 2D plan editor and backup verification depth.
 
 ## 4. Owner GitHub branch protection: blocked by connector permissions
 
@@ -118,3 +122,4 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - [ROADMAP-BACKLOG.md](ROADMAP-BACKLOG.md)
 - [DECISIONS.md](DECISIONS.md)
 - [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
+- [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
