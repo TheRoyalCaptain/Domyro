@@ -30,6 +30,14 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 7. [Quality and release strategy](docs/TEST-RELEASE.md): validation, release gates, benchmarks, incidents.
 8. [Decisions and sign-off](docs/DECISIONS.md): architecture decisions and approvals required before coding.
 9. [Repository governance and owner-only approvals](docs/GITHUB-GOVERNANCE.md): licensing, CODEOWNERS, branch protection and explicit GitHub setup steps.
+10. [Database contract](docs/DATABASE.md): schema, identities, state truth, history, retention and recovery.
+11. [API contract](docs/API-CONTRACT.md): REST v1, WebSocket events, access policies, command confirmations and error handling.
+12. [Automation engine specification](docs/AUTOMATION-ENGINE.md): triggers, graph validation, schedules, concurrency and safety.
+13. [Deployment specification](docs/DEPLOYMENT.md): Docker, native Debian/Ubuntu, Umbrel, persistence and networking.
+14. [Hardware pilot](docs/HARDWARE-PILOT.md): safe non-disruptive Zigbee2MQTT/Matter testing on real devices.
+15. [Approval and readiness register](docs/G0-READINESS.md): exact blockers and owner decisions before coding.
+
+**Current project gate: G0 not yet approved.** License and official maintainership are confirmed; stack details, pilot hardware, dependency review and GitHub branch protection remain to be signed off.
 
 ### Licensing and contributions
 
