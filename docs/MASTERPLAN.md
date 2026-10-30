@@ -43,6 +43,14 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | D-11 | AI and speech after the reliable baseline. |
 | D-12 | First milestone: genuinely functioning hardware and control, not a mockup. |
 | D-13 | Domyro application updates are **never installed or restarted automatically**. Users control automatic release checks/downloads and delay (0h/12h/24h/72h/7d/custom); installing every release remains an explicit manual action. Underlying operating-system updates are out of scope. |
+| D-14 | A fully native Domyro installation runs on Ubuntu Server ISO installations on physical hardware **and** VMs, without Docker requirement. |
+| D-15 | Native Ubuntu installations can install/configure/manage selected supporting services such as Mosquitto, Zigbee2MQTT, PostgreSQL and Matter.js from the admin UI; existing/external service connections remain available. Container installations use appropriately hosted brokers and services. |
+| D-16 | Matter functionality must be engineered ready for onboarding despite no Matter test hardware currently available; publicly confirmed device compatibility requires separate real-hardware validation. |
+| D-17 | Choose implementation language and stack based on **measured stability, reliability and speed**, not framework preference alone. |
+| D-18 | Fresh supported Ubuntu Server setups install Domyro via **one verified entry command** that orchestrates safe full installation and onboarding with explicit confirmations. |
+| D-19 | Multiple households/sites and granular user, room and entity/action permissions are required. |
+| D-20 | Backup targets include local storage, SMB/NAS, FTP and removable USB drives; add secure FTPS/SFTP, encryption and plaintext-FTP warnings. |
+| D-21 | Work out the most complete feasible specifications **before programming**; project G0 gate remains closed. |
 
 ## 3. Scope and version contracts
 
@@ -182,5 +190,6 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Supervised real-hardware pilot:** [HARDWARE-PILOT.md](HARDWARE-PILOT.md)
 - **Formal planning-to-code approval gate:** [G0-READINESS.md](G0-READINESS.md)
 - **Owner-controlled updates and manual installation:** [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md)
+- **Native Ubuntu installation, managed services and complete backup targets:** [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
 
 These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites, dependency licensing and GitHub rules remains outstanding.
