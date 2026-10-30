@@ -14,6 +14,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 - Installation targets from first supported release: Docker Compose, native Linux (Debian/Ubuntu), and Umbrel.
 - Initial protocol priorities: MQTT, Zigbee2MQTT and Matter.
 - Progressive web app first, later native mobile apps.
+- Domyro updates: optional automatic **checking and downloading** with user-controlled delay (12h/24h/72h/7d/custom), but **NEVER automatic installation or restart**. Underlying OS updates are out of scope.
 - Simple rules and a sophisticated visual automation editor.
 - Optional future remote-access relay and curated + sideloadable integrations.
 - Home Assistant bridge only for transition and subsequent migration assistance.
@@ -36,6 +37,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 13. [Deployment specification](docs/DEPLOYMENT.md): Docker, native Debian/Ubuntu, Umbrel, persistence and networking.
 14. [Hardware pilot](docs/HARDWARE-PILOT.md): safe non-disruptive Zigbee2MQTT/Matter testing on real devices.
 15. [Approval and readiness register](docs/G0-READINESS.md): exact blockers and owner decisions before coding.
+16. [Software-update policy](docs/SOFTWARE-UPDATES.md): download-only automation, manual installation, native Linux and Umbrel limitations.
 
 **Current project gate: G0 not yet approved.** License and official maintainership are confirmed; stack details, pilot hardware, dependency review and GitHub branch protection remain to be signed off.
 
