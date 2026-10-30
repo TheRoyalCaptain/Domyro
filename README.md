@@ -16,6 +16,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 - Progressive web app first, later native mobile apps.
 - Domyro updates: optional automatic **checking and downloading** with user-controlled delay (12h/24h/72h/7d/custom), but **NEVER automatic installation or restart**. Underlying OS updates are out of scope.
 - Simple rules and a sophisticated visual automation editor.
+- Product direction: beautiful, fast dashboards; powerful automations; maximum practical local independence. Full dashboard/energy/camera/voice capabilities are phased beyond a **compact, stable 1.0** as needed.
 - Optional future remote-access relay and curated + sideloadable integrations.
 - Home Assistant bridge only for transition and subsequent migration assistance.
 - AI and speech deliberately follow a reliable base.
@@ -39,6 +40,7 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 15. [Approval and readiness register](docs/G0-READINESS.md): exact blockers and owner decisions before coding.
 16. [Software-update policy](docs/SOFTWARE-UPDATES.md): download-only automation, manual installation, native Linux and Umbrel limitations.
 17. [Ubuntu native services and backup targets](docs/PLATFORM-SERVICES-BACKUPS.md): one-command installer, managed services, Matter readiness, local/SMB/FTP/USB backups.
+18. [Product decisions D-22–D-39](docs/PRODUCT-DECISIONS-22-39.md): approved full product capabilities, competitive priorities and a deliberately compact 1.0 release scope.
 
 **Current project gate: G0 not yet approved.** License and official maintainership are confirmed; stack details, pilot hardware, dependency review and GitHub branch protection remain to be signed off.
 
