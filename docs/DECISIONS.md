@@ -18,6 +18,15 @@ D-10 Transitional HA bridge then migration tooling.
 D-11 AI/speech after basic reliability.  
 D-12 First success is actual functioning devices.  
 D-13 **Final and owner-approved:** Domyro updates are never installed automatically. Users may allow automatic checking and downloading after their own 0h/12h/24h/72h/7d/custom delay; installation always requires an explicit manual decision. Updates to the underlying Linux/umbrelOS operating system are not controlled by Domyro. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
+D-14 **Approved:** Ubuntu Server ISO as native install target, both bare metal and VM. No Docker required in native mode.
+D-15 **Approved:** On native Ubuntu, the admin UI can install/manage optional necessary supporting services with permission; existing network services remain connectable. Container service management respects host boundaries.
+D-16 **Approved:** Matter-ready design without owner's Matter devices; real-world hardware validation remains release acceptance requirement.
+D-17 **Approved design principle:** select language/database/runtime with evidence on reliability, stability and speed; existing stack still proposed.
+D-18 **Approved:** one trusted entry command for full native installation and browser setup, with explicit security prompts.
+D-19 **Approved:** multiple homes/sites and granular permissions across users, rooms and entities.
+D-20 **Approved:** local, SMB/NAS, FTP and removable USB backup support, with secure FTPS/SFTP and explicit insecure FTP warning.
+D-21 **Approved:** specification-first, no application code before comprehensive planning and formal G0 sign-off.
+See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 
 ## B. Proposed technical ADRs for project owner sign-off
 
@@ -41,7 +50,7 @@ D-13 **Final and owner-approved:** Domyro updates are never installed automatica
 These are intentionally explicit; they are *not* reasons to start implementation while unsettled:
 
 1. **License selected and recorded:** `AGPL-3.0-only`; finish dependency license compatibility and third-party notice audit before public binaries. AGPL obligations do not automatically mean independently developed plugins must use AGPL.
-2. Confirm TypeScript/Node.js modular monolith + PostgreSQL as final stack.
+2. **Evaluate stability, speed, reliability and long-term support** of candidate backend/frontend/database stacks, then explicitly approve a final architecture. TypeScript/Node.js + PostgreSQL is still a proposal, not an owner decision.
 3. Confirm exact first hardware models: which Zigbee sensor and mains-powered device, which Matter device and which broker.
 4. Confirm product support boundaries for native Linux: Debian/Ubuntu versions, x86_64/ARM64 releases, supported umbrelOS version.
 5. **Maintainer control decided:** `@TheRoyalCaptain` alone authorizes official merges and releases. **Still to complete:** enable enforceable GitHub ruleset/branch protection in website settings, test CODEOWNERS, determine issue handling and code of conduct. See `docs/GITHUB-GOVERNANCE.md`.
