@@ -38,7 +38,7 @@ No fake data in production dashboards: unknown sensor data displays \"geen gegev
 
 **Integrations:** card with transport, requirements, permissions, maintenance status, configuration, software source, version and remove/repair action.
 
-**Maintenance:** health, error digest, backup/restore, update notes, startup and integration logs, support export with secret redaction.
+**Maintenance:** health, error digest, backup/restore, update notes, startup and integration logs, support export with secret redaction. Settings → Systeem → Software-updates explicitly distinguishes automatic **release checks**, automatic **verified downloads**, their delay (now/12h/24h/72h/7d/custom) and **manual-only installation**. Show queued, downloading, verified/staged and awaiting-manual-install states, with visible channel and compatibility warnings. Never include a toggle for automatic installation or scheduled restarts. Umbrel-managed updates link to the Umbrel App Store and hide unsupported download controls. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 
 ## 4. Modes and permissions
 
