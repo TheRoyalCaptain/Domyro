@@ -16,7 +16,8 @@ D-08 Optional easy remote access planned (no mandatory cloud).
 D-09 Community side-loading plus curated integration catalog.  
 D-10 Transitional HA bridge then migration tooling.  
 D-11 AI/speech after basic reliability.  
-D-12 First success is actual functioning devices.
+D-12 First success is actual functioning devices.  
+D-13 **Final and owner-approved:** Domyro updates are never installed automatically. Users may allow automatic checking and downloading after their own 0h/12h/24h/72h/7d/custom delay; installation always requires an explicit manual decision. Updates to the underlying Linux/umbrelOS operating system are not controlled by Domyro. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 
 ## B. Proposed technical ADRs for project owner sign-off
 
@@ -33,6 +34,7 @@ D-12 First success is actual functioning devices.
 | A-09 | Optional, future remote relay using audited encryption architecture | Local-first and simple opt-in access | Requires dedicated infrastructure and advanced key security |
 | A-10 | Three genuinely supported installers, including native systemd Linux | Matches user priorities | Longer initial development and support matrix |
 | A-11 | No source code before documented acceptance G0 | Prevent architecture drift and premature commitment | Slower first coding day, less later rework |
+| A-12 | **Accepted product policy:** automatic update checking/downloading can be user-enabled; **installation is always manual** | Prevent unapproved restarts and service upgrades | Umbrel platform-managed updates may not provide native artifact staging; capability limitations must be visible |
 
 ## C. Remaining G0 approvals
 
