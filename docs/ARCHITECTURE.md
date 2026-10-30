@@ -29,6 +29,15 @@ Why: fastest maintainable full-stack development while retaining protocol/proces
 
 Do not confuse proposed library selections with proven production integration; all must pass compatibility and license review at G0/G1.
 
+### Detailed binding specifications
+
+- [DATABASE.md](DATABASE.md): relational ownership, durable event outbox, stable IDs, backups and retention.
+- [API-CONTRACT.md](API-CONTRACT.md): REST endpoints, WebSocket resynchronization, authorization and pending/confirmed commands.
+- [AUTOMATION-ENGINE.md](AUTOMATION-ENGINE.md): typed flow graph, versioning, deterministic triggers, recovery and idempotency.
+- [DEPLOYMENT.md](DEPLOYMENT.md): host OS packaging, Matter networking, storage and reliability across three installation forms.
+- [HARDWARE-PILOT.md](HARDWARE-PILOT.md): non-destructive real-device proof.
+- [G0-READINESS.md](G0-READINESS.md): explicit architecture approvals still pending.
+
 ## 2. Modules and ownership
 
 - **Identity:** accounts, sessions, password and MFA enrollment, invitation lifecycle, local admin bootstrap.
