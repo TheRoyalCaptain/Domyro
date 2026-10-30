@@ -2,7 +2,7 @@
 
 **DEPLOY-001 · Planning draft 1.0 · 2026-10-30**
 
-> Three installation families are required for the first officially supported stable Domyro release: Docker Compose, **native Linux without Docker**, and Umbrel. Supporting a Docker container on Linux is *not* the same as native Linux support. No installer scripts or runnable containers are authorized until G0 sign-off.
+> Three installation families are required for the first officially supported stable Domyro release: Docker Compose, **native Linux without Docker**, and Umbrel. **Ubuntu Server ISO installed bare metal or as a VM is the primary native platform.** A verified one-command installer must handle dependencies and onboarding, and the native administrative interface must support installation/management of required auxiliary services. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md). No installer scripts or runnable containers are authorized until G0 sign-off.
 
 ## 1. Cross-platform service architecture
 
