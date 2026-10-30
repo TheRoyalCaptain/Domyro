@@ -140,6 +140,31 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 - **DOM-105 P2 L:** Direct Zigbee, Z-Wave/BLE/KNX and additional transport stacks.
 - **DOM-106 P2 L:** Multi-site management and optional federated devices.
 
+### EPIC PRODUCT — Owner-approved capabilities D-22 to D-39
+
+These tasks are **planned issue definitions**, not live GitHub Issues and not authorization to code. **P0 means a core requirement or G0 scoping activity**, not necessarily the entire future feature set must ship in 1.0. All long-term capabilities remain in the owner-approved product vision.
+
+- **DOM-112 P0 M:** Draft compact 1.0 release boundary for all D-22..D-39 selections; approve stage gates. Accepted: every selected feature mapped to 1.0 or later without dropping requirements.
+- **DOM-113 P1 L:** Full drag/drop dashboard, custom widget contracts and touch/wall-panel mode. Accepted: responsive and accessible editing, safe user widgets.
+- **DOM-114 P1 L:** Interactive 2D floorplans bound to rooms/entity IDs. Accepted: no unauthorized device control or broken mappings.
+- **DOM-115 P0 M:** Multi-device scene snapshot plus schedules; conditions built on automation engine. Accepted: partial failures, actual-state snapshot, timezone-safe schedules.
+- **DOM-116 P1 L:** Advanced expression, subflows, graph live-debugger and non-actuating simulation. Accepted: bounded recursion, typed graph, permission-aware tracing.
+- **DOM-117 P0 S:** Explicit admin approval for **every** plugin installation. Accepted: plugin installer cannot proceed unattended or omit permissions preview.
+- **DOM-118 P2 L:** Energy analytics, dynamic tariffs, solar/home battery and safe EV charging. Accepted: correct units, tariff provenance and charging limits.
+- **DOM-119 P2 L:** ONVIF/RTSP live video, recording, playback, motion events/alerts. Accepted: encrypted credentials, per-camera authorization and storage limits.
+- **DOM-120 P1 L:** Push/email/webhook notification router, priority rules and retry handling. Accepted: opt-in destinations, deduplication, platform delivery caveats.
+- **DOM-121 P0 M:** Dutch+English+German localization foundations and quality milestone. Accepted: no missing-key leaks, reviewed language scope before 1.0.
+- **DOM-122 P0 M:** Live host/driver diagnostics, resource telemetry, redacted logs/export and storage alerts. Accepted: secrets never leak, site permissions enforced, fault notifications work.
+- **DOM-123 P1 L:** Manual/motion, GPS/mobile, BLE and Wi-Fi presence adapters with consent and TTL. Accepted: explicit permission, no private cross-user location leak.
+- **DOM-124 P2 L:** Fully local voice pipeline and intent routing. Accepted: offline voice for approved actions with auth/permissions.
+- **DOM-125 P2 L:** Native Zigbee coordinator and explicit coexistence/migration mode. Accepted: no dual owner of same coordinator; external Zigbee2MQTT remains supported.
+- **DOM-126 P0 S:** Establish measured top-three differentiators and UI/automation/local-first acceptance. Accepted: tracked UX speed, automation testability and offline operation.
+- **DOM-127 P0 M:** TOTP, session management, risky-action reauthentication, passkeys planning. Accepted: role/session security and verified passkey rollout target.
+- **DOM-128 P0 L:** Scheduled multi-destination encrypted backups, retention and integrity checking. Accepted: independent target outcomes, repeatable restore, bounded deletion.
+- **DOM-129 P0 S:** Enable public GitHub feature requests through Issues with triage template. Accepted: owner-only merges, no public vulnerabilities.
+
+**Milestone discipline:** D-36 mandates a compact, reliable 1.0; no untested video recording, direct Zigbee replacement, EV charging or local voice engine may be slipped into 1.0 to inflate feature count. Phasing proposals: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Before issue creation, update task dependencies and estimates once exact 1.0 scope is owner-approved.
+
 ## 4. GitHub issue template (used only after G0)
 
 Title: DOM-### [epic] measurable outcome.  
@@ -176,5 +201,7 @@ No target dates are promised before the scope is sized by actual prototype/hardw
 - DOM-030–045 → [HARDWARE-PILOT.md](HARDWARE-PILOT.md): non-disruptive hardware validation.
 - DOM-001–006 → [G0-READINESS.md](G0-READINESS.md): actual approval and repository-branch protection gates.
 - DOM-107–111 → [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md): Ubuntu Server ISO native/VM, managed services, backups, Matter readiness and evidence-based stack choice.
+
+- DOM-112–129 → [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md): cumulative feature commitments, proposed release phasing, privacy and acceptance criteria.
 
 **Important:** backlog tasks are definitions only, not GitHub Issues. No executable work has started.
