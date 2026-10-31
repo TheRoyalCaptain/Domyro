@@ -13,11 +13,29 @@ jobs:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
         node: ['22', '24']
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: domyro_test
+          POSTGRES_PASSWORD: ci-throwaway-test-only
+          POSTGRES_DB: domyro_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U domyro_test -d domyro_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DOMYRO_TEST_DATABASE_URL: postgresql://domyro_test:ci-throwaway-test-only@127.0.0.1:5432/domyro_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Install development-only pinned database driver
+        run: npm install --ignore-scripts --no-audit --no-fund
       - run: npm run check
       - name: Read-only host diagnostic (informational, no install)
         run: npm run preflight:read-only
