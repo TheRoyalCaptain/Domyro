@@ -42,6 +42,21 @@ GitHub Actions also runs these checks on Node 22 and 24. The ephemeral Ed25519 t
 - The installer plan contains **no privileged helper**. Real Linux service management will require a narrowly restricted process with authentication and clear administrator consent.
 - The code has no third-party runtime dependencies, and new modules have no network, filesystem-write or device side effects.
 
+## Additional implementation: isolated release-directory staging and host preflight
+
+**Development-only, tested components (not production lifecycle):**
+
+- `src/lifecycle/native-preflight.mjs` checks Ubuntu LTS, amd64/arm64 CPU architecture and preliminary resource requirements, without changing the host.
+- `scripts/inspect-native.mjs` prints read-only host checks using `npm run preflight:read-only`; **this is not an installer**.
+- `src/lifecycle/transactional-release.mjs` stages in-memory bundles after verifying a pinned Ed25519 release signature and artifact digest. It rejects unsafe paths, keeps staged releases separate and requires a version-specific confirmation and a caller-reported verified backup before an isolated pointer switch.
+- The switch re-verifies the signed receipt and every staged file against its content, probes health using a **test-supplied callback**, and restores the previous release symlink if the callback fails. It does not restart processes, alter a database, make a real backup or guarantee safe production rollback.
+- Integration tests use disposable temporary directories, deliberately corrupted bundles/files and a failing health probe. No actual installed OS package, application data or server services are touched.
+- GitHub Actions targets `ubuntu-24.04` and `ubuntu-24.04-arm`, each with Node.js 22 and 24. These are **runner tests**, not bare-metal deployment certification.
+
+**Security gaps remain:** no official pinned release-signing public key, no downloadable signed production bundle, no account authentication, no privileged but restricted service helper, no PostgreSQL snapshot consistency, no genuine readiness probe and no crash-safe process/systemd transaction journal. The caller-provided `verifiedBackup` flag is **only a test contract** and must not be trusted as proof until tied to the validated backup subsystem.
+
+**The owner-server installation gate is still CLOSED.**
+
 ## Outstanding D-53 gate (still CLOSED)
 
 Before owner-server deployment: publish and verify a real one-command Ubuntu LTS amd64/arm64 installer; implement secure owner login/PostgreSQL and configurable managed dependencies; real update download staging and explicit manual install; encrypted backup+restore across supported targets; isolated upgrade and fault-injection tests, including database migrations and crash-safe recovery; and formal owner's separate server installation authorization.
