@@ -83,6 +83,7 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | D-50 | **German translation after the first stable 1.0**; 1.0 fully NL+EN. |
 | D-51 | **Domyro-managed optional remote access after 1.0**; initial access through owner-managed VPN/reverse proxy. |
 | D-52 | **Simple energy charts in 1.0**, camera functions after 1.0; advanced energy/tariffs/solar/EV later. |
+| D-53 | **Owner will NOT install Domyro on their own server** until the complete verified **one-command native Ubuntu LTS installer** and reliable **manual upgrade, verified backup and safe rollback/recovery path** are implemented and independently tested. This is a hard deployment gate, not a code-development blocker. |
 
 **The D-40..D-52 decisions refine the 1.0 release boundary.** Each is owner-approved; unchanged earlier product commitments still apply. Detailed acceptance criteria: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
@@ -96,7 +97,7 @@ All D-22..D-39 choices are cumulative, approved **product requirements**. The pr
 
 **Public beta (0.8):** real MQTT/Zigbee2MQTT/Matter interoperability for tested device types, simple rules and a **safe basic visual automation editor**, backup/restore with default 7/4/12 retention, basic role-based permissions, PWA, diagnostic logs, **Dutch/English**, Ubuntu Server LTS x86-64+ARM64 native/VM plus Docker/Umbrel packaging, security review and compatibility matrix.
 
-**1.0 stable:** **compact, very reliable** and local-first. Ubuntu Server LTS **x86-64 and ARM64**, bare metal/VM, plus supported Docker/Umbrel packages; one-command secure native installer with service-by-service choices; multiple sites on one server; IP:port, mDNS where supported, custom domain/reverse proxy; real tested MQTT/Zigbee2MQTT/Matter; **templates and basic dashboard edits**, **simple rules and safe basic visual flows**, **simple real-sensor energy graphs**; encrypted multi-target backups using **7 daily / 4 weekly / 12 monthly** defaults; per-automation missed-trigger policy and secure local/recovery-code account recovery; manual-only plugin download/install and Domyro core installations; NL+EN. Full DnD, German, camera functionality, native Zigbee, local voice and Domyro-hosted remote access ship **after 1.0**.
+**1.0 stable:** **compact, very reliable** and local-first. **D-53 deployment gate applies before owner-server install:** one-command verified Ubuntu installer plus proven manual updates, backup, rollback/recovery; current dev preview is not a supported installation. Ubuntu Server LTS **x86-64 and ARM64**, bare metal/VM, plus supported Docker/Umbrel packages; one-command secure native installer with service-by-service choices; multiple sites on one server; IP:port, mDNS where supported, custom domain/reverse proxy; real tested MQTT/Zigbee2MQTT/Matter; **templates and basic dashboard edits**, **simple rules and safe basic visual flows**, **simple real-sensor energy graphs**; encrypted multi-target backups using **7 daily / 4 weekly / 12 monthly** defaults; per-automation missed-trigger policy and secure local/recovery-code account recovery; manual-only plugin download/install and Domyro core installations; NL+EN. Full DnD, German, camera functionality, native Zigbee, local voice and Domyro-hosted remote access ship **after 1.0**.
 
 **After 1.0:** full dashboard drag-and-drop, custom widgets/tablet wall mode; **German (de-DE)**; cameras/ONVIF/RTSP/recording; advanced automation subflows and debugging; **optional multi-Domyro-server coupling** and own secure remote-access service; native mobile and local voice, direct Zigbee alongside Zigbee2MQTT, advanced energy tariffs/solar/batteries/EV, full ecosystem and enhanced migration.
 
@@ -232,6 +233,7 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Cumulative owner-approved features D-22 to D-39, release phasing and open decisions:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
 - **Owner-approved D-40 to D-52 and the definitive compact 1.0 feature boundary:** [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
 - **G0 limited foundation start:** [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md)
+- **D-53 no-own-server-deployment gate until verified one-line installation and update/recovery:** [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md)
 - **First tested development preview:** [DEV-START.md](DEV-START.md)
 
 The owner **explicitly authorized starting M1 foundation source code** on 31 October 2026 (see [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md)); this does **not** constitute acceptance of all technical ADRs, production deployment, device access or public releases. GOV-01 branch protection was consciously deferred, and other engineering and release gates remain open.
