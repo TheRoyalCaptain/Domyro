@@ -4,6 +4,10 @@
 **Status:** requirements fixed; implementation details subject to G0 architecture sign-off  
 **Scope:** Domyro application releases only; NOT updates to Linux/umbrelOS, firmware, Zigbee coordinator, PostgreSQL distribution packages or unrelated applications.
 
+## D-53: Safe upgrade is a precondition for owner-server installation
+
+The owner will **not install Domyro on their own server** until an official one-command Ubuntu Server installer and a verified manual update/recovery process are implemented. Checks and user-allowed downloads may happen automatically only as in D-13, but updating Domyro **always requires explicit administrator action**. Updating must preflight compatibility, make and verify an encrypted backup, stage authenticated binaries, confirm the requested installation, validate actual application/database/integration health, and either safely roll back or enter controlled recovery mode. Never discard post-backup user writes silently or claim an irreversible database migration can always roll back. [Installation and upgrade acceptance gate](INSTALL-UPGRADE-GATE.md).
+
 ## 1. Non-negotiable rule
 
 **Domyro must NEVER automatically install a Domyro application update or restart its services as a result of automatic update discovery/download.** Installation requires an explicit, fresh decision by an authorized local owner/admin for every new release. This applies even if the release is a security fix or an opted-in beta. A download is NOT consent to install.
