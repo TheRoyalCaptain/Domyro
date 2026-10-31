@@ -92,11 +92,11 @@ Reference: https://developers.home-assistant.io/docs/api/websocket/
 
 **Isolation:** executable plugins outside core in restricted processes or containers with non-root identity, read-only filesystem where possible, resource quotas, explicitly allowed device/network access and no Docker socket. Platform-specific isolation guarantees differ; high-risk permissions require owner approval. Sideloading displays a prominent disclosure of potential full-home impact. Untrusted plugins are never treated as genuinely harmless because of a checkbox.
 
-**Updates:** version lock, compatibility negotiation, rollback plan, signed catalog release, reapproval for expanded permissions. A failed third-party plugin must not block startup or unrelated integrations.
+**Updates (owner D-44):** automatically check plugin release metadata for new versions (user can disable checks); both **download and install are manual administrator actions**, and installation includes D-26 explicit consent/version/permission preview. Version lock, compatibility negotiation, rollback plan, signed catalog release and reapproval for expanded permissions. A failed third-party plugin must not block startup or unrelated integrations.
 
 ## 7A. Owner decisions on third-party installation and protocol direction
 
-**D-26:** Every plugin installation requires a new, explicit authorized administrator confirmation, regardless of source. The UI displays publisher/origin, version, relevant permissions, potential network/device access and trust checks. Enabling a catalog does NOT authorize unattended plugin installs. The user did not decide policies for plugin auto-checking/downloading or optional extra features in the questionnaire: keep those open, separate from the mandatory manual installation rule.
+**D-26:** Every plugin installation requires a new, explicit authorized administrator confirmation, regardless of source. The UI displays publisher/origin, version, relevant permissions, potential network/device access and trust checks. Enabling a catalog does NOT authorize unattended plugin installs. **D-44 has now resolved the update policy:** automatic checks of trusted metadata are allowed, but downloading and installing plugin releases are separate manually confirmed actions. No background plugin binaries may be staged by update checking.
 
 **D-34:** Keep external Zigbee2MQTT support permanently available while developing a **native Zigbee coordinator** in a later phase. Show all protocols together in one Domyro UI and allow the owner to choose internal vs external protocol services once proven stable. Never concurrently claim the same radio, change mesh ownership without consent or assume every Zigbee device can migrate without repair. This is a long-term interoperability commitment, not a requirement to create a direct Zigbee stack in compact 1.0.
 
@@ -104,7 +104,7 @@ Reference: https://developers.home-assistant.io/docs/api/websocket/
 
 **D-33:** Fully local voice is a later integration target. Voice processing and local-device permissions cannot depend on a mandatory hosted AI provider.
 
-See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md) and [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## 8. Compatibility matrix minimum
 
