@@ -49,7 +49,7 @@ export async function handleRequest(request, response, { persistence = null, aut
     const db = persistence ? await persistence.inspect() : { ready: false, reason: 'persistence_not_configured' };
     // Authentication and secure onboarding are not implemented. Database alone
     // never makes this development preview ready for production or commands.
-    sendJson(response, 503, { status: 'not_ready', reason: db.ready ? 'authentication_not_configured' : db.reason });
+    sendJson(response, 503, { status: 'not_ready', reason: db.ready ? auth ? 'production_features_incomplete' : 'authentication_not_configured' : db.reason });
     return;
   }
   if (pathname === '/api/v1/public/status') {
