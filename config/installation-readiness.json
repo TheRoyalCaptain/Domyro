@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "ownerDecision": "D-53",
+  "readyForOwnerInstallation": false,
+  "ownerDeploymentConsentRecorded": false,
+  "checks": {
+    "signedOfficialInstallerBootstrap": false,
+    "oneCommandUbuntuAmd64Install": false,
+    "oneCommandUbuntuArm64Install": false,
+    "nativeSystemdAndPortConfiguration": false,
+    "managedAndExternalServices": false,
+    "secureOwnerOnboarding": false,
+    "postgresqlMigrations": false,
+    "realMqttDeviceFunctionality": false,
+    "realMatterCompatibilityVerified": false,
+    "encryptedFullDataBackupRestore": false,
+    "manualCoreUpdateEngine": false,
+    "updateFailureRollback": false,
+    "ubuntuVmUpgradeRegression": false,
+    "ubuntuBareMetalUpgradeRegression": false,
+    "ownerAuthorizesProductionDeployment": false
+  },
+  "verifiedComponents": {
+    "signedDevelopmentSourceArtifactTests": true,
+    "readOnlyUbuntuPreflightTests": true,
+    "isolatedVersionPointerRollbackTests": true,
+    "isolatedEncryptedFixtureTests": true
+  },
+  "notes": "This file is an intentionally conservative development gate. Passing unit tests for isolated components does not prove an integrated installer or usable production system. No production installer URL has been published."
+}
