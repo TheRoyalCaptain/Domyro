@@ -43,11 +43,11 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 18. [Product decisions D-22–D-39](docs/PRODUCT-DECISIONS-22-39.md): approved full product capabilities and competitive priorities.
 19. [Product decisions D-40–D-52](docs/PRODUCT-DECISIONS-40-52.md): native Ubuntu/ARM64, selectable services, local addressing, plugin updates, backups, automation recovery and final 1.0 feature cut.
 
-**Current project gate: G0 not yet approved.** License and official maintainership are confirmed; stack details, pilot hardware, dependency review and GitHub branch protection remain to be signed off.
+**Current project gate: G0 not yet approved.** License and official maintainership policy are confirmed; stack details, pilot hardware and dependency review remain to be signed off. **GOV-01:** the owner chose to continue without branch protection for now, with the risk of direct writes by other permitted accounts/apps. This does **not** approve application development.
 
 ### Licensing and contributions
 
-The official license is [GNU AGPL version 3 only](LICENSE) (SPDX: `AGPL-3.0-only`). Others may inspect, fork, modify and redistribute under its terms. **Only @TheRoyalCaptain** has authority to accept contributions and publish official Domyro versions. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CODEOWNERS](.github/CODEOWNERS). GitHub's web settings must still activate required code-owner review: CODEOWNERS by itself is not branch protection.
+The official license is [GNU AGPL version 3 only](LICENSE) (SPDX: `AGPL-3.0-only`). Others may inspect, fork, modify and redistribute under its terms. **Only @TheRoyalCaptain** has official contribution/release authority **by project policy**. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CODEOWNERS](.github/CODEOWNERS). **GOV-01:** branch protection is consciously deferred; CODEOWNERS does not prevent a write-authorized account/app from pushing directly. Review privileges and commits until protections are enabled.
 
 ## Rules during planning
 
