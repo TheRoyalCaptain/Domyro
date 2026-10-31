@@ -34,7 +34,7 @@ D-22 **Approved:** Dashboard templates, full drag/drop editing, custom widgets, 
 D-23 **Approved:** Floor and room grouping, interactive 2D floorplans.  
 D-24 **Approved:** Multi-device scenes, schedules, conditions/exceptions, capture actual current states.  
 D-25 **Approved:** Advanced automation: typed variables/calculations, conditions, branching, loops, waits, reusable scripts/subflows, live tests/simulations/traces.  
-D-26 **Approved:** Every plugin installation requires explicit manual approval. Plugin update checking/download policy remains undecided.  
+D-26 **Approved:** Every plugin installation requires explicit manual approval. **D-44 subsequently fixes updates:** automatic metadata checks, manual downloading and manual installation.  
 D-27 **Approved:** Live electricity/gas/water, cost and dynamic tariffs, solar+battery, smart EV charging.  
 D-28 **Approved:** Camera live view, recordings/playback, motion detection/alerts, ONVIF/RTSP.  
 D-29 **Approved:** Phone push, email, webhooks, critical priorities and notification rules.  
