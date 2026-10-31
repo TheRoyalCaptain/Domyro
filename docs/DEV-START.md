@@ -23,6 +23,8 @@ The preview binds only to **127.0.0.1** by default. **Do not expose it directly 
 
 ## What works now
 
+Additional **read-only lifecycle modules** are now present under `src/lifecycle/`: signed manifest / artifact verification and manual-upgrade preflight; multi-destination backup retention planning (default 7 daily / 4 weekly / 12 monthly); and per-service installation decision validation. They do **not** download, install, update, migrate, mount disks, delete backups or run privileged commands. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md).
+
 - A local, standalone Node.js HTTP service and responsive development dashboard in Dutch/English.
 - `GET /api/v1/health/live` returns 200 when the process is live.
 - `GET /api/v1/health/ready` deliberately returns **503**, since persistence/integrations are not configured.
