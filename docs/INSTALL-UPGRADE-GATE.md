@@ -2,7 +2,7 @@
 
 **Decision:** D-53 · **Owner approved** · 31 October 2026  
 **Priority:** P0 **hard blocker for installing Domyro on the owner's server or recommending production installation**.  
-**Status:** Acceptance specification. The actual installer, managed updater and rollback behavior **do not exist yet**. First **read-only and non-destructive** lifecycle preflight/retention modules are now implemented and tested in isolation; they do not satisfy this gate. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md).  
+**Status:** Acceptance specification; **deployment gate CLOSED**. Development now includes Ubuntu host preflight, a signer for multiarch **source** bundles, Ed25519 verification, an isolated test-directory release switch and pointer-only rollback, authenticated encryption of small synthetic backup fixtures, and a machine-readable blocklist. **These do not yet comprise a complete installer, integrated updater, PostgreSQL backup/restore or production-safe rollback**. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md) and [../config/installation-readiness.json](../config/installation-readiness.json).  
 **Does not authorize:** any install/deployment on the owner's Ubuntu Server, VM, Umbrel, Home Assistant environment or physical devices.
 
 ## Owner's explicit requirement
@@ -15,6 +15,10 @@ The owner will **not install Domyro on their own server** until BOTH are availab
 "Never breaks" is a **quality target**, not a technically honest guarantee of zero defects or zero downtime under every condition. The product must preflight, test, fail safely, recover where feasible and transparently document unavoidable risks. An **unrecoverable migration, unrecoverable secrets loss, uncontrolled restart or silent partial upgrade blocks release**.
 
 User's prior policies remain binding: core Domyro update *checks/download-only staging* may be automatic if explicitly enabled; **installing updates and their restarts always requires explicit admin approval** (D-13). Installed plugin updates only auto-*check*, while plugin downloading **and** installing are separate manual actions (D-44). Do not silently update the underlying Ubuntu operating system.
+
+## 0. Machine-readable readiness (intentionally FAIL CLOSED)
+
+The versioned [installation-readiness.json](../config/installation-readiness.json) explicitly records outstanding blockers, and `npm run gate:status` prints them without touching the host. `npm run gate:require` exits unsuccessfully while the gate is closed. The tag-triggered [release safety workflow](../.github/workflows/release-gate.yml) requires this check before any future release workflow may proceed; **no production packages are currently published by that workflow**. Manually changing status booleans is not proof of test results: independent evidence and the owner's later deployment authorization remain mandatory. GitHub Actions on Ubuntu x86-64 and ARM64 is useful for isolated tests, but **does not prove a complete bare-metal Ubuntu installation**.
 
 ## 1. Complete one-line native Ubuntu Server installer
 
