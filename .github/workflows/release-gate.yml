@@ -1,0 +1,23 @@
+name: Official release safety gate
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: read
+jobs:
+  block-unverified-release:
+    name: D-53 owner installation gate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Require all integration and owner deployment gates
+        run: node scripts/check-installation-gate.mjs --require-ready
+      - name: Production release note
+        run: |
+          echo 'D-53 installation gate passed.'
+          echo 'This workflow does not publish binaries or create a release.'
+          echo 'Production signing, release publishing and independent verification require separate owner-approved workflows.'
