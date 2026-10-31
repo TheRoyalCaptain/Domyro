@@ -4,7 +4,7 @@
 
 Domyro is an open-source, local-first smart-home platform under active development. The repository includes an early executable **development-only foundation** and detailed specifications for the eventual full product.
 
- > **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **experimental localhost login and PostgreSQL, but no production onboarding, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
+> **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **experimental localhost login and PostgreSQL, but no production onboarding, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
 
 **Current installer progress:** Read-only Ubuntu preflight, signed **development source** bundles, isolated release pointer rollback, encrypted test fixtures and a strict [machine-readable owner-installation gate](config/installation-readiness.json) are tested. The M1 code also supports **PostgreSQL schema migrations, persistent sites/rooms and Argon2id-based loopback-only login with authenticated room management** in isolated development tests. **There is still no production-grade onboarding, complete one-command installer, full database restore or production-safe upgrade. Do NOT install Domyro on your server.** [Read the detailed limitations](docs/SAFETY-FOUNDATION.md).
 
@@ -37,7 +37,7 @@ npm test
 npm start
 ```
 
-Then open `http://127.0.0.1:8844` **on the same computer**. It binds to `127.0.0.1` by default and is **not safe to expose publicly** until authentication and permissions are implemented. See [DEV-START.md](docs/DEV-START.md) for limits and next steps.
+Then open `http://127.0.0.1:8844` **on the same computer**. The experimental local account screen is at `/login`, but is only usable with an explicitly initialized **isolated test database**. The development preview is **not safe to expose publicly**; production security and onboarding remain incomplete. See [DEV-START.md](docs/DEV-START.md) for limits and next steps.
 
 ## Documentation index
 
