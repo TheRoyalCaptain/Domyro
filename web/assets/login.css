@@ -1,0 +1,32 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+:root{color-scheme:dark;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1422;color:#e5f0f6;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 85% 12%,#173b39 0,transparent 42%),#0b1422}
+a{color:#87e8ca;text-decoration:none}a:hover{text-decoration:underline}
+.container{width:min(680px,100%);padding:32px 24px 24px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:12px;color:#e5f0f6;font-size:28px;letter-spacing:-.07em;font-weight:780}
+.logo-mark{background:#234a42;color:#94edcf;width:39px;height:39px;display:grid;place-items:center;border-radius:11px;font-size:34px}
+.tag{border:1px solid #507c6b;color:#a5f5d7;border-radius:20px;padding:7px 10px;font-size:9px;letter-spacing:.1em;font-weight:800}
+.intro{margin:72px 0 34px}.eyebrow{font-size:10px;letter-spacing:.16em;color:#87e8ca;font-weight:750;margin:0 0 15px}
+h1{font-size:clamp(42px,8vw,64px);line-height:1.08;letter-spacing:-.06em;margin:0 0 20px}h1 span{color:#87e8ca}
+.intro p,.panel p{line-height:1.7;color:#a3b5c5;font-size:14px}
+.panel{padding:30px;background:#132439;border:1px solid #30445a;border-radius:18px;box-shadow:0 10px 50px #00000020}
+.panel-heading{margin-bottom:21px}.panel h2{margin:0;font-size:22px;letter-spacing:-.03em}.panel-heading p{margin:7px 0 0}
+.panel-heading.line{display:flex;align-items:center;justify-content:space-between;gap:12px}
+form{display:grid;gap:11px}label{font-size:12px;color:#c0d5df;font-weight:650}
+input{width:100%;font:inherit;background:#0d1c2e;color:#ecf5f5;border:1px solid #415670;border-radius:9px;padding:13px 14px;min-width:0}
+input:focus-visible,button:focus-visible,.site-item:focus-visible{outline:3px solid #94edcf;outline-offset:2px}
+button{font:inherit;background:#65dab1;color:#0b2623;border:0;padding:13px 20px;border-radius:10px;font-weight:750;cursor:pointer}
+button:hover{background:#8af3d0}button:disabled{opacity:.55;cursor:wait}
+button.secondary{color:#bad8cf;background:#203448;border:1px solid #456175}
+#login-form button{margin-top:10px}
+.notice{border:1px solid #94704c;background:#3b3028;border-radius:11px;color:#ffe5b9;padding:14px 18px;font-size:13px;line-height:1.6;margin:0 0 20px}
+.notice.success{color:#aaf5d5;border-color:#548a79;background:#1b3a38}
+h3{color:#d4e3ee;font-size:15px;margin:26px 0 14px}
+.site-list{display:grid;gap:9px}.site-item{text-align:left;background:#1b3244;border:1px solid #315365;color:#dbeaf0;padding:15px;border-radius:11px;display:flex;flex-direction:column;gap:4px}
+.site-item:hover,.site-item.current{background:#254f4a;border-color:#5fc09f}.site-item small{color:#a8b7c7;font-size:11px}
+.rooms{padding-left:20px;display:grid;gap:10px;color:#e1e8ed;font-size:13px;min-height:16px}
+.inline-form{margin-top:22px}.input-row{display:flex;gap:10px}.input-row button{flex:0 0 auto}
+footer{display:flex;justify-content:space-between;gap:10px;color:#71899f;font-size:11px;margin-top:30px}
+@media(max-width:520px){.container{padding:22px 15px}.intro{margin:50px 0 25px}.panel{padding:20px}.tag{font-size:8px}.input-row{flex-direction:column}footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
