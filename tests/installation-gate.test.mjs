@@ -11,12 +11,14 @@ test('official D-53 deployment gate remains CLOSED until all integrated and manu
   assert.equal(result.ownerConsent, false);
   assert.ok(result.blockers.includes('secureOwnerOnboarding'));
   assert.ok(result.blockers.includes('updateFailureRollback'));
-  assert.ok(result.blockers.includes('ownerAuthorizesProductionDeployment'));
+  assert.equal(result.releaseReady, false);
 });
 
 test('cannot advertise ready if a required check is false; positive readiness needs explicit owner consent', () => {
   const checks = { a: true, b: true };
-  assert.equal(assessOwnerInstallationGate({ schemaVersion: 1, ownerDecision: 'D-53', readyForOwnerInstallation: true, ownerDeploymentConsentRecorded: false, checks }).ready, false);
+  const releaseOnly = assessOwnerInstallationGate({ schemaVersion: 1, ownerDecision: 'D-53', readyForOwnerInstallation: true, ownerDeploymentConsentRecorded: false, checks });
+  assert.equal(releaseOnly.ready, false);
+  assert.equal(releaseOnly.releaseReady, true);
   assert.equal(assessOwnerInstallationGate({ schemaVersion: 1, ownerDecision: 'D-53', readyForOwnerInstallation: true, ownerDeploymentConsentRecorded: true, checks }).ready, true);
   assert.throws(() => assessOwnerInstallationGate({ schemaVersion: 1, ownerDecision: 'D-53', readyForOwnerInstallation: true, ownerDeploymentConsentRecorded: true, checks: { a: true, b: false } }), /claims_ready_with_blockers/);
   assert.throws(() => assessOwnerInstallationGate({ schemaVersion: 1, ownerDecision: 'D-53', readyForOwnerInstallation: true, ownerDeploymentConsentRecorded: true, checks: { a: 'true' } }), /check_invalid/);
