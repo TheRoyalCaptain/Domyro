@@ -166,7 +166,7 @@ WebSocket reconnection: obtain a fresh consistent snapshot if sequence continuit
 
 **Docker**: core, web, Postgres, and optionally broker and separate Matter server; persistent volumes, non-root where possible, explicit host-network requirements for discovery; HTTPS termination documented; reproducible pinned images.
 
-**Native Debian/Ubuntu**: signed deb/package candidate or guided installer with systemd units; separate PostgreSQL service; stable service user, config paths, backup and uninstall policy. Supports x86_64 and ARM64 only after hardware tests. \"Native Linux\" is not a disguised Compose installer.
+**Native Ubuntu Server LTS**: signed package candidate or verified one-command installer with systemd units, service-by-service installation/connection choices, separate PostgreSQL service, dedicated account, config paths, backup and uninstall. **Both amd64 and arm64 are mandatory tested native 1.0 targets**; Debian native support requires a later independent decision. \"Native Linux\" is not a disguised Compose installer.
 
 **Umbrel**: dedicated community app-store definition (umbrel-app.yml and docker-compose.yml per active spec) backed by published Domyro images; onboarding in browser; predictable volumes; no dependence on Portainer; respect network limitations of umbrelOS. Matter local networking must be explicitly tested instead of assumed.
 
