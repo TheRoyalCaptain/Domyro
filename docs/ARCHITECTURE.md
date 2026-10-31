@@ -38,6 +38,23 @@ Do not confuse proposed library selections with proven production integration; a
 - [HARDWARE-PILOT.md](HARDWARE-PILOT.md): non-destructive real-device proof.
 - [G0-READINESS.md](G0-READINESS.md): explicit architecture approvals still pending.
 
+## 1A. Approved architecture constraints added by D-40..D-52
+
+These are owner requirements, not proof that any runtime/library choice is final:
+
+- **Native Ubuntu Server LTS** must support **amd64 and arm64**, bare metal and a VM. Native Ubuntu is required; do not claim every Debian environment is supported without separate validation.
+- **Install orchestrator** offers *per-service* install/manage, external-connect or defer when optional, never claiming ownership of preexisting Zigbee/MQTT/DB services without consent.
+- **Multiple sites** share one installation securely; future optional federation among **independent Domyro servers** needs install identity, mutual trust/pairing, role scopes, revocation and offline semantics, without central cloud as a prerequisite.
+- Local access must provide **IP:port**, mDNS e.g. `domyro.local` when supported (with collision and VLAN fallback), and custom domain/reverse proxy support including secure WebSockets, Host/Origin validation and trusted-proxy header configuration.
+- **Plugin updater** automatically checks signed catalog metadata only; download and installation are both manual; separate from Domyro core release checks/download settings (D-13).
+- **Backups:** default 7 daily/4 weekly/12 monthly snapshots, configurable and safe when multiple destinations have differing availability.
+- **Automations:** per automation missed-schedule decision `skip | bounded_catchup | confirm_before_catchup`; non-idempotent/unsafe actions not silently replayed.
+- **Authentication:** one-time recovery codes and a trusted physical/VM console recovery flow, with no network-accessible backdoor.
+- **1.0 UX:** dashboard templates/simple edits, simple rules and safe basic flow editor, basic energy trend graphs, NL/EN. German, cameras and native remote-access service **post-1.0**.
+- All commands/automations and identity state remain local-first; external linked Domyro installations are optional and can be independently operated.
+
+Full contracts: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md), [DEPLOYMENT.md](DEPLOYMENT.md), [AUTOMATION-ENGINE.md](AUTOMATION-ENGINE.md), [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md).
+
 ## 2. Modules and ownership
 
 - **Identity:** accounts, sessions, password and MFA enrollment, invitation lifecycle, local admin bootstrap.
