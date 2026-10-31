@@ -49,6 +49,24 @@ D-37 **Approved:** TOTP, passkeys/biometrics where supported, high-risk reauthen
 D-38 **Approved:** Daily/weekly/monthly backup schedules, automatic retention, several destinations, automated integrity validation.  
 D-39 **Approved:** Anyone may propose feature requests via GitHub Issues; official changes require @TheRoyalCaptain approval.  
 
+### More approved product decisions D-40..D-52 (31 October 2026)
+
+| D-40 | Ubuntu Server LTS **x86-64 and ARM64**, native bare metal and VM; exact LTS versions and ARM hardware matrix still to confirm. |
+| D-41 | Installer lets the admin **choose for each supporting service** whether to install/manage, connect an existing service or defer if optional. |
+| D-42 | Multiple sites on one server **and** multiple independent Domyro servers that may optionally connect in a future phase; no mandatory cloud. |
+| D-43 | Local access through **IP:port, mDNS host such as domyro.local where network supports it, and own domain/reverse proxy**; all three coexist. |
+| D-44 | Installed plugin updates are **checked automatically**; **downloads and installations require separate manual actions**. Plugin installation consent D-26 remains. |
+| D-45 | Default backup retention: **7 daily, 4 weekly and 12 monthly**, configurable and independently safe across targets. |
+| D-46 | Per-automation missed-run policy after outage: **skip, bounded catch-up or ask for confirmation**; unsafe commands never blindly replay. |
+| D-47 | Account recovery offers **single-use recovery codes and a secure trusted-local console recovery procedure**. |
+| D-48 | **1.0 dashboards:** ready-made templates and simple changes; full drag/drop, custom widgets and tablet wall mode later. |
+| D-49 | **1.0 automations:** simple rules plus safe basic visual editor; advanced editor features later. |
+| D-50 | **German translation after the first stable 1.0**; 1.0 fully NL+EN. |
+| D-51 | **Domyro-managed optional remote access after 1.0**; initial access through owner-managed VPN/reverse proxy. |
+| D-52 | **Simple energy charts in 1.0**, camera functions after 1.0; advanced energy/tariffs/solar/EV later. |
+
+**Full precise scope:** [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md). These decisions **supersede earlier unresolved suggestions** about German in 1.0, plugin auto-downloads, Debian being required for native 1.0, camera/energy 1.0 timing and exact editor depth.
+
 **Detailed acceptance and proposed milestones:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Multiple selected items within each question are cumulative. Unselected items remain undecided, not disallowed.
 
 ## B. Proposed technical ADRs for project owner sign-off
@@ -75,15 +93,15 @@ These are intentionally explicit; they are *not* reasons to start implementation
 1. **License selected and recorded:** `AGPL-3.0-only`; finish dependency license compatibility and third-party notice audit before public binaries. AGPL obligations do not automatically mean independently developed plugins must use AGPL.
 2. **Evaluate stability, speed, reliability and long-term support** of candidate backend/frontend/database stacks, then explicitly approve a final architecture. TypeScript/Node.js + PostgreSQL is still a proposal, not an owner decision.
 3. Confirm exact first hardware models: which Zigbee sensor and mains-powered device, which Matter device and which broker.
-4. Confirm product support boundaries for native Linux: Debian/Ubuntu versions, x86_64/ARM64 releases, supported umbrelOS version.
+4. **Ubuntu Server LTS amd64+arm64 required** for native 1.0; confirm exact Ubuntu LTS releases and ARM64 models. Debian is not approved as a native 1.0 requirement. Confirm supported UmbrelOS versions.
 5. **Maintainer control decided:** `@TheRoyalCaptain` alone authorizes official merges and releases. **Still to complete:** enable enforceable GitHub ruleset/branch protection in website settings, test CODEOWNERS, determine issue handling and code of conduct. See `docs/GITHUB-GOVERNANCE.md`.
 6. Approve threat model and the release gate that remote service/marketplace will follow core stability.
 7. Confirm initial hardware acceptance criteria and the rule that existing HA/Zigbee mesh remains untouched without explicit consent.
 8. Confirm trademark/name investigation before public brand launch.
-9. Approve the proposed **compact 1.0 release allocation** for D-22..D-39, including full drag/drop vs basic layout, German localization, advanced subflows, MFA/passkeys, cameras/energy and backup verification. Long-term functional requirements themselves are already approved.
-10. Decide plugin update **checking/downloading** rules separately; manual confirmation for every plugin installation is already approved.
+9. **Key 1.0 allocations are now confirmed by D-48..D-52:** templates/simple dashboard editing; simple rules+basic visual editor; German and cameras after 1.0; basic energy graphs 1.0; Domyro relay after 1.0. Remaining exact technical acceptance (e.g. passkeys scope/backup verification depth) still needs an ADR.
+10. **Resolved by D-44:** automatic plugin-update checks are allowed; downloading and installation both require manual actions, with manual plugin installation approval already fixed under D-26.
 
-**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-39 are accepted. Governance rule for sole official maintainer approval is accepted. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending formal G0 project-wide sign-off. External forks and contributions remain allowed under the AGPL, and GitHub CODEOWNERS must be backed by active branch rules.
+**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-52 are accepted. Governance rule for sole official maintainer approval is accepted. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending formal G0 project-wide sign-off. External forks and contributions remain allowed under the AGPL, and GitHub CODEOWNERS must be backed by active branch rules.
 
 ## D. Decision record template
 
