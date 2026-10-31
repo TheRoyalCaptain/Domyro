@@ -187,6 +187,8 @@ These are **planned tasks**, not GitHub Issues or working software. The user has
 
 - **DOM-143 P0 L:** Deliver fully verified **one-command** Ubuntu Server LTS amd64+arm64 installer plus safe owner-approved core upgrades, compatible migrations, encrypted backup/restore, post-upgrade health and fail-safe rollback/recovery. **Progress:** read-only release signature/update preflight, backup-retention planner and per-service decision planner implemented with isolated tests; real installation/updater/restore **not implemented**. **Accept:** all D-53 tests, including interrupted install/update, mismatched versions, missing services, disk-full, bad signatures and clean-host restore pass on isolated bare-metal/VM test hosts. **Hard gate: never install on the owner's operational server until tested and separately authorized.** See [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md). This is a parent/acceptance gate for DOM-072, DOM-076, DOM-078, DOM-107 and related backup/security tasks, not duplicate code work.
 
+**Current DOM-143 engineering increment:** Ubuntu LTS preliminary read-only host preflight, signed in-memory bundle stage, symlink switch and test-probe rollback simulation, negative tamper tests, amd64/arm64 CI matrix. **All real native installer/updater/database restoration work remains uncompleted.** See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md).
+
 ## 4. GitHub issue template (used only after G0)
 
 Title: DOM-### [epic] measurable outcome.  
