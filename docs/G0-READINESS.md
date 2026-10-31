@@ -9,7 +9,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [x] Build a serious public independent Home Assistant alternative.
 - [x] GNU AGPL-3.0-only is the project source license; lawful community forks allowed.
 - [x] Official upstream merges/releases require exclusive approval by @TheRoyalCaptain.
-- [x] Docker, native Debian/Ubuntu and Umbrel are target install families for 1.0.
+- [x] Docker and Umbrel are packaging targets; **native Ubuntu Server LTS on amd64+arm64** is the required native 1.0 platform (bare metal/VM). Debian is not a 1.0 native support promise.
 - [x] Modern resident UI plus advanced admin features.
 - [x] MQTT, Zigbee2MQTT and Matter are initial protocol priorities.
 - [x] One automation execution engine with simple and advanced editors.
@@ -37,7 +37,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 | A-07 | One typed, revisioned automation graph | Separate engines cause incompatible behavior | Proposed |
 | A-08 | Isolated executable plugins | Plugin-in-process is simpler but high-risk | Proposed |
 | A-09 | Future optional audited remote relay | VPN/reverse proxy only requires less infrastructure | Proposed |
-| A-10 | Real native Debian/Ubuntu packages + Docker + Umbrel | Docker-only easier but violates selected deployment priority | Proposed |
+| A-10 | Real native **Ubuntu Server LTS amd64+arm64** + Docker + Umbrel | Native Ubuntu must work bare metal+VM; Debian may be evaluated later | Proposed implementation details, target platforms accepted D-40 |
 
 **Do not infer approval solely from no objection or general messages such as “oké.”** Record a later explicit decision and the date in `docs/DECISIONS.md`.
 
@@ -58,7 +58,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [ ] Activate **main** branch protection and code-owner review in GitHub; confirm only owner can approve upstream merges.
 - [ ] Confirm project owner review and release responsibilities, and what external help may do without approval.
 - [x] **D-48..D-52 first-release boundaries accepted:** simple dashboard edits and basic visual editor in 1.0; German, cameras and Domyro relay after 1.0; simple energy charts in 1.0.
-- [ ] Confirm passkeys rollout/version, precise safe-basic visual node set and required 1.0 energy meter units/wid​​gets, while retaining remaining owner-approved future features.
+- [ ] Confirm passkeys rollout/version, precise safe-basic visual node set and required 1.0 energy-meter units/widgets, while retaining remaining owner-approved future features.
 - [x] **Plugin policy resolved D-44:** automatic version checks, but manual downloading and a separate explicit manual install approval. Test that no plug-in asset is downloaded by automatic checks.
 - [ ] Specify future camera retention/privacy, GPS data and phone background permissions, advanced energy tariff/EV safety, speech computing requirements, 2D plan editor and backup verification depth.
 - [ ] Select the trustworthy console recovery mechanism and recovery-code lifecycle, define missed-trigger catch-up windows and explicit approval queue policy.
