@@ -126,12 +126,12 @@ The GitHub release pipeline publishes immutable signed assets/manifests and a ve
 
 ## 8A. Distinction from plugin installation (D-26)
 
-The owner additionally requires **manual confirmation of every plugin installation**. This is a separate product decision from Domyro core software update checking/downloading (D-13). Do not assume the core's optional automatic downloader grants permission to download or install plugin updates. Policies for plugin-update checking/downloads remain **unanswered**, while plugin installations are explicitly manual. See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+The owner requires **manual confirmation of every plugin installation (D-26)** and has now fixed the plugin update policy **D-44**: periodically **check metadata** for available updates, with a user-configurable off switch; **download and install are both manual actions**, with separate consent for installation. The updater may NOT automatically fetch plugin code or assets. This is deliberately stricter than Domyro core's optional auto-download with delay (D-13). See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
 
 ## 9. Decisions fixed vs. still to validate
 
 **Fixed by product owner:** no automatically executed installation/restart, control over check/download, delayed downloads and manual install authority.
 
-**Open technical details:** supported scheduling resolution, native signed .deb/update-helper design, secure Docker download-only implementation, safe Umbrel metadata/API integration, specific release signature scheme and stable/beta release channels.
+**Open technical details:** supported scheduling resolution, native signed .deb/update-helper design, secure Docker download-only implementation, safe Umbrel metadata/API integration, specific release signature scheme and stable/beta release channels. **Plugin auto-check vs manual download/install policy is approved**, but its check interval/catalog source and notification defaults are still open.
 
 Cross-references: [DEPLOYMENT.md](DEPLOYMENT.md), [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), [PRODUCT-UX.md](PRODUCT-UX.md), [ROADMAP-BACKLOG.md](ROADMAP-BACKLOG.md), [G0-READINESS.md](G0-READINESS.md).
