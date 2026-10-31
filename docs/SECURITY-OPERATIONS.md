@@ -13,7 +13,7 @@ Threat actors: malicious LAN client, stolen browser session, exposed reverse pro
 ## 2. Identity and roles
 
 - First admin bootstrap is single-use and restricted to trusted local setup; no default passwords.
-- Passwords Argon2id with published parameter guidance; optional passkeys and TOTP, with strong MFA mandatory for future hosted remote service.
+- Passwords Argon2id with published parameter guidance; TOTP, planned passkeys and robust account recovery. **D-47** requires both single-use hashed recovery codes and a **trusted local physical/VM-console recovery procedure**, never an unauthenticated LAN/Internet recovery backdoor. Strong MFA mandatory for future hosted remote service.
 - Secure HttpOnly/SameSite cookies, token rotation, logout/revoke, idle/absolute session expiration and login abuse controls.
 - Permission checks on every REST/WS action, event feed, entity attribute and history result.
 - Roles owner/admin, manager, resident, guest and service token; site, area, device and action scopes.
@@ -59,7 +59,7 @@ The optional Domyro Remote proposal:
 
 Default: local data storage, no cloud telemetry, no ads, no embedded third-party analytics. Explicit consent for diagnostics upload and any cloud feature. Privacy settings control retention, exports and purge.
 
-Default retention proposals (adjustable by owner):
+Default data-retention proposals (adjustable by owner). **Backup snapshot default is separately fixed by D-45: 7 daily + 4 weekly + 12 monthly**, configurable and independent of these data-history periods:
 - high-frequency raw sensor measurements: 30 days;
 - downsampled aggregates: 365 days;
 - automation execution traces: 30 days;
@@ -71,7 +71,7 @@ Use per-class retention policies, DB partition pruning and storage pressure warn
 
 ## 7. Backup, restore and disaster recovery
 
-Owner-required targets: **local disk, directly attached USB/external drives, SMB/CIFS NAS, and FTP**; offer secure FTPS and SFTP. Plain FTP, if enabled, must have an explicit warning and never be default. Encrypted backups must be verified after writing to each destination. External/missing media cannot be formatted or silently deleted. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
+Owner-required targets: **local disk, directly attached USB/external drives, SMB/CIFS NAS, and FTP**; offer secure FTPS and SFTP. **D-45 backup default: retain 7 daily + 4 weekly + 12 monthly verified backup points** (owner configurable). Multiple destinations are isolated; a missing/failing target does not authorize pruning the only good backup elsewhere. Plain FTP, if enabled, must have an explicit warning and never be default. Encrypted backups must be verified after writing to each destination. External/missing media cannot be formatted or silently deleted. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 
 Native Ubuntu's privileged dependency-service manager must use tightly scoped allowlisted operations, signed artifacts, authenticated explicit admin confirmation and audit logs; it must not expose arbitrary system shell access through Domyro.
 
@@ -94,6 +94,21 @@ Policy: daily local backup configurable, rolling 7/30-day retention, owner-manag
 - Native Linux package and Umbrel app upgrades follow platform support rules; no silent permission escalations. Umbrel's App Store remains authoritative for upgrades, without unsafe bypass for a custom Domyro downloader; see [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - Versioned logs and support packages with secrets redacted.
 - Administrative screen shows integration status, uptime, last backup, last successful update, disk and DB health.
+
+## 8A. Security boundaries fixed by D-40..D-52
+
+- **Official native 1.0 OS:** Ubuntu Server LTS amd64 and arm64 (bare metal + VM), with the same authenticated bootstrap and privilege separation; unsupported distro/version must not be silently accepted.
+- **First run:** service-by-service installation decisions require explicit local admin authorization, not automatic installation over existing PostgreSQL/MQTT/Zigbee installations.
+- **mDNS / proxy access:** `domyro.local` uses local multicast where supported; domain/proxy mode explicitly configures allowed hosts, secure cookie and WebSocket Origin handling, trusted upstream IPs and modern TLS. IP:port remains a local recovery path; never silently expose unrestricted remote access.
+- **Future multi-server federation** requires mutual pairing, identity verification, per-site/user scopes, revocation, encrypted transport and no required vendor cloud. Not a 1.0 release requirement.
+- **D-44 plugin updater:** automatic *version metadata checks* only, no automatic plugin asset downloading, installation or plugin-triggered restart; manual admin download and another explicit install authorization.
+- **D-45 backup retention:** 7 daily, 4 weekly, 12 monthly by default, verified and isolated per destination. Pruning cannot erase unknown user files or the final healthy backup because another destination failed.
+- **D-46 missed-run recovery:** a per-automation `skip`, bounded `catch_up` or `confirm_before_catch_up` policy, with strict restriction on non-idempotent/unsafe actions and permission changes.
+- **D-47 account restoration:** high-entropy recovery codes plus local console option; scope to the rightful instance and audit/revoke existing sessions upon use.
+- **D-51:** owner's own VPN/reverse proxy for 1.0; no Domyro-hosted external-access relay until after 1.0 and separate audited security gate. No mandatory external identity/account.
+- Camera video and GPS tracking remain later opt-in/permissioned modules; basic 1.0 energy graphs must respect history and entity access scopes.
+
+Contract: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## 9. Safe automation requirements
 
