@@ -25,7 +25,8 @@
     "isolatedVersionPointerRollbackTests": true,
     "isolatedEncryptedFixtureTests": true,
     "isolatedPostgresMigrationsAndSitePermissions": true,
-    "argon2idAndHashedSessionTests": true
+    "argon2idAndHashedSessionTests": true,
+    "localBootstrapAndAuthApiIntegrationTests": true
   },
-  "notes": "M1 PostgreSQL 17 migrations and internal Argon2id/session primitives are tested on Ubuntu 24.04 x86-64 and ARM64, Node 22/24. No secure browser owner bootstrap/login, complete native installer, full encrypted database restore or reliable production upgrade yet. D-53 production release readiness remains FALSE, and owner deployment consent is separate."
+  "notes": "M1 foundation now has isolated PostgreSQL owner bootstrap, Argon2id, loopback-only login/logout with HttpOnly SameSite sessions, CSRF/Origin/Host checks and authorization-tested room endpoints, on Ubuntu amd64/ARM64 CI. No production TLS/cookie/proxy solution, MFA/recovery, complete native installer, real device integrations, full data backup or proven live updater. D-53 technical readiness remains FALSE and personal deployment consent remains FALSE."
 }
