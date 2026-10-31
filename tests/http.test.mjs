@@ -36,5 +36,12 @@ test('live server reports honest status and does not invent control endpoints', 
   const page = await fetch(base);
   assert.equal(page.status, 200);
   assert.match(await page.text(), /Domyro/);
+  const loginPage = await fetch(base + '/login');
+  assert.equal(loginPage.status, 200);
+  assert.match(loginPage.headers.get('content-security-policy'), /connect-src 'self'/);
+  assert.match(await loginPage.text(), /Lokale ontwikkelaanmelding/);
+  assert.equal((await fetch(base + '/assets/login.js')).status, 200);
+  assert.equal((await fetch(base + '/assets/login.css')).status, 200);
+  assert.equal((await fetch(base + '/api/v1/auth/me')).status, 404); // no DB => no login
   assert.equal((await fetch(`${base}/no-such-file`)).status, 404);
 });
