@@ -2,7 +2,7 @@
 
 **Decision:** D-53 · **Owner approved** · 31 October 2026  
 **Priority:** P0 **hard blocker for installing Domyro on the owner's server or recommending production installation**.  
-**Status:** Specification only. The actual installer, managed updater and rollback behavior **do not exist yet**.  
+**Status:** Acceptance specification. The actual installer, managed updater and rollback behavior **do not exist yet**. First **read-only and non-destructive** lifecycle preflight/retention modules are now implemented and tested in isolation; they do not satisfy this gate. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md).  
 **Does not authorize:** any install/deployment on the owner's Ubuntu Server, VM, Umbrel, Home Assistant environment or physical devices.
 
 ## Owner's explicit requirement
