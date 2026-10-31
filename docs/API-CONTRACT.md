@@ -170,6 +170,23 @@ Lock operations, disarming alarm, installing unsigned integrations, restoring ba
 - SDK/plugin API is versioned separately from external REST API.
 - API reference generated from checked-in schema after approval; contract tests for all high-risk endpoints.
 
+## 9A. API boundaries fixed by D-40..D-52 (proposed contract)
+
+The current API remains independently accessible from IP:port, working LAN mDNS name and configured reverse-proxy/custom-domain routes. Reverse proxies require explicit trusted source config plus secure WebSocket Origin/Host validation; no new public Internet endpoint is enabled implicitly.
+
+- **Service installation (D-41):** native Ubuntu-only privileged management actions `list_supported`, `inspect`, `install_managed`, `connect_existing`, and `defer_optional`. All writes require authenticated admin step-up and an allowlisted operation, not arbitrary executable command input. If a service is mandatory (such as a working database), API validation blocks an unusable configuration.
+- **Plugins (D-44):** query metadata-only update availability from catalog; initiate a separate user-authorized asset download; initiate a separate user-authorized install with another permission/compatibility confirmation. Status must never describe a metadata check as an installed update.
+- **Backups (D-45):** backup-policy read/update returns count targets `daily:7, weekly:4, monthly:12`, destination IDs, verification state, retention action preview and per-destination result. Prevent cross-destination deletion on failed jobs.
+- **Automations (D-46):** each automation revision stores `missed_run_policy` (`skip | catch_up | confirm_before_catch_up`) and limits; a pending catch-up approval API must enforce expiry, current permission checks and non-idempotent action safety. Events show recovered/skipped/expired status with occurrence IDs.
+- **Recovery (D-47):** recovery codes may be consumed only through a guarded credential-reset workflow; console recovery is a privileged **local host operation**, not an unauthenticated REST or WebSocket endpoint. No default network master token or universal password.
+- **Multi-site and linked servers (D-42):** all 1.0 endpoints remain site-scoped to one installation. A future federation API uses mutually authenticated installation IDs, explicit sharing scope and revocation; do not expose non-working cross-install linking endpoints as stable 1.0.
+- **Dashboards / flows / energy (D-48/49/52):** the 1.0 API must support template-based layout editing, restricted typed automation graph revisions, and real numeric energy history. Camera endpoints and first-party hosted remote-relay API are **not 1.0 requirements**.
+- **Localization (D-50):** 1.0 public text localizations NL and EN; `de-DE` extension after 1.0 without changing error codes or schema fields.
+
+Any feature not implemented in 1.0 must be absent or clearly version/capability-gated in OpenAPI and runtime feature discovery.
+
+Full owner requirements: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
+
 ## 10. Acceptance scenarios
 
 - Guest cannot read forbidden entity via direct GET or WS subscription.
