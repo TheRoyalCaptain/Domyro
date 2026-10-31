@@ -1,8 +1,8 @@
 # Domyro — Planning sign-off and readiness register
 
-**G0-REGISTER · 2026-10-30 · Status: NOT APPROVED FOR DEVELOPMENT**
+**G0-REGISTER · updated 2026-10-31 · Status: M1 FOUNDATION CODING AUTHORIZED; RELEASE GATES NOT APPROVED**
 
-This checklist is the source of truth for whether Domyro may begin implementing application code. Having an extensive plan does not imply all design decisions are approved.
+This checklist tracks the owner-approved **limited 0.1 foundation start** and remaining architecture/hardware/release gates. The user's explicit 'Oké start maar' on 31 October 2026 authorizes M1 foundation source work, **not** deployment on live home equipment or public releases. See [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md).
 
 ## 1. What the project owner already decided
 
@@ -19,7 +19,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [x] Transitional Home Assistant bridge and later migration tools.
 - [x] AI/voice after the reliable first release.
 - [x] First measurable success is actual physical device control.
-- [x] No executable application code before project-wide plan sign-off.
+- [x] Planning-only gate observed until owner expressly authorized first **M1 foundation source implementation** on 31 October 2026. No live deployment or production release authorized.
 - [x] **D-13:** Users control Domyro release checking/downloading and an optional download delay; installation is ALWAYS manually approved, never automatically scheduled. No Domyro control of Linux/umbrelOS system updates.
 - [x] **D-14..D-21:** Ubuntu Server ISO native bare metal/VM; native UI-managed dependent services + container external services; Matter readiness without local test hardware; reliability/performance-led tech evaluation; secure one-command installer; multisite granular RBAC; local/SMB/NAS/FTP/USB backups; extensive specifications before implementation. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 - [x] **D-22..D-39:** owner-approved cumulative dashboard, building, scene, advanced automation, plugin confirmation, energy, camera, notification, German, diagnostics, presence, local voice, protocol, top-three differentiation, compact v1, security, backup and GitHub Ideas choices. See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
@@ -101,9 +101,9 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - Hardware pilot equipment confirmed:
 - GitHub protection status / accepted GOV-01 exception: **No ruleset enabled by us; owner chooses to defer.**
 - Risk exceptions accepted:
-- Permission to begin executable development: **Yes/No**
+- Permission to begin executable development: **YES for M1 foundation code, per explicit owner authorization on 2026-10-31; NO for live-environment deployment or official release.**
 
-**Current answer: No.** GOV-01 is only permission to defer branch protection, **not** permission to develop. Product planning continues; no source code, install scripts, container images or deploy actions yet.
+**Current answer: YES, LIMITED TO M1 FOUNDATION SOURCE WORK**, based on explicit owner approval on 31 October 2026. The owner also separately accepted GOV-01. Foundation files and tests are being added; the architecture, licensing, hardware/ARM64 test and release gates above **remain open**. The first runnable preview is intentionally loopback-only, unauthenticated and not production-ready. No deployment into the owner's environment is approved.
 
 ## 8. Specification index
 
@@ -124,3 +124,5 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
 - [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
 - [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
+- [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md)
+- [DEV-START.md](DEV-START.md)
