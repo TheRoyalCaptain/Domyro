@@ -20,13 +20,13 @@ The first-run experience must explain broker choice, local IP/mDNS/IPv6 network 
 
 | Target | Preferred installation | Architecture | Scope |
 |---|---|---|---|
-| Linux Ubuntu LTS | Native managed service, no container runtime | x86_64 primary, ARM64 test candidate | P0 |
-| Debian stable | Native managed service | x86_64 primary, ARM64 test candidate | P0 |
+| **Ubuntu Server LTS** | **Native without Docker**, bare metal and VM | **x86-64 (amd64) AND ARM64 (arm64), both required and tested** | **P0 / binding D-40** |
+| Debian stable | Separate future compatibility evaluation, not a confirmed native 1.0 production target | x86-64/ARM64 TBD | Future / not committed |
 | Docker Engine + Compose | Multi-service OCI deployment | x86_64 + ARM64 after CI/hardware test | P0 |
 | umbrelOS | Community App Store app package and managed container app | Umbrel-supported hardware tested | P0 |
 | Windows/macOS | Docker development only | best effort | Not production supported in 1.0 |
 | Raspberry Pi | ARM64 only with adequate RAM and SD/SSD warnings | selected distro/board | Tested subset |
-| Proxmox VM | run supported Debian/Ubuntu install inside a VM | matching Linux architecture | Host hypervisor not directly supported |
+| Proxmox VM | Run supported Ubuntu Server LTS guest ISO | x86-64 or ARM64 as actually virtualized | Guest OS supported, hypervisor support tested separately |
 | Domyro OS | own appliance image | TBD | post-1.0 |
 
 Minimum proposed resources for production evaluation: 2 vCPU, 4 GiB RAM, 8+ GiB free persistent SSD space, stable local network; actual spec must follow benchmarks. The existing performance baseline uses 4 vCPU/4 GiB and 250 entities. Matter+Thread and heavy history may demand more resources.
@@ -58,13 +58,13 @@ Volumes for database, server config/master keys, Matter fabric/controller storag
 
 Image digests pinned in official release compose file; preflight check DB compatibility, free space, Matter/driver version compatibility, verified backup and rollback possibility. No blind `latest` pin on production docs.
 
-## 4. Native Debian/Ubuntu design (genuine native)
+## 4. Native Ubuntu Server LTS design (genuine native, bare metal or VM)
 
 Installation:
 1. Detect system distribution and architecture and show compatibility.
 2. Install signed packages from a trusted distribution channel or verified downloaded artifacts.
 3. Set up dedicated unprivileged `domyro` system user, private data directory and hardened systemd services.
-4. Provision or connect to PostgreSQL and optional MQTT broker; never assume root access to broker.
+4. **Prompt per supporting service** (PostgreSQL, MQTT broker, Zigbee2MQTT, Matter server): install/manage, connect existing, or defer if optional. Required database must be provided one way or another. Never assume root access to an existing service.
 5. Configure instance master key and TLS/loopback defaults.
 6. Start backend and show browser-based onboarding URL, without exposing bootstrap over untrusted interfaces.
 
@@ -104,8 +104,8 @@ The Umbrel official-store app standard can change; pin the actual tested app pac
 
 ## 6. First-run wizard (all platforms)
 
-1. Detect backend and DB readiness, display service health.
-2. Language: NL/EN, time zone, site/room name.
+1. Detect architecture (amd64/arm64), verified Ubuntu Server LTS version, backend and DB readiness, display service health. On native install, prompt per supporting service to provision/manage, connect externally or defer if optional.
+2. Language: NL/EN for 1.0 (German after 1.0), timezone, site/room name, local address selection (IP:port, optional mDNS, optional domain/reverse proxy).
 3. Single-use local admin creation; reject remote untrusted bootstrap.
 4. Consent/control over diagnostics, data retention and backup approach.
 5. Choose existing broker or optional managed MQTT, verify connection.
@@ -169,11 +169,23 @@ Backup artifact includes consistent database dump, config, key material only und
 
 No platform gets the `supported` label until its entire relevant row/column is tested on an explicit version/hardware matrix.
 
+## 10A. D-40..D-52 native installation and network acceptance
+
+- Run the same secure one-command installer on **Ubuntu Server LTS amd64 and arm64**, both on supported bare-metal hardware and VM images; publish explicit package/CPU requirements and failures.
+- Support existing service connections and **separate choices per supporting service** during onboarding. Skip is accepted only for optional services; never silently install an unwanted MQTT/Zigbee/Matter dependency.
+- Expose local **IP:port** as reliable fallback, advertise `domyro.local` via mDNS where host/network supports it, detect hostname conflict and support custom domain/reverse proxy with correct trusted-proxy/WebSocket/TLS configuration.
+- **Separate Domyro servers remain independent** in 1.0. Future linking is opt-in with mutual authorization, encrypted transport and revocation, planned after 1.0.
+- Native plugin auto-checker reads metadata only, with **separate manual download and manual install** permissions. The policy for Domyro core releases (optional staged downloads, manual install) remains separate.
+- Clean restore on supported platforms preserves user-selected **7 daily/4 weekly/12 monthly** retention, no accidental cleanup across disconnected SMB/USB targets.
+- Owner-approved operational boundaries: 1.0 supports NL/EN, no camera system or in-house remote relay, basic energy charts and simple dashboard/visual automation editor.
+
+Read full decisions and tests: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
+
 ## 11. Open deployment decisions (G0)
 
-- Native package channel: signed .deb packages vs verified install script; minimum OS versions.
+- Native package channel: signed .deb packages vs verified install script; **exact Ubuntu Server LTS versions/ARM64 hosts** to support. Debian is not a required native 1.0 target.
 - Matter host networking strategy per platform; whether it must run as separate user-managed service on native.
-- Default broker strategy: require existing MQTT broker or include optional managed broker.
+- Installer offers **per-service choice**, including optional managed Mosquitto or external broker; decide exact privilege helper and supported broker versions, not whether to offer the choice.
 - Memory/CPU baseline by ARM64 device class, filesystem and backup size limits.
 - Initial official Umbrel distribution: own community store first, then upstream submission.
 
