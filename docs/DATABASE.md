@@ -2,7 +2,7 @@
 
 **Document:** DB-001 · **Status:** detailed proposal, subject to G0 sign-off · **Date:** 2026-10-30
 
-> Documentation only. This document is the intended relational contract, not SQL to execute. The final choice of query builder/migration library and PostgreSQL major version remains an architecture decision.
+> **Partially implemented:** initial SQL schema migrations `001_foundation.sql` and `002_installation.sql` now exist under `src/persistence/migrations/`, with explicit checksum-verified transactional migrator, persisted site/area repository operations and internal Argon2id/session primitives. This is **not yet** the full model shown below, and no secure public authentication API or owner installation is available. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md). The final database production test/recovery matrix remains open.
 
 ## 1. Design goals
 
