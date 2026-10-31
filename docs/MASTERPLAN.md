@@ -55,7 +55,7 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | D-23 | Floors and room groups plus interactive 2D floorplans. |
 | D-24 | Scenes: multiple devices, scheduling, conditions/exceptions and snapshots from actual states. |
 | D-25 | Advanced automations: variables/calculations, branches/loops/waits, reusable scripts/subflows, live tests/simulation/debugging. |
-| D-26 | Every plugin installation needs explicit manual administrator confirmation; plugin update checking/downloading still undecided. |
+| D-26 | Every plugin installation needs explicit manual administrator confirmation; D-44 later confirms automatic version checks but manual downloads/installations. |
 | D-27 | Electricity/gas/water, dynamic tariffs/costs, solar/batteries and smart EV charging. |
 | D-28 | Camera live views, recordings/playback, motion alerts, ONVIF and RTSP. |
 | D-29 | Phone push, email, webhooks and prioritized/critical notification rules. |
