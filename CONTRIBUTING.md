@@ -12,9 +12,9 @@ Domyro is free software licensed under **GNU Affero General Public License versi
 
 ## Before implementing
 
-The project is currently **PLAN-ONLY**. Source contributions and runnable applications are not being accepted until the product owner explicitly records project gate G0 approval in `docs/DECISIONS.md`. You may propose documentation edits and review decisions.
+The owner explicitly approved **limited M1 foundation development on 31 October 2026**. Source proposals may now be submitted, but official merges/releases remain solely at @TheRoyalCaptain's discretion, and untested production deployments or device-control claims are not accepted. See `docs/G0-IMPLEMENTATION-START.md`.
 
-## Future implementation workflow after G0
+## Implementation workflow after limited G0 foundation approval
 
 1. Discuss major changes in an issue, link the relevant product/architecture decision.
 2. Fork and use a topical branch; do not push directly to `main`.
