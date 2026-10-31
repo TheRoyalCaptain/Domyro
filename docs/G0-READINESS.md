@@ -41,6 +41,10 @@ This checklist tracks the owner-approved **limited 0.1 foundation start** and re
 
 **Do not infer approval solely from no objection or general messages such as “oké.”** Record a later explicit decision and the date in `docs/DECISIONS.md`.
 
+## 2A. D-53 owner server deployment remains prohibited
+
+**Hard gate:** No installation, provisioning, upgrading, migration or changes to the owner's servers/HA/MQTT/Zigbee environment until the fully tested verified **one-command native Ubuntu installer** AND safe admin-confirmed update/backup/rollback/recovery workflow exist, and the owner separately authorizes installation. M1 coding and isolated CI/VM tests are still authorized. Requirements and measurable acceptance are in [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md).
+
 ## 3. Practical prerequisites (must resolve before G0)
 
 - [ ] Confirm lab hardware/VM and exact Ubuntu Server LTS versions on **both x86-64 and ARM64**; native 1.0 must validate both, while Debian native production support is NOT a selected 1.0 requirement.
@@ -125,4 +129,5 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
 - [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
 - [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md)
+- [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md)
 - [DEV-START.md](DEV-START.md)
