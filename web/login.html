@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#101a2b">
+  <title>Domyro · Lokale ontwikkelaanmelding</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/login.css">
+  <script type="module" src="/assets/login.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <a href="/" class="logo"><span class="logo-mark">⌂</span><span>domyro</span></a>
+      <span class="tag">0.1 DEVELOPMENT ONLY</span>
+    </header>
+    <section class="intro">
+      <div class="eyebrow">LOCAL-FIRST HOME AUTOMATION</div>
+      <h1>Jouw woning.<br><span>Jouw controle.</span></h1>
+      <p>Een vroege demonstratie van lokale gebruikersaccounts, rechten en ruimtes. Nog niet veilig of compleet genoeg voor dagelijks gebruik.</p>
+    </section>
+
+    <div id="message" role="status" aria-live="polite" class="notice" hidden></div>
+    <section id="signin" class="panel" aria-labelledby="sign-heading">
+      <div class="panel-heading">
+        <h2 id="sign-heading">Aanmelden</h2>
+        <p>Alleen via een lokale testdatabase met een eerder aangemaakte eigenaar.</p>
+      </div>
+      <form id="login-form" autocomplete="on">
+        <label for="login">Gebruikersnaam</label>
+        <input id="login" name="username" type="text" autocomplete="username" minlength="3" maxlength="64" required>
+        <label for="password">Wachtwoord</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" minlength="12" required>
+        <button id="login-button" type="submit">Aanmelden</button>
+      </form>
+    </section>
+
+    <section id="signedin" class="panel" hidden aria-labelledby="welcome-heading">
+      <div class="panel-heading line">
+        <div>
+          <p class="eyebrow">LOKALE SESSIE ACTIEF</p>
+          <h2 id="welcome-heading">Welkom</h2>
+        </div>
+        <button type="button" id="logout" class="secondary">Uitloggen</button>
+      </div>
+      <h3>Woningen</h3>
+      <div id="sites" class="site-list"></div>
+      <div id="rooms-panel" hidden>
+        <h3 id="rooms-title">Kamers</h3>
+        <ul id="rooms" class="rooms"></ul>
+        <form id="add-room-form" class="inline-form">
+          <label for="room-name">Nieuwe kamer</label>
+          <div class="input-row">
+            <input type="text" id="room-name" minlength="1" maxlength="100" required placeholder="Bijv. Woonkamer">
+            <button type="submit">Toevoegen</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer><span>Geen cloudverbinding vereist.</span><a href="https://github.com/TheRoyalCaptain/Domyro" target="_blank" rel="noopener noreferrer">Bekijk broncode</a></footer>
+  </main>
+</body>
+</html>
