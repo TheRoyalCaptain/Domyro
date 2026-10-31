@@ -98,12 +98,12 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 
 - **DOM-070 P0 M:** Reproducible multiarch OCI images with persistent data and health checks. Accept: documented cold install.
 - **DOM-071 P0 M:** Docker Compose production-like stack and secure config template. Accept: local onboarding and backup work.
-- **DOM-072 P0 L:** Native Debian/Ubuntu packaging, systemd, upgrade/uninstall path. Accept: service works with no Docker dependency.
+- **DOM-072 P0 L:** Native Ubuntu Server LTS (amd64+arm64) packaging, systemd, upgrade/uninstall path. Accept: bare-metal/VM native installs work without Docker on both architectures.
 - **DOM-073 P0 L:** Umbrel app-store package and browser-based setup. Accept: install/update/restore without Portainer or SSH.
 - **DOM-074 P0 M:** Integration-specific network/USB/mDNS preflight and docs. Accept: actionable error rather than silent failure.
 - **DOM-075 P0 M:** Backups, integrity validation and restore wizard. Accept: clean restore on each supported platform.
 - **DOM-076 P0 M:** Signed GitHub-release discovery with independent auto-check, optional auto-download and delay policy (0h/12h/24h/72h/7d/custom), safe staging, explicit owner-controlled install, preflight and rollback. Accept: no release is ever automatically installed or causes a restart; all compatibility and failed-migration cases preserve production. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
-- **DOM-078 P0 M:** Native Debian/Ubuntu download-only systemd timer and restricted staging. Accept: signed artifact download at delay eligibility; zero automatic dpkg/apt installation and zero automatic service restart.
+- **DOM-078 P0 M:** Native Ubuntu LTS download-only systemd timer on amd64+arm64 with restricted staging. Accept: signed artifact download at delay eligibility; zero automatic dpkg/apt installation and zero automatic service restart.
 - **DOM-079 P0 M:** Docker/umbrelOS-specific update UX and capability detection. Accept: Docker pull-only never recreates containers; Umbrel update/install remains owned by App Store with unsupported staging controls hidden.
 - **DOM-077 P0 S:** Multiarch compatibility matrix, platform version pinning and support policy. Accept: published pass/fail data.
 - **DOM-107 P0 L:** Verified single-command Ubuntu Server ISO installation on bare metal and VM. Accept: clean install with dependency preflight, secure prompts, rollback and browser onboarding, no Docker requirement.
