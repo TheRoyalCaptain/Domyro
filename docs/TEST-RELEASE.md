@@ -10,7 +10,7 @@
 - Integration tests: PostgreSQL transactions, outbox recovery, broker reconnect, Matter server restart and plugin sandbox.
 - Browser E2E: onboarding, room control, scenes, simple and advanced automations, mobile navigation, PWA loss/reconnect.
 - Hardware-in-loop: dedicated Zigbee2MQTT coordinator, battery sensor, lamp/plug, supported Matter Wi-Fi or Thread device with borderrouter; repeat against real hardware.
-- Installation E2E: Docker x86_64+ARM64, Debian/Ubuntu native x86_64+ARM64, Umbrel supported version and disk restore.
+- Installation E2E: native **Ubuntu Server LTS amd64 AND arm64** on bare metal and VM, first-run per-service installer choices, Docker images on their supported architectures, compatible Umbrel version and clean disk restore. Debian is not a required officially supported native 1.0 target.
 
 Coverage target: critical domain logic branches 90%+ and overall statement coverage 80%+ for stable core; coverage is a minimum indicator, never a substitute for behavioral tests.
 
@@ -35,9 +35,9 @@ At minimum:
 - Zigbee2MQTT: renamed device, sensor offline, battery vs mains semantics, join expiry, exposed feature schema updates, groups and command state-confirmation gap.
 - Matter: initial pairing, multi-admin where hardware supports, commissioning failure, fabric persistence, service failure and IPv6/mDNS breakdown.
 - UI: control disabled when unavailable, no fabricated state, keyboard navigation, Dutch/English and mobile viewport.
-- Automation: repeat triggers, missed DST hours, duplicate incoming events, restart mid-delay, concurrency control and unsafe non-idempotent actions.
+- Automation: repeat triggers, missed DST hours, duplicate incoming events, restart mid-delay, concurrency control, **per-automation skip/bounded catch-up/approval of missed events**, and unsafe non-idempotent action rejection.
 - Security: guest cannot modify admin functions through API/WS, audit redaction, session expiry, CSRF and plugin isolation.
-- Backup: correct DB snapshot, corrupted archive, wrong password, restore older schema and missing radio/fabric key handling.
+- Backup: correct DB snapshot, corrupted archive, wrong password, restore older schema, missing radio/fabric keys and **7 daily/4 weekly/12 monthly default retention across multiple independent destinations**.
 
 ## 4. Release process
 
@@ -63,16 +63,30 @@ The owner approved all selected capabilities in the full product roadmap but cho
 - Dashboard: 1.0 must have responsive templates, true-state device control, accessible layout editing; later full DnD and custom widgets require validation/sandboxing.
 - Scenes: test multi-device execution, current-state capture, scheduling and partial failure; condition-heavy scenes follow approved milestone.
 - Automation: test graph validation, bounded loops, waits/restart, variables, trace and zero-actuation simulations; reusable subflows/live debugging receive a dedicated release gate.
-- Plugins: all installations require explicit admin confirmation; do not invent any automatic plugin-download policy.
-- Energy/EV and cameras: keep future modules out of stable 1.0 until their security, hardware and storage tests pass.
+- Plugins: automatically **check update metadata only**, with **manual download and separate confirmed manual installation** (D-44 and D-26). Test negative proof: no network asset download or deployment from a periodic check.
+- Energy: **simple live/historical energy measurement charts are mandatory in 1.0** for supported devices, with correct physical units and missing/stale handling. Dynamic tariffs/solar/battery/EV optimization remain later. Camera live/recording/motion capabilities are **post-1.0**, not release claims.
 - Notifications/presence: do not imply PWA push or GPS background tracking is guaranteed across mobile platforms.
 - Diagnostics: tests cover redacted logs, access-controlled exports, resource pressure and storage alerts.
-- Backup: daily/weekly/monthly scheduling, multiple targets, independent results, retention and encrypted archive validation must not erase good backups after another target fails.
+- Backup: daily/weekly/monthly scheduling, **default 7 daily/4 weekly/12 monthly snapshots**, multiple targets, independent results, retention and encrypted archive validation must not erase good backups after another target fails.
 - Identity: TOTP and step-up are foundational; passkey QA covers recovery and compatible browsers before release.
-- Languages: English, Dutch and desired German tracked as distinct localization QA targets; German's exact first shipping milestone remains an owner decision.
+- Languages: **full Dutch and English in 1.0**, **German (de-DE) only after the first stable release (D-50)**; no German 1.0 obligation or ambiguous launch milestone.
 - Public Issues accept proposals only; protected main and official release approval remain owner-only.
 
 Reference: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+
+## 4B. Release gates fixed by D-40..D-52
+
+1. Official native installation succeeds on **Ubuntu Server LTS amd64 and ARM64** with supported bare-metal/VM test environments. Test every selectable supporting-service path, including existing-service connection and skipped optional service.
+2. All three local access options tested where supported: IP:port, mDNS host (including collisions/fallback), own domain/reverse proxy with WS/TLS/trusted headers.
+3. One host may own multiple sites without access leakage; independent servers remain operable without linking; optional federation is not misrepresented as 1.0.
+4. Plugin updater automatically checks only metadata, never downloads/installs assets without separate actions and no silent restart.
+5. Default 7 daily/4 weekly/12 monthly backup rotation survives failed NAS/USB/FTP target, preserves a verified recovery point and reports errors.
+6. Power-loss test distinguishes `skip`, bounded `catch_up` and `confirm_before_catch_up`, rejects blind non-idempotent replay and honors approval expiry.
+7. Valid recovery code is single-use, expired/revoked code fails; trusted local physical/VM-console recovery succeeds under explicitly authorized host privileges; remote unauthenticated recovery cannot.
+8. The 1.0 dashboard offers templates and simple edits; simple rules and safe basic flow editor share engine; simple energy graphs use real sensor data and correct units.
+9. 1.0 ships NL/EN, **no functional camera claims and no Domyro-hosted relay**; German, cameras and optional managed remote access are later milestones.
+
+Full requirements and tests: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## 5. QA gates
 
@@ -94,14 +108,14 @@ No remote service/customer SLA promised before staffing, monitoring and incident
 
 ## 7. Go/no-go checklist for version 1.0
 
-- [ ] All **39 owner product decisions (D-01..D-39)** preserved in the product design; 1.0 remains deliberately compact and reliable under D-36. Long-term planned features are not misrepresented as already implemented.
+- [ ] All **52 owner product decisions (D-01..D-52)** reflected in design and release phasing; the compact 1.0 guarantees only its approved scope while later items stay on the roadmap.
 - [ ] No hidden Home Assistant or proprietary-cloud runtime dependency.
 - [ ] True live Zigbee2MQTT + MQTT + Matter tests passed.
 - [ ] State/command truth, reconnect and idempotency correct.
 - [ ] Resident+admin UX and both automation editors tested.
 - [ ] Docker, native Linux and Umbrel installs upgraded and restored through explicit owner-initiated installation, never through automatic download; verify native timer cannot invoke package installs or restarts.
 - [ ] Auto-check off sends no scheduled release requests; download delay (12h/24h/72h/7d/custom) stages only; invalid signatures/low disk/offline/critical security release never trigger silent install; Umbrel App Store remains authoritative. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
-- [ ] PWA accessible; Dutch/English screens reviewed and German (de-DE) scope explicitly quality-approved for stable 1.0 or scheduled as an acknowledged follow-up. Localization user decision D-30 remains binding.
+- [ ] PWA accessible; **Dutch and English 1.0** fully reviewed, German scheduled **after 1.0** (D-50).
 - [ ] Security, plugin isolation, privacy and backup gates passed, including **manual confirmation of every plugin installation**, TOTP/step-up/session controls, and integrity checks of multi-destination backups.
 - [ ] Original Domyro source licensed under AGPL-3.0-only, all third-party licenses compatible/noticed, image signatures and SBOM published.
 - [ ] Reproducible benchmark/test results and known limits published.
