@@ -181,9 +181,9 @@ Test baseline: reference Linux x86_64 mini PC with 4 vCPU, 4 GiB RAM, SSD; 250 e
 
 - Public repository; design and code developed transparently.
 - **Confirmed source license:** GNU Affero General Public License version 3 only (SPDX `AGPL-3.0-only`), full standard text in repository `LICENSE`. License compatibility of dependencies remains under review. Covered derivatives and modified network deployments must honor AGPLv3 requirements; independently developed programs/plugins require legal analysis.
-- **Official maintainer control:** sole merge/release authority belongs to `@TheRoyalCaptain`. Community forks are fully allowed. All official files are assigned to this owner in `.github/CODEOWNERS`; enforce review through GitHub branch rules before external contributions are merged. See `docs/GITHUB-GOVERNANCE.md`.
+- **Official maintainer policy:** sole intentional merge/release authorization belongs to `@TheRoyalCaptain`. Community forks are allowed, and CODEOWNERS assigns all official files to that owner. **GOV-01:** owner elected to proceed **without GitHub branch protection for now**; CODEOWNERS does **not enforce** approval. Keep write/admin/app permissions tightly restricted and reassess before expanding maintainers. See `docs/GITHUB-GOVERNANCE.md`.
 - Signed releases, dependency provenance, SBOM, update notes and vulnerability disclosure policy before 1.0.
-- Only `@TheRoyalCaptain` can approve changes entering the official repository and publish official releases. Community PRs are proposals, not approvals. No other person, automation or app receives an unrestricted merge/bypass role. GitHub web protection activation remains a required security setup task.
+- Only `@TheRoyalCaptain` is authorized by **project policy** to approve official contributions/releases; community PRs are proposals. **Without branch rules, any granted write-capable user/app might technically push changes to `main`**. This is a knowingly accepted GOV-01 interim risk, not guaranteed enforcement. Maintain least-privilege app/collaborator rights.
 - All significant technical changes documented with ADRs and rationale.
 - SemVer releases with stable API versioning rules and deprecation windows.
 - Dutch and English maintained together for public-facing functionality.
@@ -232,4 +232,4 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Cumulative owner-approved features D-22 to D-39, release phasing and open decisions:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
 - **Owner-approved D-40 to D-52 and the definitive compact 1.0 feature boundary:** [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
 
-These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites, dependency licensing and GitHub rules remains outstanding.
+These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites and dependency licensing remains outstanding. **GitHub branch protection was consciously deferred under GOV-01** and no longer blocks G0; the separate explicit owner code-authorization requirement is unchanged.
