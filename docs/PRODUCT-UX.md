@@ -22,7 +22,7 @@ No fake data in production dashboards: unknown sensor data displays \"geen gegev
 
 ## 3. Screens and acceptance
 
-**First-run wizard:** LAN address > locale > admin invitation/credential setup > site/time zone > devices connection > room creation > first dashboard > backup reminder. If Zigbee2MQTT is absent, provide a documented \"configure broker\" step, never imply radio was discovered. Pairing is time-bounded and can be cancelled.
+**First-run wizard:** show IP:port and attempt safe mDNS name such as `domyro.local`, allow own domain/reverse proxy; NL/EN language > admin auth/recovery codes > site/timezone > **per-service** install/connect/defer choices > device connection > room > dashboard template > default backup policy 7 daily/4 weekly/12 monthly. If Zigbee2MQTT is absent, provide a documented \"configure broker\" step, never imply radio was discovered. Pairing is time-bounded and can be cancelled.
 
 **Overview:** customizable tiles, per-user default, 1-tap common scenes, device offline indicator, responsive grid and keyboard reorder alternative.
 
@@ -34,7 +34,7 @@ No fake data in production dashboards: unknown sensor data displays \"geen gegev
 
 **Simple automations:** plain-language trigger/conditions/actions, time conditions, validation before save, natural NL/EN labels; previews translate to the common graph model.
 
-**Advanced automations:** nodes and directed edges, pan/zoom, minimap optional, accessible list-equivalent editor, static validation, per-node trace, dry-run and version diff. No hidden auto-reordering of physical commands.
+**Advanced automations:** **1.0 includes simple rules and a safe basic visual flow editor**, nodes/edges, static validation, clear error and basic trace with accessible list equivalent. Rich expressions, nested reusable subflows, complex debugger and live stepping are future features. No hidden auto-reordering of physical commands.
 
 **Integrations:** card with transport, requirements, permissions, maintenance status, configuration, software source, version and remove/repair action.
 
@@ -54,7 +54,7 @@ Permission granularity: view entity, command specific capability, manage room, e
 
 P0: light control, switch, sensor value + trend, thermostat, scene button, battery/availability, multi-entity card, chart, text, weather if configured. Widgets reference stable entity IDs and validate capabilities; empty and unsupported widget states are supported.
 
-Post-1.0: confirmed requirements include full drag-and-drop editing, custom widgets, wall/tablet mode, interactive **2D** floorplans, live camera views and energy widgets. Media views, 3D representations and advanced themes are not owner-approved questionnaire selections and must not be treated as committed D-22..D-39 features.
+1.0: supported numeric sensors (including actual energy measurements) may display **simple unit-aware trend graphs**, without promising every utility meter integration. **Post-1.0:** full drag-and-drop editing, custom widgets, wall/tablet mode, interactive 2D floorplans and camera views. Media views, 3D representations and advanced themes are not owner-approved questionnaire selections and must not be treated as committed D-22..D-39 features.
 
 ## 5A. Additional owner-approved user experiences D-22..D-39
 
@@ -66,7 +66,7 @@ Post-1.0: confirmed requirements include full drag-and-drop editing, custom widg
 
 **D-29 Notifications:** in-app channel foundation; mobile push, email, webhooks, and severity, critical priority and routing rules. External delivery must be opt-in and explain platform limitations. Critical notification labels are not delivery guarantees.
 
-**D-30 Languages:** add German alongside Dutch and English. Prepare i18n structure to support all three, with an explicit first stable localization review gate.
+**D-30 + D-50 Languages:** full 1.0 **Dutch and English only**; **German after 1.0**. Prepare locale keys so later `de-DE` addition is backwards-compatible. This overrides the earlier undecided timing.
 
 **D-31 Diagnostics:** live CPU, RAM, disk and network information; searchable device/driver logs; redacted diagnostic exports; proactive fault and storage alerts. Privilege and host-vs-container boundaries must be apparent.
 
@@ -78,6 +78,20 @@ Post-1.0: confirmed requirements include full drag-and-drop editing, custom widg
 
 These are **approved long-term feature requirements**, but D-36 requires a compact and highly reliable 1.0. Suggested release phases and undecided options are in [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
 
+## 5B. Fixed D-40..D-52 release-specific UX
+
+- **Accessibility / local access:** offer IP:port, supported `domyro.local` mDNS name, own domain/reverse proxy. Explain mDNS multicast limitations, conflict fallback and proxy TLS/Host/Origin safety.
+- **Installer:** per supporting service choose local managed install, existing service connection, or defer when optional; show how this affects first-run readiness.
+- **1.0 dashboard:** ready-made templates plus simple add/remove/reorder/rename/room settings, saved across sessions. Rich drag/drop/resizing, user-created widgets and dedicated tablet/wall-mode are **later**.
+- **1.0 automation:** simple rules and basic safe visual nodes; show per-automation missed-run setting **skip / bounded catch-up / ask confirmation** with audit/status of missed runs. Advanced reusable subflows and detailed live debugger later.
+- **Plugin update UI:** automatic **metadata checking only**, manual **Download update** and then separate confirmed **Install update**. Never use core-release settings to silently stage plugin binaries.
+- **Account recovery:** one-time recovery code enrollment/status and documented local secure physical/VM-console recovery, without web reset backdoor.
+- **Backups:** show defaults 7 daily / 4 weekly / 12 monthly; per-destination status and safe retention.
+- **1.0 languages:** NL/EN; German later. **1.0 energy:** simple actual sensor history charts. **No camera UI feature claim in 1.0.** Optional Domyro-operated remote access also later.
+- **Multi-server:** multiple sites inside one 1.0 installation; UI may show remote-server linking as planned but cannot pretend it works until post-1.0 federation ships.
+
+Canonical detailed decision contract: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
+
 ## 6. Performance/usability targets
 
 - Responsive 320 CSS px through large desktops and tablets.
@@ -85,7 +99,7 @@ These are **approved long-term feature requirements**, but D-36 requires a compa
 - Data updates independently of page navigation; visible stale status after connection loss.
 - Skeletons only during real loading, no decorative infinite spinners.
 - Support full keyboard paths for pairing, dashboards and automations; alternate list editor for graph actions.
-- Localization covers onboarding, errors, permissions, notifications and integrations in Dutch and English; **German (de-DE) is additionally required** under D-30. The exact German 1.0 vs 1.x completion milestone requires translation-quality sign-off, not omission.
+- Localization covers onboarding, errors, permissions, notifications and integrations in **Dutch and English for 1.0**. **German (de-DE) is required after 1.0**, as decided in D-50; no German launch-milestone ambiguity remains.
 - Offline PWA shell may load cached UI; live control is disabled until connectivity returns.
 
 ## 7. Core acceptance journeys
