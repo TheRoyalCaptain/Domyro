@@ -94,14 +94,24 @@ These are intentionally explicit; they are *not* reasons to start implementation
 2. **Evaluate stability, speed, reliability and long-term support** of candidate backend/frontend/database stacks, then explicitly approve a final architecture. TypeScript/Node.js + PostgreSQL is still a proposal, not an owner decision.
 3. Confirm exact first hardware models: which Zigbee sensor and mains-powered device, which Matter device and which broker.
 4. **Ubuntu Server LTS amd64+arm64 required** for native 1.0; confirm exact Ubuntu LTS releases and ARM64 models. Debian is not approved as a native 1.0 requirement. Confirm supported UmbrelOS versions.
-5. **Maintainer control decided:** `@TheRoyalCaptain` alone authorizes official merges and releases. **Still to complete:** enable enforceable GitHub ruleset/branch protection in website settings, test CODEOWNERS, determine issue handling and code of conduct. See `docs/GITHUB-GOVERNANCE.md`.
+5. **Maintainer policy decided:** `@TheRoyalCaptain` alone authorizes official upstream merges and releases. **GOV-01 accepted 31 October 2026:** owner elected to proceed **without mandatory GitHub branch protection for now**. This makes owner-only approval a procedural rule, **not a technical guarantee** against other authorized writers or GitHub Apps. Confirm minimal write permissions, issue handling and code of conduct. See `docs/GITHUB-GOVERNANCE.md`.
 6. Approve threat model and the release gate that remote service/marketplace will follow core stability.
 7. Confirm initial hardware acceptance criteria and the rule that existing HA/Zigbee mesh remains untouched without explicit consent.
 8. Confirm trademark/name investigation before public brand launch.
 9. **Key 1.0 allocations are now confirmed by D-48..D-52:** templates/simple dashboard editing; simple rules+basic visual editor; German and cameras after 1.0; basic energy graphs 1.0; Domyro relay after 1.0. Remaining exact technical acceptance (e.g. passkeys scope/backup verification depth) still needs an ADR.
 10. **Resolved by D-44:** automatic plugin-update checks are allowed; downloading and installation both require manual actions, with manual plugin installation approval already fixed under D-26.
 
-**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-52 are accepted. Governance rule for sole official maintainer approval is accepted. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending formal G0 project-wide sign-off. External forks and contributions remain allowed under the AGPL, and GitHub CODEOWNERS must be backed by active branch rules.
+**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-52 are accepted. **GOV-01:** owner knowingly defers branch protection; CODEOWNERS alone does not enforce sole-authorizer control. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending separate formal G0 sign-off. External forks and contributions remain allowed under AGPL.
+
+## C1. Accepted governance exception GOV-01 (31 October 2026)
+
+- **Approved by:** @TheRoyalCaptain, via explicit instruction to continue without branch protection.
+- **Scope:** no mandatory GitHub `main` branch ruleset at this stage. Preserve CODEOWNERS and contributor policy.
+- **Risk accepted:** anyone with active Write/Maintain/Admin permissions and privileged GitHub Apps may be able to push to `main` directly, regardless of CODEOWNERS; forced branch safeguards and required PR review are not guaranteed.
+- **Mitigations:** minimum necessary access to the repository; audit GitHub collaborator and app authorizations, use passkeys/2FA, watch commits; prefer branches+PRs as workflow even if not enforced.
+- **Reassessment trigger:** before inviting additional write maintainers or assigning unrestricted unattended GitHub bot access, and before public stable release security review.
+- **Does not authorize:** new application code, GitHub Issues, installation or release. G0 remains separately pending.
+- **References:** [GITHUB-GOVERNANCE.md](GITHUB-GOVERNANCE.md), [G0-READINESS.md](G0-READINESS.md).
 
 ## D. Decision record template
 
