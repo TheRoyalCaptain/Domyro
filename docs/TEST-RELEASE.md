@@ -88,6 +88,12 @@ Reference: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
 
 Full requirements and tests: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
+## 4C. D-53: Owner-server installation is blocked until verified installer and upgrades
+
+Release/owner deployment must not be recommended based solely on a running dev server. Gate is **not passed** until all measurable items in [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md) have passed: genuine one-command Ubuntu Server LTS amd64/arm64 bare-metal+VM install with per-service wizard; interrupted-install recovery; signed artifacts; manual update approval and zero automatic installs/restarts; upgrade across supported version pairs preserving accounts, data and integration keys; failure injection (disk full, corrupt signature, DB unavailable, killed process, network error, incompatible migrations) with proven safe rollback or recovery mode; encrypted backup, clean-machine restore and CLI fallback. After independent tests, the owner still must explicitly authorize their own server installation.
+
+**An absolute guarantee that software can never break is not technically possible.** A release is blocked if tested supported upgrades have unresolved data-loss, unsafe rollback or no-recovery failures. A documented known issue is not an excuse to bypass this gate.
+
 ## 5. QA gates
 
 **Alpha:** real end-to-end device control, no dangerous automatic retries, first auth and state reliability.  
@@ -108,7 +114,7 @@ No remote service/customer SLA promised before staffing, monitoring and incident
 
 ## 7. Go/no-go checklist for version 1.0
 
-- [ ] All **52 owner product decisions (D-01..D-52)** reflected in design and release phasing; the compact 1.0 guarantees only its approved scope while later items stay on the roadmap.
+- [ ] All **53 owner product decisions (D-01..D-53)** reflected in design and release phasing; D-53 requires a complete installer and recovery-safe update workflow **before owner-server deployment**.
 - [ ] No hidden Home Assistant or proprietary-cloud runtime dependency.
 - [ ] True live Zigbee2MQTT + MQTT + Matter tests passed.
 - [ ] State/command truth, reconnect and idempotency correct.
