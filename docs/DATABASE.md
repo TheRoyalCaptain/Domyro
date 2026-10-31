@@ -124,9 +124,18 @@ Dedup namespace: `site_id + caller_identity + idempotency_key`; idempotency keys
 | General diagnostics | 14 days | yes |
 | Security audit history | 90 days | yes |
 | Current device/entity registrations | while device exists | deletion by authorized admin |
-| Backups | 7 daily / 4 weekly (proposal) | yes |
+| Backups | **7 daily / 4 weekly / 12 monthly** (owner decision D-45) | yes |
 
 Times and periods are **design defaults**, not verified production behavior. Warn users about size and privacy consequences of long-term retention. Restore and personal-data deletion policies must be documented together.
+
+## 8A. Owner decisions D-42, D-45 and D-47 affecting data layout
+
+- **D-42 multi-server topology:** each Domyro installation has its own immutable identity and independent authoritative DB. Future linked installations must use explicit mutual pairing, source installation identity, remote permissions, revocation state and sync cursors; never merge databases or entity IDs blindly.
+- **D-45 backup snapshots:** default 7 daily + 4 weekly + 12 monthly, configurable per target/policy; backup manifest tracks logical retention category, verification outcome and protected deletion eligibility. Failed target writes must not cause removal of a last healthy backup.
+- **D-47 account recovery:** never store recovery codes in plaintext; store one-time hashed codes with recovery audit, revocation and trusted local-console reset capability. Console recovery must not expose existing passkey private keys or encryption secrets.
+- **D-46 missed scheduled actions:** include immutable occurrence identity and stored schedule timestamp per run, missed execution state, catch-up bounds/approval status, expiration and audit links. Design supports safe restart replay prevention.
+
+Requirements: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## 9. Database acceptance gates
 
