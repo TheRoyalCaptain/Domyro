@@ -1,6 +1,6 @@
 # Domyro — Delivery roadmap and executable backlog
 
-**Planning baseline v1.0 · planning only, no application code**
+**Roadmap v1.1 · M1 foundation source development authorized on 2026-10-31, production/release gates open**
 
 ## 1. Planning method
 
@@ -8,7 +8,7 @@ This backlog is organized by dependency and demonstrable outcomes, not by specul
 
 Priorities: **P0** blocks supported 1.0; **P1** first later wave; **P2** future.  
 Relative effort: **S** <=2 focused development days, **M** 3-7, **L** >7 or uncertain; these are early sizing categories, not delivery promises.  
-Status: every task **planned/unstarted**.
+Status: **M1 foundation server/web/status/initial tests started**. Other engineering work remains planned; the first preview is intentionally not a full product.
 
 ## 2. Milestones and dependency map
 
@@ -223,4 +223,4 @@ No target dates are promised before the scope is sized by actual prototype/hardw
 - DOM-112–129 → [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md): cumulative feature commitments, proposed release phasing, privacy and acceptance criteria.
 - DOM-130–142 → [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md): finalized first-release scope, network, backup, recovery, plugin, multi-server and platform requirements.
 
-**Important:** backlog tasks are definitions only, not GitHub Issues. No executable work has started.
+**Important:** backlog tasks remain definitions, not GitHub Issues. **M1 foundation source work has begun** with owner authorization; no real hardware deployment or production release has occurred.
