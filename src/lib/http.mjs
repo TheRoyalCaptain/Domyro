@@ -26,7 +26,7 @@ export function sendJson(response, code, data) {
 }
 
 /** @param {import('node:http').IncomingMessage} request @param {import('node:http').ServerResponse} response */
-export async function handleRequest(request, response) {
+export async function handleRequest(request, response, { persistence = null } = {}) {
   let pathname;
   try {
     pathname = new URL(request.url ?? '/', 'http://domyro.invalid').pathname;
@@ -44,13 +44,17 @@ export async function handleRequest(request, response) {
     return;
   }
   if (pathname === '/api/v1/health/ready') {
-    sendJson(response, 503, { status: 'not_ready', reason: 'persistence_not_configured' });
+    const db = persistence ? await persistence.inspect() : { ready: false, reason: 'persistence_not_configured' };
+    // Authentication and secure onboarding are not implemented. Database alone
+    // never makes this development preview ready for production or commands.
+    sendJson(response, 503, { status: 'not_ready', reason: db.ready ? 'authentication_not_configured' : db.reason });
     return;
   }
   if (pathname === '/api/v1/public/status') {
+    const db = persistence ? await persistence.inspect() : { ready: false, reason: 'persistence_not_configured' };
     sendJson(response, 200, {
       service: 'Domyro', version: '0.1.0-dev.1', phase: 'foundation',
-      core: 'running', persistence: 'not_configured',
+      core: 'running', persistence: db.ready ? 'ready' : db.reason === 'database_unavailable' ? 'unavailable' : 'not_configured',
       integrations: 'not_configured', devices: 'not_connected',
       productionReady: false,
     });
