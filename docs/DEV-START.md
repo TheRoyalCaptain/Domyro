@@ -8,11 +8,12 @@ The owner explicitly **does not want a server installation** until the productio
 
 ## Quick local start
 
-Prerequisites: Node.js **22.12+** (Node 22/24 targeted in checks). No other packages, databases or broker are installed by these commands.
+Prerequisites: Node.js **22.12+** (Node 22/24 targeted in checks). The CLI uses exact-pinned development dependencies; **no PostgreSQL server is installed by these commands**. Migrations only run when explicitly requested against an isolated test database.
 
 ```bash
 git clone https://github.com/TheRoyalCaptain/Domyro.git
 cd Domyro
+npm install --ignore-scripts
 npm test
 npm start
 ```
@@ -37,9 +38,13 @@ Additional **read-only lifecycle modules** are now present under `src/lifecycle/
 - Early **not-yet-API-wired** pure domain utilities for deny-by-default site permissions and observed-vs-requested hardware state, covered by Node tests.
 - GitHub Actions checks for Node.js 22 and 24.
 
+## PostgreSQL and account-security foundation
+
+The preview now includes explicit **PostgreSQL migrations**, real persisted multi-site/area repository operations, Argon2id password and revocable hashed-session primitives. They are tested against disposable CI PostgreSQL 17 on amd64/ARM64. **No authentication endpoint or owner onboarding is exposed**, so `/api/v1/health/ready` must still return 503, even when a test DB is migrated. The preview does not install/configure PostgreSQL itself or run schema migrations automatically. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
+
 ## Explicitly not implemented yet
 
-No authentication/login, secure admin setup, PostgreSQL, MQTT, Matter, rooms, Zigbee device controls, persistent data, secure WebSockets, React PWA, native installer, Docker/Umbrel production image or plugin installer. This is a **foundation**, not version 0.1 released to users.
+No authentication/login API, secure admin setup, real device control/MQTT/Matter, secured rooms HTTP APIs, histories, secure WebSockets, React PWA, complete native installer, PostgreSQL managed provisioning, database restore, Docker/Umbrel production image or plugin installer. PostgreSQL schema and internal repository/session primitives exist, but are not a production app. This is a **foundation**, not version 0.1 released to users.
 
 ## Next engineering milestone
 
