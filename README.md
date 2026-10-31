@@ -2,9 +2,9 @@
 
 **Your home. Your rules.**
 
-Domyro is a planned open-source, local-first smart-home platform with a self-hosted core, modern resident interface and advanced management tools.
+Domyro is an open-source, local-first smart-home platform under active development. The repository includes an early executable **development-only foundation** and detailed specifications for the eventual full product.
 
-> **Status: PLAN-ONLY.** This repository currently contains architecture and product planning documents, **not an implementation**. No application code is authorized until the project plan has been reviewed and approved.
+> **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized beginning M1 foundation code on 31 October 2026. The included server and web preview run locally, but **PostgreSQL, login, MQTT, Zigbee, Matter and real device control are not implemented**. This is not a production release. See [how to run the preview](docs/DEV-START.md) and [limited G0 start authorization](docs/G0-IMPLEMENTATION-START.md).
 
 ## Product commitments
 
@@ -20,6 +20,19 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 - Optional future remote-access relay and curated + sideloadable integrations.
 - Home Assistant bridge only for transition and subsequent migration assistance.
 - AI and speech deliberately follow a reliable base.
+
+## Run the development preview
+
+Node.js 22.12+ is required. The starter preview requires no additional installed packages or database:
+
+```bash
+git clone https://github.com/TheRoyalCaptain/Domyro.git
+cd Domyro
+npm test
+npm start
+```
+
+Then open `http://127.0.0.1:8844` **on the same computer**. It binds to `127.0.0.1` by default and is **not safe to expose publicly** until authentication and permissions are implemented. See [DEV-START.md](docs/DEV-START.md) for limits and next steps.
 
 ## Documentation index
 
@@ -42,15 +55,17 @@ Domyro is a planned open-source, local-first smart-home platform with a self-hos
 17. [Ubuntu native services and backup targets](docs/PLATFORM-SERVICES-BACKUPS.md): one-command installer, managed services, Matter readiness, local/SMB/FTP/USB backups.
 18. [Product decisions D-22–D-39](docs/PRODUCT-DECISIONS-22-39.md): approved full product capabilities and competitive priorities.
 19. [Product decisions D-40–D-52](docs/PRODUCT-DECISIONS-40-52.md): native Ubuntu/ARM64, selectable services, local addressing, plugin updates, backups, automation recovery and final 1.0 feature cut.
+20. [Run development foundation](docs/DEV-START.md): verified local preview and limitations.
+21. [Owner's limited foundation start authorization](docs/G0-IMPLEMENTATION-START.md): implementation authorization and remaining gates.
 
-**Current project gate: G0 not yet approved.** License and official maintainership policy are confirmed; stack details, pilot hardware and dependency review remain to be signed off. **GOV-01:** the owner chose to continue without branch protection for now, with the risk of direct writes by other permitted accounts/apps. This does **not** approve application development.
+**Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
 ### Licensing and contributions
 
 The official license is [GNU AGPL version 3 only](LICENSE) (SPDX: `AGPL-3.0-only`). Others may inspect, fork, modify and redistribute under its terms. **Only @TheRoyalCaptain** has official contribution/release authority **by project policy**. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CODEOWNERS](.github/CODEOWNERS). **GOV-01:** branch protection is consciously deferred; CODEOWNERS does not prevent a write-authorized account/app from pushing directly. Review privileges and commits until protections are enabled.
 
-## Rules during planning
+## Rules during development
 
-Only changes to planning, governance and licensing documents are allowed. Do not initialize an application, provision services, publish containers or implement source code. Do not migrate, reset or claim ownership of the user's active smart-home devices.
+M1 code, documentation and tests are now explicitly authorized. Do **not** provision the owner's server, publish production images, open WAN access, install smart-home services on existing hardware, migrate/reset Zigbee meshes or claim that device integrations work until separately tested and approved.
 
 Reference material is recorded in the relevant documents. Trademark and name clearance, dependency license review and a first real hardware inventory remain explicit pre-release checkpoints.
