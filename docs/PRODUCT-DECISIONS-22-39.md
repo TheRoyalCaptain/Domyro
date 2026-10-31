@@ -71,7 +71,7 @@ This applies whether the package comes from a curated catalog, a bundled source 
 
 **Suggested delivery:** 1.0 installation safety/permission model and built-in adapters; full public catalog and sideload experience after 1.0. Do not automatically install optional plugins or silently grant expanded permissions.
 
-**Explicitly undecided:** automatic plugin-update checking/downloading, per-plugin permissions UI depth, and local upload of custom plugins (previous choices not checked). D-09 separately confirms that a curated catalog and sideloading are part of the long-term product vision; D-26 only governs the **manual authorization of installation**, not whether those distribution channels are permitted.
+**Clarified by later D-44:** installed plugins may be **automatically checked for available updates**, but **both download and installation are manual**. Per-plugin permissions UI depth and custom upload beyond previously approved D-09 remain separate design decisions. D-09 separately confirms that a curated catalog and sideloading are part of the long-term product vision; D-26 only governs the **manual authorization of installation**, not whether those distribution channels are permitted.
 
 ## D-27 — Energy management
 
@@ -81,7 +81,7 @@ This applies whether the package comes from a curated catalog, a bundled source 
 
 **Acceptance:** explicit source measurement units, meter reset handling, sensor sampling and cost provenance; tariff schedules including taxes/network fees are configurable; computed cost is presented as an estimate when appropriate. EV charging honors minimum/maximum current, failsafe stop, circuit limits and explicit user limits; do not promise support for every charger or car.
 
-**Open:** country-specific tariffs and utilities; supported meters/inverters/chargers; whether any energy summary widget belongs in 1.0.
+**D-52 resolves first-release scope:** **simple energy sensor trend graphs ARE in 1.0**; cost/dynamic tariffs, solar, home battery and smart charging remain later. Still open: tariff jurisdictions and supported advanced hardware.
 
 ## D-28 — Cameras
 
@@ -107,7 +107,7 @@ This applies whether the package comes from a curated catalog, a bundled source 
 
 **Approved:** German (**de-DE**) in addition to already-decided Dutch (**nl-NL**) and English (**en**).
 
-**Suggested delivery:** all interfaces and errors use translation keys immediately; three-language launch is the preferred 1.0 target if complete translations can be validated. If translation readiness threatens stability, localization shipping phase must be resolved explicitly at G0 rather than silently deleting German from scope.
+**Superseded by binding D-50:** ship complete Dutch and English in the first stable **1.0**; German **only after 1.0**. Preserve translation-key architecture from day one. Do not imply German is required in the first stable release.
 
 **Acceptance:** full setup and essential screens, errors, date/time/units and accessibility labels translated; languages are user configurable and independent of site timezone; automated missing-key checks.
 
@@ -214,10 +214,10 @@ Longer-term features D-22–D-34 and D-37–D-39 are **not cancelled**. Their de
 | Scenes | Multi-device + snapshot + schedule | Full conditional/exceptions UX |
 | Automation | Deterministic graph, simple editor, bounded advanced subset, trace | Complex expression packs, reusable subflows, live step debugger |
 | Plugins | Safe owner confirmation, built-in drivers | Full catalog/sideload UX and SDK |
-| Energy | Meter entities/history foundation | Dynamic tariffs, solar/battery/EV charging |
+| Energy | **Simple unit-aware energy graphs from supported live/history entities** (D-52) | Dynamic tariffs, solar/battery/EV charging |
 | Cameras | Entity/security groundwork | ONVIF/RTSP, live streaming, recording, detection |
 | Notifications | Local inbox and internal event routing | Push/email/webhook/priority rules |
-| Language | NL+EN; German targeting 1.0 pending QA gate | Additional locales only by future decision |
+| Language | NL+EN | **German de-DE after 1.0** (D-50); others by future decision |
 | Diagnostics | Host health, errors, redacted logs/export, disk alerts | Advanced resource analytics |
 | Presence | Motion + home/away | GPS, BLE, Wi-Fi and fusion |
 | Voice | Interfaces not blocked by architecture | Fully local assistant |
@@ -230,10 +230,10 @@ Longer-term features D-22–D-34 and D-37–D-39 are **not cancelled**. Their de
 
 ## Open questions retained for future decisions
 
-- **O-01:** Are ready-made and drag-and-drop dashboards required at first stable release or can full editing arrive in 1.x?
-- **O-02:** Which advanced automation editor functions must be in 1.0 vs 1.x?
-- **O-03:** Plugin automatic update checking/downloading policies (manual installs required); safe upload/permission UX.
-- **O-04:** German translation launch milestone and quality sign-off.
+- **O-01 resolved by D-48:** 1.0 templates and simple edits; full drag-and-drop later. Exact simple edit widget capabilities still open.
+- **O-02 resolved by D-49:** 1.0 simple rules + safe basic visual editor; rich subflows/debug later. Exact initial node set still open.
+- **O-03 resolved by D-44:** metadata checks automatic; plugin downloading and installation manual. Safe upload/permission UI details remain open.
+- **O-04 resolved by D-50:** German after stable 1.0; exact later minor version and translation QA effort still open.
 - **O-05:** Camera storage, codec/transcoding, recording retention and per-camera privacy.
 - **O-06:** Dynamic electricity pricing markets, supported power/solar/EV hardware and charging safety rules.
 - **O-07:** Phone push implementation constraints for PWA vs future native application.
