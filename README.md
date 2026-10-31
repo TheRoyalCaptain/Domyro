@@ -60,6 +60,7 @@ Then open `http://127.0.0.1:8844` **on the same computer**. It binds to `127.0.0
 20. [Run development foundation](docs/DEV-START.md): verified local preview and limitations.
 21. [Owner's limited foundation start authorization](docs/G0-IMPLEMENTATION-START.md): implementation authorization and remaining gates.
 22. [D-53 installer and upgrade safety gate](docs/INSTALL-UPGRADE-GATE.md): **no installation on owner equipment** before verified one-command install, manual upgrades and proven recovery.
+23. [0.1 read-only update/install/backup safety foundation](docs/SAFETY-FOUNDATION.md): signed-release verification, dry-run service planning, retention planning and tested limitations.
 
 **Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
