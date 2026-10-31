@@ -70,6 +70,22 @@ Domyro is an independent, publicly distributed, self-hosted, local-first home au
 | D-38 | Daily/weekly/monthly backup scheduling, retention cleanup, multiple targets, automated integrity checks. |
 | D-39 | Public GitHub Issues for feature requests; @TheRoyalCaptain retains sole official merge/release authority. |
 
+| D-40 | Ubuntu Server LTS **x86-64 and ARM64**, native bare metal and VM; exact LTS versions and ARM hardware matrix still to confirm. |
+| D-41 | Installer lets the admin **choose for each supporting service** whether to install/manage, connect an existing service or defer if optional. |
+| D-42 | Multiple sites on one server **and** multiple independent Domyro servers that may optionally connect in a future phase; no mandatory cloud. |
+| D-43 | Local access through **IP:port, mDNS host such as domyro.local where network supports it, and own domain/reverse proxy**; all three coexist. |
+| D-44 | Installed plugin updates are **checked automatically**; **downloads and installations require separate manual actions**. Plugin installation consent D-26 remains. |
+| D-45 | Default backup retention: **7 daily, 4 weekly and 12 monthly**, configurable and independently safe across targets. |
+| D-46 | Per-automation missed-run policy after outage: **skip, bounded catch-up or ask for confirmation**; unsafe commands never blindly replay. |
+| D-47 | Account recovery offers **single-use recovery codes and a secure trusted-local console recovery procedure**. |
+| D-48 | **1.0 dashboards:** ready-made templates and simple changes; full drag/drop, custom widgets and tablet wall mode later. |
+| D-49 | **1.0 automations:** simple rules plus safe basic visual editor; advanced editor features later. |
+| D-50 | **German translation after the first stable 1.0**; 1.0 fully NL+EN. |
+| D-51 | **Domyro-managed optional remote access after 1.0**; initial access through owner-managed VPN/reverse proxy. |
+| D-52 | **Simple energy charts in 1.0**, camera functions after 1.0; advanced energy/tariffs/solar/EV later. |
+
+**The D-40..D-52 decisions refine the 1.0 release boundary.** Each is owner-approved; unchanged earlier product commitments still apply. Detailed acceptance criteria: [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
+
 All D-22..D-39 choices are cumulative, approved **product requirements**. The proposed version split is separately documented in [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md); unchecked options are not silently accepted or forbidden.
 
 ## 3. Scope and version contracts
@@ -78,11 +94,11 @@ All D-22..D-39 choices are cumulative, approved **product requirements**. The pr
 
 **Private alpha (0.3):** SQLite is not offered as a production alternative; PostgreSQL-backed system, setup wizard, resident dashboard, basic rules, device lifecycle, native Linux install candidate, Umbrel package candidate, real Matter commissioning in lab.
 
-**Public beta (0.8):** robust end-to-end MQTT/Zigbee2MQTT/Matter, two automation editors, backup/restore, basic role-based permissions, PWA installability, logs and diagnostics, Dutch/English, reliable install targets, security review and compatibility matrix.
+**Public beta (0.8):** real MQTT/Zigbee2MQTT/Matter interoperability for tested device types, simple rules and a **safe basic visual automation editor**, backup/restore with default 7/4/12 retention, basic role-based permissions, PWA, diagnostic logs, **Dutch/English**, Ubuntu Server LTS x86-64+ARM64 native/VM plus Docker/Umbrel packaging, security review and compatibility matrix.
 
-**1.0 stable:** the owner explicitly wants a **compact, very reliable** release. Prioritize tested MQTT/Zigbee2MQTT/Matter functionality, local-first dashboards/templates, essential scenes/automations and three installation targets; protect security, backups, user control over manually installed updates and data integrity. The full dashboard editor, energy optimization, cameras, native Zigbee controller and local voice assistant remain long-term requirements, but are not necessarily 1.0 blockers. German is a required additional language; precise launch timing subject to translation quality and scope review.
+**1.0 stable:** **compact, very reliable** and local-first. Ubuntu Server LTS **x86-64 and ARM64**, bare metal/VM, plus supported Docker/Umbrel packages; one-command secure native installer with service-by-service choices; multiple sites on one server; IP:port, mDNS where supported, custom domain/reverse proxy; real tested MQTT/Zigbee2MQTT/Matter; **templates and basic dashboard edits**, **simple rules and safe basic visual flows**, **simple real-sensor energy graphs**; encrypted multi-target backups using **7 daily / 4 weekly / 12 monthly** defaults; per-automation missed-trigger policy and secure local/recovery-code account recovery; manual-only plugin download/install and Domyro core installations; NL+EN. Full DnD, German, camera functionality, native Zigbee, local voice and Domyro-hosted remote access ship **after 1.0**.
 
-**After 1.0:** native mobile apps; remote-access product if security gates completed; full ecosystem catalog and sandbox hardening; direct Zigbee coordinator without Zigbee2MQTT; extensive energy, camera and AI features; Domyro OS; enhanced migration.
+**After 1.0:** full dashboard drag-and-drop, custom widgets/tablet wall mode; **German (de-DE)**; cameras/ONVIF/RTSP/recording; advanced automation subflows and debugging; **optional multi-Domyro-server coupling** and own secure remote-access service; native mobile and local voice, direct Zigbee alongside Zigbee2MQTT, advanced energy tariffs/solar/batteries/EV, full ecosystem and enhanced migration.
 
 ### Explicit non-goals for 1.0
 
@@ -118,13 +134,13 @@ All D-22..D-39 choices are cumulative, approved **product requirements**. The pr
 |---|---|---|---|
 | Device/state/command | real Zigbee+MQTT | robust registry, history, errors | complex diagnostics |
 | Matter | lab proof targeted | commissioning, state, commands for tested types | expanded device classes |
-| UI | responsive device list | dashboard templates, basic layout editor, rooms, scenes, accessibility | full drag-and-drop, custom widgets, tablet/wall mode, 2D floorplans |
+| UI | responsive device list | dashboard templates, simple edits, rooms, scenes, energy trend widget, accessibility | full drag-and-drop, custom widgets, tablet/wall mode, 2D floorplans and cameras |
 | Rules | one trigger-one action | triggers, conditions, waits, schedules and traces | AI suggestions |
-| Advanced automation | architecture ready | visual editor for safe subset | reusable subflows/scripts |
-| Deployment | Compose dev/proof | Docker, native Linux, Umbrel | bespoke OS |
+| Advanced automation | architecture ready | simple rules + safe basic visual editor; outage missed-run policy | advanced expressions, reusable subflows/scripts, full live debugging |
+| Deployment | Compose dev/proof | Docker, Umbrel and native Ubuntu Server LTS amd64+arm64 (VM/bare metal), per-service install choices | extra Linux distro support on new approval, bespoke OS |
 | Identity | single admin | roles, TOTP, session control, step-up for risky actions | passkeys if not verified for 1.0, stronger SSO/federation |
-| Backups | export prototype | encrypted backup/restore verified | remote vault destinations |
-| Remote | none | secure reverse proxy/VPN docs | optional Domyro relay |
+| Backups | export prototype | encrypted multi-target restore; 7 daily/4 weekly/12 monthly default | additional cloud vault destinations |
+| Remote | none | own VPN/reverse proxy (and IP:port/mDNS/custom domain on LAN) | optional Domyro relay and multi-server federation |
 | Catalog | bundled adapters | safe curated installation mechanism or documented restricted beta | expanded community marketplace |
 | PWA | responsive | installable offline UI shell and reconnect | native apps |
 | HA migration | research | optional read-only bridge for discovery if robust | state/config import tools |
@@ -214,5 +230,6 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Owner-controlled updates and manual installation:** [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md)
 - **Native Ubuntu installation, managed services and complete backup targets:** [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
 - **Cumulative owner-approved features D-22 to D-39, release phasing and open decisions:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
+- **Owner-approved D-40 to D-52 and the definitive compact 1.0 feature boundary:** [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
 
 These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites, dependency licensing and GitHub rules remains outstanding.
