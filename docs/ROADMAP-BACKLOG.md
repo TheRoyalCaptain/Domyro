@@ -144,7 +144,7 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 
 These tasks are **planned issue definitions**, not live GitHub Issues and not authorization to code. **P0 means a core requirement or G0 scoping activity**, not necessarily the entire future feature set must ship in 1.0. All long-term capabilities remain in the owner-approved product vision.
 
-- **DOM-112 P0 M:** Draft compact 1.0 release boundary for all D-22..D-39 selections; approve stage gates. Accepted: every selected feature mapped to 1.0 or later without dropping requirements.
+- **DOM-112 P0 M:** Draft compact 1.0 release boundary for D-22..D-39, incorporating binding D-40..D-52 stage decisions; approve remaining technical stage gates. Accepted: every selected feature mapped to 1.0 or later without dropping requirements.
 - **DOM-113 P1 L:** Full drag/drop dashboard, custom widget contracts and touch/wall-panel mode. Accepted: responsive and accessible editing, safe user widgets.
 - **DOM-114 P1 L:** Interactive 2D floorplans bound to rooms/entity IDs. Accepted: no unauthorized device control or broken mappings.
 - **DOM-115 P0 M:** Multi-device scene snapshot plus schedules; conditions built on automation engine. Accepted: partial failures, actual-state snapshot, timezone-safe schedules.
@@ -153,15 +153,33 @@ These tasks are **planned issue definitions**, not live GitHub Issues and not au
 - **DOM-118 P2 L:** Energy analytics, dynamic tariffs, solar/home battery and safe EV charging. Accepted: correct units, tariff provenance and charging limits.
 - **DOM-119 P2 L:** ONVIF/RTSP live video, recording, playback, motion events/alerts. Accepted: encrypted credentials, per-camera authorization and storage limits.
 - **DOM-120 P1 L:** Push/email/webhook notification router, priority rules and retry handling. Accepted: opt-in destinations, deduplication, platform delivery caveats.
-- **DOM-121 P0 M:** Dutch+English+German localization foundations and quality milestone. Accepted: no missing-key leaks, reviewed language scope before 1.0.
+- **DOM-121 P0 M:** Dutch+English i18n foundation for 1.0 and locale architecture for future German translation. Accepted: fully reviewed NL/EN and no promise of de-DE before first stable 1.0; see DOM-140.
 - **DOM-122 P0 M:** Live host/driver diagnostics, resource telemetry, redacted logs/export and storage alerts. Accepted: secrets never leak, site permissions enforced, fault notifications work.
 - **DOM-123 P1 L:** Manual/motion, GPS/mobile, BLE and Wi-Fi presence adapters with consent and TTL. Accepted: explicit permission, no private cross-user location leak.
 - **DOM-124 P2 L:** Fully local voice pipeline and intent routing. Accepted: offline voice for approved actions with auth/permissions.
 - **DOM-125 P2 L:** Native Zigbee coordinator and explicit coexistence/migration mode. Accepted: no dual owner of same coordinator; external Zigbee2MQTT remains supported.
 - **DOM-126 P0 S:** Establish measured top-three differentiators and UI/automation/local-first acceptance. Accepted: tracked UX speed, automation testability and offline operation.
 - **DOM-127 P0 M:** TOTP, session management, risky-action reauthentication, passkeys planning. Accepted: role/session security and verified passkey rollout target.
-- **DOM-128 P0 L:** Scheduled multi-destination encrypted backups, retention and integrity checking. Accepted: independent target outcomes, repeatable restore, bounded deletion.
+- **DOM-128 P0 L:** Scheduled multi-destination encrypted backups, configurable retention and integrity checking. Accepted: independent target outcomes, repeatable restore, default **7 daily/4 weekly/12 monthly**, bounded deletion. See DOM-135.
 - **DOM-129 P0 S:** Enable public GitHub feature requests through Issues with triage template. Accepted: owner-only merges, no public vulnerabilities.
+
+### EPIC FINAL SCOPE — Binding decisions D-40 to D-52
+
+These are **planned tasks**, not GitHub Issues or working software. The user has approved the **features and 1.0-vs-later phase decisions**, while implementation details remain G0 work.
+
+- **DOM-130 P0 M:** Validate Ubuntu Server LTS native install on x86-64 and ARM64; bare metal and VM, signed package support. Acceptance: reproducible success and error handling on both architectures; version and ARM64 hardware matrix.
+- **DOM-131 P0 M:** One-command installer: per supporting service choose managed install, existing connection or defer. Acceptance: independently confirmed choices for PostgreSQL/MQTT/Zigbee2MQTT/Matter without overwriting services.
+- **DOM-132 P0 M:** Local discovery/access: IP:port, conflict-aware mDNS domain, secure custom domain/reverse proxy. Acceptance: multicast fallback, trusted proxy, Host/Origin/WS and TLS checks.
+- **DOM-133 P1 L:** Design optional secure federation/pairing for independent Domyro servers. Acceptance: stand-alone operation, mutual consent, site scopes, encrypted connectivity and revocation.
+- **DOM-134 P0 M:** Plugin catalog automatic version checks with manual download and manual installation. Acceptance: no asset download or binary change during background checks.
+- **DOM-135 P0 M:** Implement 7 daily/4 weekly/12 monthly default backup retention policy. Acceptance: multi-destination safe pruning, verified restore points, no deletion after target failure.
+- **DOM-136 P0 M:** Per-automation missed scheduled event action: skip, bounded catch-up or approve. Acceptance: outage/DST tests, missed-run audit, no dangerous automatic replay.
+- **DOM-137 P0 M:** Single-use recovery codes plus secure local physical/VM-console recovery. Acceptance: code one-time, no remote backdoor, session revocation/audit.
+- **DOM-138 P0 M:** Ship 1.0 dashboard templates with simple persisted editing only. Acceptance: accessible add/remove/reorder and correct live states; advanced DnD later.
+- **DOM-139 P0 M:** Ship 1.0 simple rules and safe basic visual automation editor. Acceptance: one engine, bounded graph, no unapproved side effects.
+- **DOM-140 P1 M:** Complete full German de-DE localization after first stable 1.0. Acceptance: NL/EN 1.0 stays complete; de-DE QA passes in later release.
+- **DOM-141 P1 L:** Design and implement optional first-party remote access after 1.0. Acceptance: VPN/reverse proxy 1.0 docs; later service opt-in, independently audited, no cloud requirement.
+- **DOM-142 P0 M:** Basic energy measurement graphs from actual supported entities in 1.0; cameras post-1.0. Acceptance: real unit-aware time series, stale state, no camera implementation claim in 1.0.
 
 **Milestone discipline:** D-36 mandates a compact, reliable 1.0; no untested video recording, direct Zigbee replacement, EV charging or local voice engine may be slipped into 1.0 to inflate feature count. Phasing proposals: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Before issue creation, update task dependencies and estimates once exact 1.0 scope is owner-approved.
 
@@ -171,7 +189,7 @@ Title: DOM-### [epic] measurable outcome.
 Body: problem, user value, non-goals, dependencies, design link, tasks, exact acceptance tests, security/privacy impact, supported environments, estimated complexity and rollback plan.  
 Labels: type/feature, type/bug, type/docs, area/core, area/ui, area/integrations, area/security, priority/P0..P2, status/blocked, needs/design.  
 Milestones: M0 through M7.  
-Work: branch -> PR -> review -> tests -> changelog/doc updates -> squash merge. Main is protected. Use required CI checks and no direct pushes once established.
+Work (after G0): branch -> PR -> owner review -> tests -> changelog/doc updates -> squash merge. **Main branch protection is NOT yet verified active; enable ruleset and codeowner reviews before implementation.** Use required CI checks and no direct pushes once established.
 
 ## 5. Definition of ready (DoR)
 
@@ -203,5 +221,6 @@ No target dates are promised before the scope is sized by actual prototype/hardw
 - DOM-107–111 → [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md): Ubuntu Server ISO native/VM, managed services, backups, Matter readiness and evidence-based stack choice.
 
 - DOM-112–129 → [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md): cumulative feature commitments, proposed release phasing, privacy and acceptance criteria.
+- DOM-130–142 → [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md): finalized first-release scope, network, backup, recovery, plugin, multi-server and platform requirements.
 
 **Important:** backlog tasks are definitions only, not GitHub Issues. No executable work has started.
