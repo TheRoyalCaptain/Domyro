@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '24'
       - name: Require all integration and owner deployment gates
-        run: node scripts/check-installation-gate.mjs --require-ready
+        run: node scripts/check-installation-gate.mjs --require-release
       - name: Production release note
         run: |
           echo 'D-53 installation gate passed.'
