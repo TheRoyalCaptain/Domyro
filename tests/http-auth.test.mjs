@@ -108,7 +108,17 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   assert.match(logout.headers.get('set-cookie'), /Max-Age=0/);
   assert.equal((await fetch(base + '/api/v1/auth/me', { headers: { cookie: sessionCookie } })).status, 401);
   assert.equal((await fetch(base + '/api/v1/auth/me', { headers: { cookie: 'domyro_session=malformed' } })).status, 401);
-  assert.equal((await fetch(base + '/api/v1/sites', { headers: { host: 'malicious.example', cookie: guestCookie } })).status, 403);
+  // Undici fetch may normalize Host, so use a genuine raw HTTP request to
+  // prove DNS-rebinding-style host spoofing is rejected.
+  const { request: rawHttpRequest } = await import('node:http');
+  const forgedHostCode = await new Promise((resolve, reject) => {
+    const req = rawHttpRequest(base + '/api/v1/sites', {
+      headers: { Host: 'malicious.example', Cookie: guestCookie },
+    }, response => { response.resume(); response.on('end', () => resolve(response.statusCode)); });
+    req.on('error', reject);
+    req.end();
+  });
+  assert.equal(forgedHostCode, 403);
   assert.equal((await fetch(base + '/api/v1/health/ready')).status, 503);
 });
 
@@ -118,6 +128,9 @@ test('unknown user login is rate-limited, without account enumeration', {
   const { Pool } = await import('pg');
   const db = new Pool({ connectionString: process.env.DOMYRO_TEST_DATABASE_URL, max: 2 });
   t.after(() => db.end());
+  const client = await db.connect();
+  try { await applyMigrations(client, await loadMigrations()); }
+  finally { client.release(); }
   const auth = await createLocalAuthService(db, sendJson);
   const server = createDomyroServer({ auth });
   server.listen(0, '127.0.0.1');
