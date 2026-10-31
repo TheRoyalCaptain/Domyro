@@ -60,6 +60,12 @@ The **installed** Domyro must expose the following update flow to the authentica
 - During a successful upgrade, preserve: users, auth factors and recovery codes, permissions, sites/rooms, entity IDs, scenes, automations and schedules, event/history integrity, dashboard layouts, encrypted integration secrets, plugin version/permission metadata and Matter fabrics when relevant.
 - No loss of existing Home Assistant configuration, other services, or Zigbee coordinator ownership.
 
+### Current isolated test progress (not approval)
+
+An initial read-only Ubuntu host preflight and a staged-release file pointer-switch prototype now exist. The latter checks signed bytes and staged-file integrity, requires a manual version confirmation and can restore a previous **symlink** after a test health probe fails. This is not process rollback, database restore, a complete installer or a supported update. The files are listed in [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md).
+
+GitHub Actions has been configured for Ubuntu x86-64 and ARM64 development tests; VM/bare-metal system installation and actual recovery scenarios remain **unchecked**. No real deployment is authorized by these changes.
+
 ## 4. Acceptance criteria before owner-server installation
 
 **All must pass on isolated test hosts**, not the owner's operational server:
