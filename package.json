@@ -12,9 +12,14 @@
     "start": "node src/server.mjs",
     "dev": "node --watch src/server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/server.mjs && node --check src/lib/http.mjs && node --check src/domain/permissions.mjs && node --check src/domain/state.mjs && node --check src/lifecycle/native-preflight.mjs && node --check src/lifecycle/transactional-release.mjs && node --check scripts/inspect-native.mjs && node --check web/assets/app.js && node --check src/lifecycle/encrypted-backup.mjs && node --check tools/build-release.mjs && node --check scripts/check-installation-gate.mjs && npm test",
+    "check": "node --check src/server.mjs && node --check src/lib/http.mjs && node --check src/domain/permissions.mjs && node --check src/domain/state.mjs && node --check src/lifecycle/native-preflight.mjs && node --check src/lifecycle/transactional-release.mjs && node --check scripts/inspect-native.mjs && node --check web/assets/app.js && node --check src/lifecycle/encrypted-backup.mjs && node --check tools/build-release.mjs && node --check scripts/check-installation-gate.mjs && node --check src/persistence/migrator.mjs && node --check src/persistence/db-config.mjs && node --check src/persistence/site-repository.mjs && node --check scripts/migrate-db.mjs && npm test",
     "preflight:read-only": "node scripts/inspect-native.mjs",
     "gate:status": "node scripts/check-installation-gate.mjs",
-    "gate:require": "node scripts/check-installation-gate.mjs --require-ready"
+    "gate:require": "node scripts/check-installation-gate.mjs --require-ready",
+    "db:check": "node scripts/migrate-db.mjs --check",
+    "db:migrate": "node scripts/migrate-db.mjs --apply"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
   }
 }
