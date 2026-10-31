@@ -4,9 +4,9 @@
 
 Domyro is an open-source, local-first smart-home platform under active development. The repository includes an early executable **development-only foundation** and detailed specifications for the eventual full product.
 
-> **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **no login, database, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
+ > **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **experimental localhost login and PostgreSQL, but no production onboarding, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
 
-**Current installer progress:** Read-only Ubuntu preflight, signed **development source** bundles, isolated release pointer rollback, encrypted test fixtures and a strict [machine-readable owner-installation gate](config/installation-readiness.json) are tested. The M1 code also supports **PostgreSQL schema migrations, persistent sites/rooms and internal Argon2id session primitives** in isolated development tests. **There is still no complete one-command installer, secure browser login, real database restore or production-safe upgrade. Do NOT install Domyro on your server.** [Read the detailed limitations](docs/SAFETY-FOUNDATION.md).
+**Current installer progress:** Read-only Ubuntu preflight, signed **development source** bundles, isolated release pointer rollback, encrypted test fixtures and a strict [machine-readable owner-installation gate](config/installation-readiness.json) are tested. The M1 code also supports **PostgreSQL schema migrations, persistent sites/rooms and Argon2id-based loopback-only login with authenticated room management** in isolated development tests. **There is still no production-grade onboarding, complete one-command installer, full database restore or production-safe upgrade. Do NOT install Domyro on your server.** [Read the detailed limitations](docs/SAFETY-FOUNDATION.md).
 
 ## Product commitments
 
@@ -65,7 +65,8 @@ Then open `http://127.0.0.1:8844` **on the same computer**. It binds to `127.0.0
 22. [D-53 installer and upgrade safety gate](docs/INSTALL-UPGRADE-GATE.md): **no installation on owner equipment** before verified one-command install, manual upgrades and proven recovery.
 23. [0.1 installer/update/backup safety foundation](docs/SAFETY-FOUNDATION.md): signed development artifacts, isolated version switching, encrypted test fixtures, dry-run planning and tested limitations.
 24. [Machine-readable installation readiness gate](config/installation-readiness.json): fail-closed checklist; no owner deployment permission or real installation instructions yet.
-25. [PostgreSQL and security foundation](docs/PERSISTENCE-FOUNDATION.md): transactional migrations, multi-site data boundaries and internal Argon2id credentials; **no public login yet**.
+25. [PostgreSQL and security foundation](docs/PERSISTENCE-FOUNDATION.md): transactional migrations, multi-site data boundaries and Argon2id sessions.
+26. [Local authentication development preview](docs/LOCAL-AUTH-FOUNDATION.md): console-only initial owner, loopback login, HttpOnly cookies, CSRF, sites/rooms; **not production security**.
 
 **Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
