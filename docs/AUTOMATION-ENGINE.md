@@ -71,7 +71,7 @@ Compare normalized numeric values and units; optional hysteresis (enter threshol
 Store civil schedule + IANA timezone, next run in UTC. Explicit rules for DST:
 - Nonexistent wall time (spring): default **skip**, alternative run at next valid time.
 - Repeated wall time (autumn): default **once**, alternative twice (explicit opt-in).
-- Missing execution due to service outage: default **do not retroactively replay**; selected safe notifications may catch up within bounded window.
+- Missing execution due to service outage: **per-automation policy** (D-46): `skip` (safe default), `catch_up` (bounded by user-defined window/maximum count) or `confirm_before_catch_up` (explicit owner/user permission with expiry). No unbounded post-outage event storm. Skip or require confirmation for unsafe/non-idempotent device effects and uncertain command outcomes. All missed/handled runs are traced.
 - Monotonic timer for active delays where possible; persist wake_at UTC for restart.
 
 ### Sun events
@@ -92,6 +92,19 @@ Random unguessable secret or signed request, expiration/rate-limit, auth checks 
 - Guarantee **at-least-once internal event processing**, not magical exactly-once delivery to real devices.
 - Non-idempotent actions (toggle, unlock, siren, dispense) **must not auto-replay** after uncertain completion; return `outcome_unknown` for manual review where needed.
 - A set-state action may be retried with stable idempotency key only if supported and safe for the target.
+
+## 5A. Recovery of missed scheduled events (owner decision D-46)
+
+Persist planned fire timestamp, schedule revision, IANA timezone and unique schedule occurrence ID separately from execution start. When Domyro returns after outage, calculate missed occurrences bounded by a time horizon and safety budget:
+
+- `skip`: mark missed scheduled occurrence as skipped, no side effect.
+- `catch_up`: execute only safe, authorized, eligible missed occurrences within configured max age/count, each with a dedup/correlation identifier. Never blindly replay non-idempotent toggle/unlock or commands with unknown previous outcome.
+- `confirm_before_catch_up`: create pending approval with original schedule time, intended action list, expiry and step-up checks for high-risk actions. Expired/denied approvals do not dispatch.
+- DST nonexistent/repeated civil times are resolved *before* outage recovery and never doubled by reconciliation.
+- If an automation revision or permission changed during outage, old scheduled operations cannot bypass current permissions or run against incompatible definitions.
+- Power loss/restart test covers 1, 3 and 100 missed occurrences, duplicate recovery and UI status in each policy.
+
+**D-49 1.0 editor boundary:** one simple rule builder plus safe basic visual editor, backed by this same scheduler/graph. Full subflow library, rich expressions and detailed live debugging are post-1.0 features. See [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## 6. Concurrency modes
 
