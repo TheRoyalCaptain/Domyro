@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2b">
+  <meta name="description" content="Domyro: your home, your rules. Local-first home automation, development foundation.">
+  <title>Domyro · Ontwikkelomgeving</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="module" src="/assets/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Projectnavigatie">
+      <a class="brand" href="/" aria-label="Domyro startpagina">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" fill="none"><path d="M7 16.5 18 7l11 9.5V29H7V16.5Z" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/><path d="M14 29V19h8v10" stroke="currentColor" stroke-width="2.8"/></svg></span>
+        <span><strong>domyro</strong><small>your home, your rules.</small></span>
+      </a>
+      <div class="nav-heading" data-i18n="navTitle">ONTWIKKELING</div>
+      <nav class="nav">
+        <a class="nav-item current" href="#overview"><span class="nav-dot"></span><span data-i18n="overview">Overzicht</span></a>
+        <a class="nav-item" href="#status"><span class="nav-dot"></span><span data-i18n="health">Systeemstatus</span></a>
+        <a class="nav-item" href="#next"><span class="nav-dot"></span><span data-i18n="next">Volgende stappen</span></a>
+      </nav>
+      <div class="side-bottom">
+        <span class="mini-badge"><span class="pulse"></span> ALPHA FOUNDATION</span>
+        <p data-i18n="local">Lokaal en onafhankelijk. Geen externe cloud nodig.</p>
+        <a href="https://github.com/TheRoyalCaptain/Domyro" target="_blank" rel="noopener noreferrer" data-i18n="source">Broncode op GitHub ↗</a>
+      </div>
+    </aside>
+    <main id="overview">
+      <header class="topbar"><div class="breadcrumbs"><span>Domyro</span><span class="slash">/</span><strong data-i18n="overview">Overzicht</strong></div><button id="language" class="language" type="button" aria-label="Switch language">EN</button></header>
+      <div class="container">
+        <div class="eyebrow"><span class="pulse"></span><span data-i18n="eyebrow">DOMYRO 0.1 · EERSTE ONTWIKKELVERSIE</span></div>
+        <div class="hero"><div><h1 data-i18n="hero">Je woning.<br><em>Jouw regels.</em></h1><p data-i18n="intro">De basis van een nieuwe, volledig lokale smart-homeomgeving staat. Apparaten en automatiseringen worden pas zichtbaar zodra de echte koppelingen zijn gebouwd.</p></div><div class="hero-graphic" aria-hidden="true"><div class="circle outer"><div class="circle middle"><div class="circle inner">⌂</div></div></div><span class="orbit-dot one"></span><span class="orbit-dot two"></span></div></div>
+        <section id="status" class="section" aria-labelledby="status-heading"><div class="section-header"><div><h2 id="status-heading" data-i18n="system">Systeemoverzicht</h2><p data-i18n="live">Rechtstreeks uit je lokale Domyro-server. Geen verzonnen apparaten of statistieken.</p></div><button class="refresh" id="refresh" type="button"><span aria-hidden="true">↻</span> <span data-i18n="refresh">Verversen</span></button></div>
+        <div class="stats"><article class="stat"><div class="stat-icon">◈</div><div class="stat-label" data-i18n="core">Core server</div><div class="stat-value" id="core-status" aria-live="polite">…</div><div class="stat-sub" data-i18n="coreSub">Lokale HTTP-dienst</div></article><article class="stat"><div class="stat-icon">▤</div><div class="stat-label" data-i18n="database">Database</div><div class="stat-value" id="db-status">…</div><div class="stat-sub" data-i18n="dbSub">PostgreSQL-koppeling gepland</div></article><article class="stat"><div class="stat-icon">⌁</div><div class="stat-label" data-i18n="devices">Apparaten</div><div class="stat-value" id="device-status">…</div><div class="stat-sub" data-i18n="devicesSub">Nog geen integraties geactiveerd</div></article></div>
+        <p class="checked" id="checked" role="status" aria-live="polite"></p></section>
+        <section id="next" class="section next-section" aria-labelledby="next-heading"><div class="section-header"><div><h2 id="next-heading" data-i18n="roadmap">Op weg naar een slim huis</h2><p data-i18n="planIntro">We bouwen eerst een betrouwbaar fundament, daarna pas de functies die apparaten bedienen.</p></div></div><div class="steps"><div class="step active"><div class="step-count">01</div><div><strong data-i18n="step1">Ontwikkelbasis en veilige API</strong><p data-i18n="step1Sub">De HTTP-server, echte statusmeldingen en automatische tests.</p></div><span class="step-pill" data-i18n="inProgress">In ontwikkeling</span></div><div class="step"><div class="step-count">02</div><div><strong data-i18n="step2">Accounts, PostgreSQL en kamers</strong><p data-i18n="step2Sub">Veilige gebruikers, rechten en blijvende gegevens.</p></div></div><div class="step"><div class="step-count">03</div><div><strong data-i18n="step3">MQTT en Zigbee2MQTT</strong><p data-i18n="step3Sub">Echte apparaten uitlezen en bedienen, zonder afhankelijkheid van Home Assistant.</p></div></div><div class="step"><div class="step-count">04</div><div><strong data-i18n="step4">Dashboard en automatiseringen</strong><p data-i18n="step4Sub">De eerste bruikbare dagelijkse smart-homefuncties.</p></div></div></div></section>
+        <footer><span>Domyro · 0.1.0-dev.1</span><span data-i18n="footer">Preview, nog niet voor productiegebruik</span></footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
