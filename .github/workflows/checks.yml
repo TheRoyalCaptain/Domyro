@@ -6,11 +6,12 @@ permissions:
   contents: read
 jobs:
   test:
-    name: Node ${{ matrix.node }} / unit and HTTP tests
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} / Node ${{ matrix.node }} / unit and isolated release tests
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
         node: ['22', '24']
     steps:
       - uses: actions/checkout@v4
@@ -18,3 +19,5 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm run check
+      - name: Read-only host diagnostic (informational, no install)
+        run: npm run preflight:read-only
