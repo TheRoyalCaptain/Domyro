@@ -23,6 +23,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [x] **D-13:** Users control Domyro release checking/downloading and an optional download delay; installation is ALWAYS manually approved, never automatically scheduled. No Domyro control of Linux/umbrelOS system updates.
 - [x] **D-14..D-21:** Ubuntu Server ISO native bare metal/VM; native UI-managed dependent services + container external services; Matter readiness without local test hardware; reliability/performance-led tech evaluation; secure one-command installer; multisite granular RBAC; local/SMB/NAS/FTP/USB backups; extensive specifications before implementation. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md).
 - [x] **D-22..D-39:** owner-approved cumulative dashboard, building, scene, advanced automation, plugin confirmation, energy, camera, notification, German, diagnostics, presence, local voice, protocol, top-three differentiation, compact v1, security, backup and GitHub Ideas choices. See [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md).
+- [x] **D-40..D-52:** Ubuntu LTS x86-64+ARM64; choose per supporting service; local multi-sites and optional future server linking; IP:port+mDNS+custom domain; plugin checks-only; backup default 7/4/12; per-flow missed-run options; recovery codes + local console; 1.0 simple dashboard and visual automation editing, NL/EN, simple energy charts; cameras/German/Domyro relay later. See [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## 2. Proposed technical ADRs still needing an explicit yes/no
 
@@ -42,7 +43,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 
 ## 3. Practical prerequisites (must resolve before G0)
 
-- [ ] Confirm first test host: **Ubuntu Server ISO native install** (physical or VM), exact supported LTS version, CPU architecture, virtualization networking and ability to run isolated test services.
+- [ ] Confirm lab hardware/VM and exact Ubuntu Server LTS versions on **both x86-64 and ARM64**; native 1.0 must validate both, while Debian native production support is NOT a selected 1.0 requirement.
 - [ ] Identify exact harmless Zigbee lamp/plug and a sensor; never publish credentials/device IDs.
 - [ ] Identify a genuinely available Matter Wi-Fi/Thread test device and network preflight strategy; a separate hardware purchase is not automatically authorized.
 - [ ] Determine first managed services (native Mosquitto, Zigbee2MQTT, Matter.js, DB) and service administration permission model; preserve external broker/service mode and no ownership changes without explicit consent.
@@ -51,14 +52,18 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [ ] Review safety and privacy threat model, multi-site permissions and retention settings.
 - [ ] Validate encrypted backups against local paths, USB disks, SMB/NAS and secure FTP variants; decide plaintext FTP restrictions and managed-dependency update confirmation policy.
 - [ ] Approve verified one-command native installer (preflight, prompts, reversible failures, narrow service management helper).
-- [ ] Confirm tested native Ubuntu/Debian and umbrelOS minimum versions, x86_64/ARM64 release commitments.
+- [ ] Confirm supported Ubuntu Server LTS release numbers and representative ARM64 hardware, Docker image architectures and umbrelOS version; **no implied official Debian support**.
 - [ ] Select secure, nonprivileged native release-check/download timer and separately authorized manual install helper; validate Umbrel App Store limitations without making false download/upgrade promises. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - [ ] Verify brand clearance for Domyro before public trademark/promotional launch.
 - [ ] Activate **main** branch protection and code-owner review in GitHub; confirm only owner can approve upstream merges.
 - [ ] Confirm project owner review and release responsibilities, and what external help may do without approval.
-- [ ] Approve the proposed **compact 1.0 scope**, as distinct from the complete long-term feature list D-22..D-39; resolve staging of full dashboard editing, advanced subflows/live debugger, German and passkeys.
-- [ ] Decide plugin-update checking/downloading and UI policy separately: only **manual confirmation of every plugin installation** is approved under D-26.
-- [ ] Specify camera retention/privacy, GPS data and phone background permission behavior, energy tariff/EV safety, speech computing requirements, 2D plan editor and backup verification depth.
+- [x] **D-48..D-52 first-release boundaries accepted:** simple dashboard edits and basic visual editor in 1.0; German, cameras and Domyro relay after 1.0; simple energy charts in 1.0.
+- [ ] Confirm passkeys rollout/version, precise safe-basic visual node set and required 1.0 energy meter units/wid​​gets, while retaining remaining owner-approved future features.
+- [x] **Plugin policy resolved D-44:** automatic version checks, but manual downloading and a separate explicit manual install approval. Test that no plug-in asset is downloaded by automatic checks.
+- [ ] Specify future camera retention/privacy, GPS data and phone background permissions, advanced energy tariff/EV safety, speech computing requirements, 2D plan editor and backup verification depth.
+- [ ] Select the trustworthy console recovery mechanism and recovery-code lifecycle, define missed-trigger catch-up windows and explicit approval queue policy.
+- [ ] Specify mDNS collision/fallback, reverse-proxy trusted-header security, default LAN port and future multi-server trust protocol (implementation after 1.0).
+- [ ] Approve 7 daily/4 weekly/12 monthly backup retention semantics, independently per destination, and tests for safe pruning after failed jobs.
 
 ## 4. Owner GitHub branch protection: blocked by connector permissions
 
@@ -123,3 +128,4 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - [DECISIONS.md](DECISIONS.md)
 - [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
 - [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
+- [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
