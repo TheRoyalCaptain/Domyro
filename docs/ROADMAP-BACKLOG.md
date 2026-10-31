@@ -38,9 +38,9 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 
 - **DOM-010 P0 M:** Initialize pnpm/TypeScript monorepo and quality conventions. Accept: reproducible clean build, test and lint on x86_64 + ARM64 candidates.
 - **DOM-011 P0 M:** CI with lint, typecheck, unit tests, dependency audit and artifact storage. Accept: failed check blocks merging.
-- **DOM-012 P0 M:** Core PostgreSQL schema/migration runner. Accept: clean install, upgrade and failed migration tests.
+- **DOM-012 P0 M (in progress):** Core PostgreSQL schema/migration runner. **Implemented:** two versioned, checksum-verified transactional migrations, installation/users/sites/memberships/areas/sessions, isolated PostgreSQL 17 CI on amd64+arm64, idempotency and tamper rejection. **Still required:** full entity/event schema, production DB roles/backup/restore and upgrade fault injection.
 - **DOM-013 P0 M:** Initial setup wizard and local administrator provisioning. Accept: cannot operate uninitialized system or reuse bootstrap token.
-- **DOM-014 P0 M:** Authentication, sessions, basic role/permission infrastructure. Accept: forbidden operations denied by server and WS.
+- **DOM-014 P0 M (in progress):** Authentication, sessions, basic role/permission infrastructure. **Implemented internally:** Argon2id password hashes, 256-bit random session tokens stored hashed, expiry/revocation, basic per-site SQL authorization. **NOT implemented:** login/bootstrap API, CSRF/rate limits, passkeys/TOTP, real permissioned HTTP/WebSocket handlers. Do not advertise secure login yet.
 - **DOM-015 P0 M:** REST v1 schemas, validation, errors and versioning. Accept: OpenAPI and contract tests generated.
 - **DOM-016 P0 M:** WebSocket snapshot/delta/resync transport. Accept: ordered state after reconnect and missing event range.
 - **DOM-017 P0 M:** Structured logs, trace IDs, health readiness and metrics. Accept: redacted logs and integration fault visibility.
