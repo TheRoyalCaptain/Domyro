@@ -6,7 +6,7 @@ Domyro is an open-source, local-first smart-home platform under active developme
 
 > **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **no login, database, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
 
-**Current installer progress:** Native Ubuntu inspection and isolated signed-release staging/rollback tests have been added. There is **no finished one-command installation or production-safe upgrade**. Do not install Domyro on your server yet. [See the implementation status](docs/SAFETY-FOUNDATION.md).
+**Current installer progress:** Read-only Ubuntu preflight, signed **development source** bundles, isolated release pointer rollback, encrypted test fixtures and a strict [machine-readable owner-installation gate](config/installation-readiness.json) are tested. **There is no complete one-command installer, real database restore or production-safe upgrade yet. Do NOT install Domyro on your server.** [Read the detailed limitations](docs/SAFETY-FOUNDATION.md).
 
 ## Product commitments
 
@@ -62,7 +62,8 @@ Then open `http://127.0.0.1:8844` **on the same computer**. It binds to `127.0.0
 20. [Run development foundation](docs/DEV-START.md): verified local preview and limitations.
 21. [Owner's limited foundation start authorization](docs/G0-IMPLEMENTATION-START.md): implementation authorization and remaining gates.
 22. [D-53 installer and upgrade safety gate](docs/INSTALL-UPGRADE-GATE.md): **no installation on owner equipment** before verified one-command install, manual upgrades and proven recovery.
-23. [0.1 read-only update/install/backup safety foundation](docs/SAFETY-FOUNDATION.md): signed-release verification, dry-run service planning, retention planning and tested limitations.
+23. [0.1 installer/update/backup safety foundation](docs/SAFETY-FOUNDATION.md): signed development artifacts, isolated version switching, encrypted test fixtures, dry-run planning and tested limitations.
+24. [Machine-readable installation readiness gate](config/installation-readiness.json): fail-closed checklist; no owner deployment permission or real installation instructions yet.
 
 **Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
