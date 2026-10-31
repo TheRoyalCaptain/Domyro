@@ -21,7 +21,7 @@ D-36 has precedence for release scope: the owner explicitly selected **a compact
 **Approved together:** ready-made dashboard templates; complete drag-and-drop editor; custom widgets created/added by users; separate tablet/wall-panel mode.
 
 **Suggested delivery:**
-- 1.0: templates for standard household and room overview, responsive card layout with simple editor, persistent layouts, real device states, accessible edit alternative.
+- 1.0 **confirmed by D-48**: templates for household/room overview, responsive layout with **simple editing**, persistent layouts, real device states and an accessible edit alternative. Complete drag/drop later.
 - After 1.0: full drag-and-drop editor with resize/reorder/grid snapping, import/export of user-authored widget definitions, safe widget extension API and wall/tablet kiosk profiles.
 - Product design for the full editor and tablet mode is required before implementation even if shipped later.
 
@@ -57,7 +57,7 @@ D-36 has precedence for release scope: the owner explicitly selected **a compact
 
 **Approved together:** variables, calculations, complex conditions; branches, loops, waits; reusable scripts/subflows; live tests, simulation and debugging.
 
-**Suggested delivery:** 1.0 stable typed graph, basic branch, delay, bounded repeat, local variables, trace/simulation and a useful graphical editor; post-1.0 reusable subflows, advanced calculations/expressions and live step-through debugging when safe. Shared runtime across simple and advanced editors remains mandatory.
+**Confirmed by D-49:** 1.0 simple rules plus a **safe basic visual graph editor** with necessary trace/restart guards; post-1.0 reusable subflows, rich advanced calculations/expressions and detailed live step-through debugging. Shared runtime across simple and advanced editors remains mandatory.
 
 **Acceptance:** deterministic validation with type/unit checks, bounded loops, no arbitrary script execution, no physical effects in dry-run, resumable safe waits, immutable revision for running jobs, audited permissions and explicit unknown/unavailable branches.
 
@@ -77,7 +77,7 @@ This applies whether the package comes from a curated catalog, a bundled source 
 
 **Approved together:** realtime electricity/gas/water measurements; cost calculations with dynamic tariffs; solar and home-battery management; smart EV charging.
 
-**Suggested delivery:** 1.0 has a reliable numeric sensor/history capability suitable for energy entities; after 1.0 energy dashboards, unit-aware measurement/cost and tariff accounting; later solar, battery optimization and EV charging subject to device/inverter/car compatibility and safety testing.
+**D-52 finalizes 1.0 delivery:** simple energy measurement charts based on actual numeric sensor/history data are part of 1.0; detailed tariff/cost accounting, solar/battery optimization and EV charging follow afterward, subject to device/inverter/car compatibility and safety testing.
 
 **Acceptance:** explicit source measurement units, meter reset handling, sensor sampling and cost provenance; tariff schedules including taxes/network fees are configurable; computed cost is presented as an estimate when appropriate. EV charging honors minimum/maximum current, failsafe stop, circuit limits and explicit user limits; do not promise support for every charger or car.
 
@@ -87,7 +87,7 @@ This applies whether the package comes from a curated catalog, a bundled source 
 
 **Approved together:** live feed in dashboard; recorded video browsing/storage; motion detection/notifications; ONVIF and RTSP.
 
-**Suggested delivery:** plan camera entities and security scopes early; after 1.0 ONVIF discovery/RTSP live view, then recordings and playback, then detection/event alerts and retention policies as a dedicated module. Continuous transcoding and object recognition are substantial scope; not part of a compact 1.0 by default.
+**Confirmed by D-52:** no functional camera support is required in 1.0; after 1.0 ONVIF discovery/RTSP live view, recordings/playback, detection/event alerts and retention policies as a dedicated secure module. Continuous transcoding and object recognition are substantial scope; not part of a compact 1.0 by default.
 
 **Acceptance:** authenticated streams, camera privacy scope, playback authorizations, storage quota/retention, encrypted credentials, failure diagnostics, no accidental exposure to WAN. ONVIF and RTSP are different capabilities; not all cameras expose them.
 
@@ -195,7 +195,7 @@ Longer-term features D-22–D-34 and D-37–D-39 are **not cancelled**. Their de
 
 **Acceptance:** schedule and retention defined per destination; independent per-target error (failed USB does not delete good NAS backup); verify archive signature/checksum/decryption safely; never erase other files on removable disks; alerts on missed jobs or low storage. Plain FTP requires user acknowledgement and pre-encrypted archive.
 
-**Open:** default retention ages, same-backup fanout vs independent job scheduling, automatic verification type/depth, exact snapshot consistency guarantees and whether managed protocol-service config is included.
+**D-45 fixes default retention:** 7 daily / 4 weekly / 12 monthly. Still open: same-backup fanout vs independent job scheduling, verification depth, snapshot consistency and inclusion of managed service configs.
 
 ## D-39 — Community
 
@@ -226,7 +226,7 @@ Longer-term features D-22–D-34 and D-37–D-39 are **not cancelled**. Their de
 | Backup | Scheduling, retention, multi-target, validation | Broader restore verification/replication |
 | Community | GitHub Issues ideas | Extras only on future explicit choice |
 
-**The 1.0 column is an architectural recommendation, not a new owner decision.** Both the scope and technical approach need G0 sign-off.
+**This 1.0 column is now constrained by owner decisions D-40..D-52**, including D-48 basic dashboards, D-49 basic visual flows, D-50 German after stable 1.0, D-52 basic energy charts and cameras later. Remaining technical details still require G0 review. See [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md).
 
 ## Open questions retained for future decisions
 
