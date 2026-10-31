@@ -22,7 +22,7 @@ The versioned [installation-readiness.json](../config/installation-readiness.jso
 
 ### PostgreSQL milestone (still not an installation)
 
-A development-only PostgreSQL schema/migrator and internal user/site/area/session primitives now exist. The schema migrator runs **only through an explicit CLI invocation** on a separately configured local test DB; no automatic DB setup takes place at server startup or during update polling. **Real PostgreSQL backup, restore, migration recovery, secure user login and one-line native installer remain unfinished**. Do not mark D-53 as passed based on these CI tests. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
+A development-only PostgreSQL schema/migrator, internal user/site/area/session primitives, **console-only first-owner initialization and an experimental localhost login/room interface** now exist. The schema migrator runs **only through an explicit CLI invocation** on a separately configured local test DB; no automatic DB setup takes place at server startup or during update polling. **Real PostgreSQL backup, restore, migration recovery, secure production onboarding/MFA/account recovery and the one-line native installer remain unfinished**. Do not mark D-53 as passed based on these CI tests. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
 
 ## 1. Complete one-line native Ubuntu Server installer
 
