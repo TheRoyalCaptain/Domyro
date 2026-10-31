@@ -183,6 +183,10 @@ These are **planned tasks**, not GitHub Issues or working software. The user has
 
 **Milestone discipline:** D-36 mandates a compact, reliable 1.0; no untested video recording, direct Zigbee replacement, EV charging or local voice engine may be slipped into 1.0 to inflate feature count. Phasing proposals: [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Before issue creation, update task dependencies and estimates once exact 1.0 scope is owner-approved.
 
+### EPIC INSTALL/UPDATE QUALITY — Owner-hard deployment gate D-53
+
+- **DOM-143 P0 L:** Deliver fully verified **one-command** Ubuntu Server LTS amd64+arm64 installer plus safe owner-approved core upgrades, compatible migrations, encrypted backup/restore, post-upgrade health and fail-safe rollback/recovery. **Accept:** all D-53 tests, including interrupted install/update, mismatched versions, missing services, disk-full, bad signatures and clean-host restore pass on isolated bare-metal/VM test hosts. **Hard gate: never install on the owner's operational server until tested and separately authorized.** See [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md). This is a parent/acceptance gate for DOM-072, DOM-076, DOM-078, DOM-107 and related backup/security tasks, not duplicate code work.
+
 ## 4. GitHub issue template (used only after G0)
 
 Title: DOM-### [epic] measurable outcome.  
@@ -222,5 +226,6 @@ No target dates are promised before the scope is sized by actual prototype/hardw
 
 - DOM-112–129 → [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md): cumulative feature commitments, proposed release phasing, privacy and acceptance criteria.
 - DOM-130–142 → [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md): finalized first-release scope, network, backup, recovery, plugin, multi-server and platform requirements.
+- DOM-143 → [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md): **no owner-server install until one-command installer and safely upgradable/recoverable lifecycle are proven**.
 
 **Important:** backlog tasks remain definitions, not GitHub Issues. **M1 foundation source work has begun** with owner authorization; no real hardware deployment or production release has occurred.
