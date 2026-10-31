@@ -69,6 +69,10 @@ D-39 **Approved:** Anyone may propose feature requests via GitHub Issues; offici
 
 **Detailed acceptance and proposed milestones:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md). Multiple selected items within each question are cumulative. Unselected items remain undecided, not disallowed.
 
+## A2. D-53 — Owner installation and update safety gate (31 October 2026)
+
+**Approved:** The owner will **not install Domyro on their own server** until a complete one-command Ubuntu Server LTS installation and a safe, tested **manual** application upgrade path with preflight, verified backup, post-upgrade health and rollback/recovery are operational. This is a **P0 hard blocker for owner-server deployment**, not a ban on further development on isolated CI/test hosts. The owner must separately authorize any deployment on their equipment, even after the gate is passed. D-13 core updates remain manual-install only, optional automated download-only; D-44 plugin checks-only with manual download/install. Absolute zero-defect assurance cannot be promised; fail-safe and recoverability must be proven. Detailed acceptance: [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md).
+
 ## B. Proposed technical ADRs for project owner sign-off
 
 | ADR | Decision | Rationale | Alternative / tradeoff |
@@ -101,7 +105,7 @@ These are intentionally explicit; they are *not* reasons to start implementation
 9. **Key 1.0 allocations are now confirmed by D-48..D-52:** templates/simple dashboard editing; simple rules+basic visual editor; German and cameras after 1.0; basic energy graphs 1.0; Domyro relay after 1.0. Remaining exact technical acceptance (e.g. passkeys scope/backup verification depth) still needs an ADR.
 10. **Resolved by D-44:** automatic plugin-update checks are allowed; downloading and installation both require manual actions, with manual plugin installation approval already fixed under D-26.
 
-**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-52 are accepted. **GOV-01:** owner knowingly defers branch protection; CODEOWNERS alone does not enforce sole-authorizer control. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending separate formal G0 sign-off. External forks and contributions remain allowed under AGPL.
+**Decision status:** A-01 (AGPL-3.0-only) and owner product decisions D-01..D-53 are accepted. **GOV-01:** owner knowingly defers branch protection; CODEOWNERS alone does not enforce sole-authorizer control. A-02..A-11 and remaining hardware/legal/deployment gates are still proposed pending separate formal G0 sign-off. External forks and contributions remain allowed under AGPL.
 
 ## C1. Accepted governance exception GOV-01 (31 October 2026)
 
