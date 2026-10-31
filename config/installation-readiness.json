@@ -17,8 +17,7 @@
     "manualCoreUpdateEngine": false,
     "updateFailureRollback": false,
     "ubuntuVmUpgradeRegression": false,
-    "ubuntuBareMetalUpgradeRegression": false,
-    "ownerAuthorizesProductionDeployment": false
+    "ubuntuBareMetalUpgradeRegression": false
   },
   "verifiedComponents": {
     "signedDevelopmentSourceArtifactTests": true,
@@ -26,5 +25,5 @@
     "isolatedVersionPointerRollbackTests": true,
     "isolatedEncryptedFixtureTests": true
   },
-  "notes": "This file is an intentionally conservative development gate. Passing unit tests for isolated components does not prove an integrated installer or usable production system. No production installer URL has been published."
+  "notes": "Release readiness and user-specific installation consent are separate. Official releases remain blocked until all technical checks pass; even then, this owner will not deploy without a fresh explicit consent. Passing isolated tests does not imply real installation readiness."
 }
