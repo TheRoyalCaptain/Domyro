@@ -31,7 +31,7 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 - **DOM-002 P0 S:** Produce and verify the architecture diagram, module boundaries, data lifecycle and network topology. Accept: no hidden Home Assistant dependency.
 - **DOM-003 P0 M:** Audit dependencies against confirmed AGPL-3.0-only, including plugins and redistributed binaries. Accept: vetted compatibility list and third-party notices; choice of license itself is already final.
 - **DOM-004 P0 S:** Establish tested hardware matrix and network diagram. Accept: at least real Zigbee2MQTT lamp/plug, sensor, broker and Matter Wi-Fi/Thread candidate identified.
-- **DOM-005 P0 S:** Trademark/name clearance and GitHub official-upstream protection. Accept: risks documented, all CODEOWNERS paths covered by @TheRoyalCaptain, active `main` PR/codeowner ruleset verified with a test PR; no unauthorized bypass actor.
+- **DOM-005 P0 S:** Trademark/name clearance and GitHub governance risk review. Accept: CODEOWNERS still covers all files, owner-approved temporary **GOV-01 unprotected-main waiver** is documented, and privileged users/apps audited; activating rulesets is a later recommended hardening task **not a G0 blocker**.
 - **DOM-006 P0 S:** Finalize API schema and data migration policy ADRs. Accept: reviewed resource and error envelopes.
 
 ### EPIC DEV — Development foundation
@@ -189,7 +189,7 @@ Title: DOM-### [epic] measurable outcome.
 Body: problem, user value, non-goals, dependencies, design link, tasks, exact acceptance tests, security/privacy impact, supported environments, estimated complexity and rollback plan.  
 Labels: type/feature, type/bug, type/docs, area/core, area/ui, area/integrations, area/security, priority/P0..P2, status/blocked, needs/design.  
 Milestones: M0 through M7.  
-Work (after G0): branch -> PR -> owner review -> tests -> changelog/doc updates -> squash merge. **Main branch protection is NOT yet verified active; enable ruleset and codeowner reviews before implementation.** Use required CI checks and no direct pushes once established.
+Work (after explicit G0 sign-off): prefer feature branch -> PR -> owner review -> tests -> changelog/docs -> merge. **GOV-01:** GitHub review/ruleset is not currently enforced; the owner has elected to defer it. Direct writes remain technically possible for permitted users/apps, so use least privilege and audit activity. Add required CI checks and branch restrictions if/when the owner opts in.
 
 ## 5. Definition of ready (DoR)
 
@@ -201,7 +201,7 @@ Code and tests, security/permission checks, error handling, usability/accessibil
 
 ## 7. Key deliverables by gate
 
-- G0: project plan + decisions signed, branch protection and owner-only approvals validated; **no code until then**.
+- G0: project plan, architecture and owner decisions signed; **GOV-01 allows proceeding without branch rules** and records the residual risk; a separate explicit owner authorization is mandatory, **no code until then**.
 - G1: trustworthy scaffold, local auth, DB, one frontend view, tests.
 - G2: real Zigbee2MQTT and generic MQTT flows with observable truth.
 - G3: independent Matter devices commissioned and controlled.
