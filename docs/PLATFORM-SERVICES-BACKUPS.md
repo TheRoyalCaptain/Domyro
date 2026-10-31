@@ -21,9 +21,9 @@ The prior D-13 remains unchanged: Domyro application releases may be checked/dow
 ## 2. Supported native Ubuntu Server architecture
 
 - Source installation: official Ubuntu Server ISO; VM and physical installation are equally valid targets.
-- First supported Ubuntu Server LTS version(s) and CPU architectures require actual test matrix approval.
+- **Both x86-64 (amd64) and ARM64 (arm64) are required native 1.0 architectures** on Ubuntu Server LTS. Exact LTS release numbers and representative ARM64 hardware still require test-matrix approval. Debian support is not automatically part of this requirement.
 - Native Domyro server/web and supporting components run as distinct systemd services and restricted users. Native mode cannot secretly require Docker/Podman.
-- The installer provisions or connects to PostgreSQL, optional local MQTT broker, Zigbee2MQTT (only when owner has compatible radio), Matter.js server and the update/checker components as required.
+- The installer gives the owner a **separate decision for PostgreSQL, optional local Mosquitto, Zigbee2MQTT and Matter.js Server**: install/manage, connect existing, or defer when optional. No 'install everything' silent shortcut; the core database must be provisioned or connected.
 - The installer checks OS support, CPU/RAM/disk, existing ports, local interfaces, privilege, conflicting services and the availability of third-party repositories/packages before changing anything.
 - Existing MQTT/Zigbee2MQTT, other Home Assistant setups or Matter controllers must never be overwritten, stopped, reconfigured or migrated automatically.
 - Virtual machine docs cover USB Zigbee pass-through, network discovery/mDNS/multicast, IPv6 and Thread border router setup; not every hypervisor/network mode supports these features equally.
@@ -99,7 +99,7 @@ A user's lack of Matter hardware is not a request to buy devices or bypass valid
 - Destination test with free space, credentials, encrypted connection capabilities and write/read-back check.
 - Encrypted archive by default, versioned manifest, checksum and documented recovery secret management.
 - Local staging in protected temp area; stream/copy to destination; verify remote size/hash before marking success.
-- User-selectable backups: manual, scheduled, retention (count/time), rotation and storage health alerts; **backups are different from software updates** and can be scheduled without violating D-13.
+- User-selectable backups: manual, scheduled, retention (count/time), rotation and storage health alerts; **default 7 daily, 4 weekly and 12 monthly** verified restore points, adjustable per destination. Backup rotation must not delete the last healthy verified set due to a failed NAS/USB/FTP write. **Backups are different from software updates** and can be scheduled without violating D-13.
 - Do not put plaintext backup secrets, FTP passwords, SMB passwords, SSH keys, Matter fabrics or LAN shares in public GitHub data.
 - On disconnect, USB/SMB/FTP failure must not trigger deletion of healthy backups or pretend the remote copy succeeded.
 - Restore wizard checks integrity, decryptability, application/schema version and potentially unsafe re-pair scenarios before modifying live state.
@@ -126,7 +126,7 @@ Candidates for server implementation should include TypeScript/Node.js, Go, Rust
 - Installation may include multiple sites (homes/buildings); residents can belong to multiple sites with different roles.
 - Site owner can create households, rooms and floors and assign access down to entity/action where needed.
 - Session/WS scope and backup/export respect site separation; accounts are not automatically global administrators in every site.
-- Future centralized management should not require a cloud account for local use.
+- Future optional **separate Domyro-server pairing/federation** should not require a cloud account for local use; every linked instance can operate standalone and must explicitly grant/revoke connection scopes.
 
 ## 10. Acceptance tests
 
@@ -149,4 +149,4 @@ Candidates for server implementation should include TypeScript/Node.js, Go, Rust
 - Whether original FTP without TLS is allowed at all (the owner asked for FTP; it is provisionally opt-in with risk warning).
 - Which managed backend version constraints/pinning and user-visible service removal/data retention semantics are acceptable.
 
-Cross-reference: [DEPLOYMENT.md](DEPLOYMENT.md), [INTEGRATIONS.md](INTEGRATIONS.md), [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md), [G0-READINESS.md](G0-READINESS.md).
+Cross-reference: [DEPLOYMENT.md](DEPLOYMENT.md), [INTEGRATIONS.md](INTEGRATIONS.md), [SECURITY-OPERATIONS.md](SECURITY-OPERATIONS.md), [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md), [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md), [G0-READINESS.md](G0-READINESS.md).
