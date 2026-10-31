@@ -4,7 +4,7 @@
 
 Domyro is an open-source, local-first smart-home platform under active development. The repository includes an early executable **development-only foundation** and detailed specifications for the eventual full product.
 
-> **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized beginning M1 foundation code on 31 October 2026. The included server and web preview run locally, but **PostgreSQL, login, MQTT, Zigbee, Matter and real device control are not implemented**. This is not a production release. See [how to run the preview](docs/DEV-START.md) and [limited G0 start authorization](docs/G0-IMPLEMENTATION-START.md).
+> **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **no login, database, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
 
 ## Product commitments
 
@@ -21,7 +21,9 @@ Domyro is an open-source, local-first smart-home platform under active developme
 - Home Assistant bridge only for transition and subsequent migration assistance.
 - AI and speech deliberately follow a reliable base.
 
-## Run the development preview
+## Run the development preview (isolated development computer ONLY)
+
+**Do not run these commands on the owner's actual server or Home Assistant environment.** The user explicitly wants to defer any such installation until the complete one-command installer and safe update/recovery system have been independently validated.
 
 Node.js 22.12+ is required. The starter preview requires no additional installed packages or database:
 
@@ -57,6 +59,7 @@ Then open `http://127.0.0.1:8844` **on the same computer**. It binds to `127.0.0
 19. [Product decisions D-40–D-52](docs/PRODUCT-DECISIONS-40-52.md): native Ubuntu/ARM64, selectable services, local addressing, plugin updates, backups, automation recovery and final 1.0 feature cut.
 20. [Run development foundation](docs/DEV-START.md): verified local preview and limitations.
 21. [Owner's limited foundation start authorization](docs/G0-IMPLEMENTATION-START.md): implementation authorization and remaining gates.
+22. [D-53 installer and upgrade safety gate](docs/INSTALL-UPGRADE-GATE.md): **no installation on owner equipment** before verified one-command install, manual upgrades and proven recovery.
 
 **Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
