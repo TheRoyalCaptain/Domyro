@@ -1,7 +1,7 @@
 # Domyro — Decisions, assumptions and sign-off
 
 **Planning baseline v1.0 · 29 October 2026**  
-**Implementation status: prohibited until G0 approved**
+**Implementation status: 0.1 M1 foundation development explicitly approved on 2026-10-31; all hardware/deployment/release gates remain pending**
 
 ## A. Owner-approved product decisions
 
@@ -113,6 +113,12 @@ These are intentionally explicit; they are *not* reasons to start implementation
 - **Does not authorize:** new application code, GitHub Issues, installation or release. G0 remains separately pending.
 - **References:** [GITHUB-GOVERNANCE.md](GITHUB-GOVERNANCE.md), [G0-READINESS.md](G0-READINESS.md).
 
+## C2. Owner's limited G0 foundation authorization (31 October 2026)
+
+**Approved by:** @TheRoyalCaptain: 'Oké start maar', in direct reply to the explicit proposed G0 programming start. **Scope:** create M1 foundation source and tests in GitHub. This authorizes **code development**, not production release, installing software on live user servers, touching Zigbee/MQTT/Home Assistant or configuring WAN connectivity. Runtime/framework/DB selection is still subject to documented architecture/security/dependency review.
+
+[Exact limited approval and phase boundaries](G0-IMPLEMENTATION-START.md). Branch protection remains consciously deferred under GOV-01.
+
 ## D. Decision record template
 
 - ADR ID and date:
@@ -130,7 +136,7 @@ These are intentionally explicit; they are *not* reasons to start implementation
 
 \"\"I approve the Domyro planning baseline, including selected architecture, the licensing strategy after review, priority and deployment scope, risk exclusions, test gates and task list. Implementation and GitHub issue creation may begin only after this sign-off is recorded.\"\"
 
-Approval is NOT yet recorded merely by publishing these planning files.
+The explicit owner response on 31 October 2026 **has authorized limited M1 source development**, which is recorded in [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md). This is **not blanket approval** of unreviewed hardware activity, dependency risks or official distribution.
 
 ## F. External reference links
 
