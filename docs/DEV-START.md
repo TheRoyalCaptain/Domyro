@@ -2,6 +2,10 @@
 
 **Status:** development preview, **not** a smart-home product or production installation.
 
+## D-53 warning: do NOT install on the owner's server
+
+The owner explicitly **does not want a server installation** until the production-grade one-command Ubuntu Server installer, manual upgrade path, tested recovery and backup are all ready. **This page is exclusively a developer's isolated local preview**, not instructions to install Domyro on the owner's Ubuntu/VM/Umbrel or HA setup. Even a complete tested installer will require the owner's **separate later consent** for their own server. See [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md).
+
 ## Quick local start
 
 Prerequisites: Node.js **22.12+** (Node 22/24 targeted in checks). No other packages, databases or broker are installed by these commands.
