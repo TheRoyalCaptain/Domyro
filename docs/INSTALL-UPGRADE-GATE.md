@@ -20,6 +20,10 @@ User's prior policies remain binding: core Domyro update *checks/download-only s
 
 The versioned [installation-readiness.json](../config/installation-readiness.json) explicitly records outstanding blockers, and `npm run gate:status` prints them without touching the host. `npm run gate:require` requires **technical readiness and separate owner-server deployment consent**. The tag-triggered [release safety workflow](../.github/workflows/release-gate.yml) requires **technical release readiness only**, not consent for an installation on the owner's server. **No production packages are currently published by that workflow**. A published release never implies permission to deploy to owner equipment. Manually changing status booleans is not proof of test results: independent evidence and the owner's later deployment authorization remain mandatory. GitHub Actions on Ubuntu x86-64 and ARM64 is useful for isolated tests, but **does not prove a complete bare-metal Ubuntu installation**.
 
+### PostgreSQL milestone (still not an installation)
+
+A development-only PostgreSQL schema/migrator and internal user/site/area/session primitives now exist. The schema migrator runs **only through an explicit CLI invocation** on a separately configured local test DB; no automatic DB setup takes place at server startup or during update polling. **Real PostgreSQL backup, restore, migration recovery, secure user login and one-line native installer remain unfinished**. Do not mark D-53 as passed based on these CI tests. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
+
 ## 1. Complete one-line native Ubuntu Server installer
 
 The official documentation must offer **one clear, copyable installation command** for a clean supported Ubuntu Server LTS host (both amd64 and arm64; physical and VM). It may launch an interactive terminal wizard followed by a secure browser-based onboarding wizard. One command means **one trusted entry point**, not unverified blind execution.
