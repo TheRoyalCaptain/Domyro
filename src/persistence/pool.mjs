@@ -11,6 +11,7 @@ export async function createPersistence(env = process.env) {
   const pool = new Pool(options);
   const migrations = await loadMigrations();
   return Object.freeze({
+    db: pool, // Internal server-only handle; never send to the browser.
     async inspect() {
       let client;
       try {
