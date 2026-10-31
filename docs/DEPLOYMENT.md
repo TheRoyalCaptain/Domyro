@@ -4,6 +4,10 @@
 
 > Three installation families are required for the first officially supported stable Domyro release: Docker Compose, **native Linux without Docker**, and Umbrel. **Ubuntu Server ISO installed bare metal or as a VM is the primary native platform.** A verified one-command installer must handle dependencies and onboarding, and the native administrative interface must support installation/management of required auxiliary services. See [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md). No installer scripts or runnable containers are authorized until G0 sign-off.
 
+## D-53: Mandatory deployment gate for the owner's own server
+
+**Do NOT ask the owner to install the current development preview.** The owner will not install Domyro until the official **single-command Ubuntu Server LTS installer** and full **manual safe-upgrade, verified backup and recoverable rollback** are developed and tested on both amd64 and arm64 in isolated test environments. A successful HTTP request or `npm start` is not a complete installation. Installation on the owner's server requires **separate later consent**, even when the automated test gate passes. See [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md).
+
 ## 1. Cross-platform service architecture
 
 Common logical services:
@@ -55,6 +59,8 @@ Minimum proposed resources for production evaluation: 2 vCPU, 4 GiB RAM, 8+ GiB 
 Volumes for database, server config/master keys, Matter fabric/controller storage and optional broker config/data. Never store secrets in container images or source repository. Record volume paths in backup manifest.
 
 ### Update and restore
+
+D-53 requires supported upgrade paths, version compatibility preflight, verified and restorable encrypted backup, explicit admin approval, signed immutable artifacts, post-install health tests and a safe rollback or protected recovery mode. Untestable/irreversible migrations block unsupported upgrade paths. Never promise an absolute zero-failure guarantee. See [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md).
 
 Image digests pinned in official release compose file; preflight check DB compatibility, free space, Matter/driver version compatibility, verified backup and rollback possibility. No blind `latest` pin on production docs.
 
