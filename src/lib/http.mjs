@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 const assets = new Map([
   ['/', { filename: '../../web/index.html', mime: 'text/html; charset=utf-8' }],
   ['/index.html', { filename: '../../web/index.html', mime: 'text/html; charset=utf-8' }],
+  ['/login', { filename: '../../web/login.html', mime: 'text/html; charset=utf-8' }],
+  ['/login.html', { filename: '../../web/login.html', mime: 'text/html; charset=utf-8' }],
+  ['/assets/login.css', { filename: '../../web/assets/login.css', mime: 'text/css; charset=utf-8' }],
+  ['/assets/login.js', { filename: '../../web/assets/login.js', mime: 'text/javascript; charset=utf-8' }],
   ['/assets/styles.css', { filename: '../../web/assets/styles.css', mime: 'text/css; charset=utf-8' }],
   ['/assets/app.js', { filename: '../../web/assets/app.js', mime: 'text/javascript; charset=utf-8' }],
   ['/favicon.svg', { filename: '../../web/favicon.svg', mime: 'image/svg+xml' }],
@@ -75,7 +79,7 @@ export async function handleRequest(request, response, { persistence = null, aut
     const contents = await readFile(fileURLToPath(new URL(asset.filename, import.meta.url)));
     response.writeHead(200, {
       ...securityHeaders,
-      'cache-control': pathname === '/' || pathname === '/index.html' ? 'no-store' : 'public, max-age=300',
+      'cache-control': ['/', '/index.html', '/login', '/login.html'].includes(pathname) ? 'no-store' : 'public, max-age=300',
       'content-type': asset.mime,
       'content-length': contents.byteLength,
     });
