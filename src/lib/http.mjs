@@ -26,7 +26,7 @@ export function sendJson(response, code, data) {
 }
 
 /** @param {import('node:http').IncomingMessage} request @param {import('node:http').ServerResponse} response */
-export async function handleRequest(request, response, { persistence = null } = {}) {
+export async function handleRequest(request, response, { persistence = null, auth = null } = {}) {
   let pathname;
   try {
     pathname = new URL(request.url ?? '/', 'http://domyro.invalid').pathname;
@@ -34,6 +34,8 @@ export async function handleRequest(request, response, { persistence = null } = 
     sendJson(response, 400, { error: 'bad_request' });
     return;
   }
+  // Authenticate state-bearing API routes before the GET-only preview fallback.
+  if (auth && await auth.route(request, response, pathname)) return;
   if (!['GET', 'HEAD'].includes(request.method ?? '')) {
     response.setHeader('allow', 'GET, HEAD');
     sendJson(response, 405, { error: 'method_not_allowed' });
