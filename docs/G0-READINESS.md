@@ -55,7 +55,7 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [ ] Confirm supported Ubuntu Server LTS release numbers and representative ARM64 hardware, Docker image architectures and umbrelOS version; **no implied official Debian support**.
 - [ ] Select secure, nonprivileged native release-check/download timer and separately authorized manual install helper; validate Umbrel App Store limitations without making false download/upgrade promises. See [SOFTWARE-UPDATES.md](SOFTWARE-UPDATES.md).
 - [ ] Verify brand clearance for Domyro before public trademark/promotional launch.
-- [ ] Activate **main** branch protection and code-owner review in GitHub; confirm only owner can approve upstream merges.
+- [x] **GOV-01:** project owner explicitly elected to **continue without `main` branch protection for now**. This is an accepted procedural-governance risk, NOT proof of enforced code-owner review and NOT a G0 blocker. Minimize collaborator and app write/admin access; reconsider before expanding privileged contributors.
 - [ ] Confirm project owner review and release responsibilities, and what external help may do without approval.
 - [x] **D-48..D-52 first-release boundaries accepted:** simple dashboard edits and basic visual editor in 1.0; German, cameras and Domyro relay after 1.0; simple energy charts in 1.0.
 - [ ] Confirm passkeys rollout/version, precise safe-basic visual node set and required 1.0 energy-meter units/widgets, while retaining remaining owner-approved future features.
@@ -65,20 +65,15 @@ This checklist is the source of truth for whether Domyro may begin implementing 
 - [ ] Specify mDNS collision/fallback, reverse-proxy trusted-header security, default LAN port and future multi-server trust protocol (implementation after 1.0).
 - [ ] Approve 7 daily/4 weekly/12 monthly backup retention semantics, independently per destination, and tests for safe pruning after failed jobs.
 
-## 4. Owner GitHub branch protection: blocked by connector permissions
+## 4. GitHub branch protection: consciously deferred by the owner
 
-Current status: `.github/CODEOWNERS` exists with `* @TheRoyalCaptain`, but GitHub ruleset listing was empty when checked and current connector cannot modify protections.
+**GOV-01 (31 October 2026):** The owner chose to proceed **without** an active `main` branch ruleset. `.github/CODEOWNERS` still assigns files to `@TheRoyalCaptain`, but **does not enforce approval** when branch protection is absent. Available ruleset listing was empty; the classic branch-protection API is not readable from this connector. Do not present the repository as protected.
 
-Required:
-- active ruleset targeting `main`;
-- PR requirement, 1 approval, required code-owner review, stale-approval dismissal and no untrusted bypass;
-- prevent force pushes and deletion;
-- test a non-owner PR cannot merge without owner authorization;
-- handle owner's self-authored PR using narrowly constrained owner-only admin route (GitHub does not count self-review).
-
-This setup must remain **open**, not falsely marked complete. No new GitHub action/branch protection settings should be claimed active until verified by a readable repository ruleset.
-
-Instructions: [GITHUB-GOVERNANCE.md](GITHUB-GOVERNANCE.md).
+- This accepted risk no longer blocks G0. No code authorization follows from GOV-01: a **separate formal G0 approval** is still required.
+- Only trusted owner accounts/apps should have Write/Maintain/Admin privileges; collaborators without such access can fork and submit PRs, not directly change upstream.
+- Our GitHub connector currently has push/write permission, so a compromised or improperly authorized connection could modify `main` directly. Human owner-only approval is currently **project policy**, not an enforced server rule.
+- Keep a documented list of privileged integrations, review granted permissions, use passkeys/2FA, and regularly audit the GitHub repository and commit history.
+- Revisit a ruleset before adding privileged collaborators or auto-merge bots, or earlier if the owner prefers. Steps remain in [GITHUB-GOVERNANCE.md](GITHUB-GOVERNANCE.md).
 
 ## 5. Security and dependency proof
 
@@ -104,11 +99,11 @@ M1 foundation → M2 Zigbee2MQTT/MQTT real hardware → M3 independent Matter in
 - ADR status: A-01 already approved; remaining A-02..A-10 explicit decisions:
 - License/dependency check completed:
 - Hardware pilot equipment confirmed:
-- GitHub branch protection independently verified:
+- GitHub protection status / accepted GOV-01 exception: **No ruleset enabled by us; owner chooses to defer.**
 - Risk exceptions accepted:
 - Permission to begin executable development: **Yes/No**
 
-**Current answer: No.** Product planning continues; no source code, install scripts, container images or deploy actions yet.
+**Current answer: No.** GOV-01 is only permission to defer branch protection, **not** permission to develop. Product planning continues; no source code, install scripts, container images or deploy actions yet.
 
 ## 8. Specification index
 
