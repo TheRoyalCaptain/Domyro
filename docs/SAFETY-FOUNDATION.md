@@ -1,8 +1,17 @@
 # Domyro 0.1 — Update, backup and installer safety foundation
 
 **Milestone:** M1 / DOM-143 preparatory code  
-**Status:** Read-only safety rules and automated tests implemented. **NOT an installer, updater, backup engine, verified production release or deployment approval.**  
+**Status:** Pure safety rules plus **isolated release directory staging**, **pointer-only test rollback**, a **development source-bundle signing utility** and a **bounded encrypted test snapshot primitive**. Tested on hosted Ubuntu x86-64/ARM64 CI, **but NOT** an installer, real updater, PostgreSQL backup/restore engine, production release or deployment approval.  
 **Owner deployment gate D-53:** CLOSED. No installation on the owner's own server until complete safe one-command installation and update/restore lifecycle is built, tested and separately approved.
+
+## Newly implemented (not deployable) building blocks
+
+- `src/lifecycle/native-preflight.mjs`: read-only Ubuntu LTS/architecture/resource eligibility, without changes to the host.
+- `src/lifecycle/transactional-release.mjs`: in an **isolated temporary test directory** stage release files only after signature/hash verification, recheck staged files before activation, then switch a version pointer with a health probe and revert the pointer if it fails. It **does not** stop/restart systemd, migrate/restore PostgreSQL, manage processes or guarantee crash-safe recovery of a real deployment.
+- `tools/build-release.mjs`: build and sign **development source-bundle artifacts** for amd64/arm64 with an explicit developer-provided Ed25519 private key. Neither an official signing key nor an installable native Ubuntu package exists yet. Never commit a private key.
+- `src/lifecycle/encrypted-backup.mjs`: AES-256-GCM + scrypt encryption/decryption of **small in-memory test data**, with tamper/wrong-password tests. This is **not** PostgreSQL backup or a recoverable home dataset.
+- `tests/isolated-upgrade-e2e.test.mjs`: cross-module test of signed test bundles, fixture encryption, bad health and pointer-only rollback on both artifact architectures.
+- `config/installation-readiness.json`, `scripts/check-installation-gate.mjs` and the release-gate workflow: keep **owner-server installation blocked by default**. No automated release is created.
 
 ## Implemented modules
 
@@ -58,6 +67,8 @@ GitHub Actions also runs these checks on Node 22 and 24. The ephemeral Ed25519 t
 **The owner-server installation gate is still CLOSED.**
 
 ## Outstanding D-53 gate (still CLOSED)
+
+An actual one-command install command will only be published **after** official key pinning/distribution, safe per-service native Ubuntu installer, fully functional PostgreSQL/auth/API and real-device integrations, dependency review, real encrypted database backups, manual updater and database-safe rollback/recovery, VM and bare-metal multiarch failure injection, and separate owner approval. These are not solved by signing source ZIP/JSON files or passing hosted unit tests.
 
 Before owner-server deployment: publish and verify a real one-command Ubuntu LTS amd64/arm64 installer; implement secure owner login/PostgreSQL and configurable managed dependencies; real update download staging and explicit manual install; encrypted backup+restore across supported targets; isolated upgrade and fault-injection tests, including database migrations and crash-safe recovery; and formal owner's separate server installation authorization.
 
