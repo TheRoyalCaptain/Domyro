@@ -1,6 +1,6 @@
 # Domyro — Architecture and contracts
 
-**Planning baseline 1.0 · 2026-10-29 · no code authorized**
+**Planning baseline 1.0 · updated 2026-10-31 · limited M1 foundation code now authorized, full architecture still under review**
 
 ## 1. Adopted architecture (ADR-002)
 
@@ -187,4 +187,4 @@ Support matrix pins the versions actually validated; Linux distro releases, CPU 
 
 apps/web, apps/server, packages/core, packages/api, packages/database, packages/ui, packages/integration-sdk, packages/automation-engine, packages/shared, integrations/mqtt, integrations/zigbee2mqtt, integrations/matter, deploy/docker, deploy/linux, deploy/umbrel, docs, tests, .github/workflows.
 
-Source directories are planned only; they must not be created before planning sign-off.
+**Current implementation:** a minimal dependency-free Node.js development preview exists under `src/`, with a read-only HTTP status API, static `web/` UI, and initial isolated domain utilities. These are **not** the final agreed TypeScript/Fastify/React/PostgreSQL application stack. No persistence, login, MQTT/Matter or real device control is implemented yet. See [DEV-START.md](DEV-START.md) and [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md).
