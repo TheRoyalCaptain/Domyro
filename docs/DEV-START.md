@@ -21,6 +21,10 @@ Open http://127.0.0.1:8844 in the browser. Use `DOMYRO_PORT=8845 npm start` to c
 
 The preview binds only to **127.0.0.1** by default. **Do not expose it directly to the Internet**: login, access controls, persistence and device control are *not implemented yet*. For isolated lab LAN testing only, an administrator may explicitly set `DOMYRO_HOST=0.0.0.0` with an appropriate VM/firewall. This is **not** the final Ubuntu installer and does **not** modify existing Home Assistant, MQTT brokers, Zigbee mesh or OS services.
 
+## Development-only installer readiness
+
+Run `npm run gate:status` to see the documented open release blockers. The `gate:require` command must **fail** until the complete installer, stable authenticated Domyro and recoverable upgrade workflows have passed independent tests and the owner authorizes their own installation. These are readiness diagnostics only, **not** instructions to install on the owner's server. See [INSTALL-UPGRADE-GATE.md](INSTALL-UPGRADE-GATE.md).
+
 ## What works now
 
 Additional **read-only lifecycle modules** are now present under `src/lifecycle/`: signed manifest / artifact verification and manual-upgrade preflight; multi-destination backup retention planning (default 7 daily / 4 weekly / 12 monthly); and per-service installation decision validation. They do **not** download, install, update, migrate, mount disks, delete backups or run privileged commands. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md).
