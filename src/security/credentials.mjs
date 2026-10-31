@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Internal authentication primitives. Intentionally NOT exposed over HTTP:
-// rate limits, CSRF, owner bootstrap, TOTP/passkeys and secure cookies pending.
+// Internal authentication primitives now power experimental loopback-only
+// HTTP login. Production TLS cookies, MFA, recovery and security audit pending.
 import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 import { hash, verify, Algorithm, Version } from '@node-rs/argon2';
 
