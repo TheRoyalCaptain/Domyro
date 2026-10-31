@@ -1,0 +1,15 @@
+{
+  "name": "domyro",
+  "version": "0.1.0-dev.1",
+  "private": true,
+  "type": "module",
+  "description": "Local-first smart-home platform, first development foundation",
+  "license": "AGPL-3.0-only",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "dev": "node --watch src/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/server.mjs && node --check src/lib/http.mjs && node --check src/domain/permissions.mjs && node --check src/domain/state.mjs && node --check web/assets/app.js && npm test"
+  }
+}
