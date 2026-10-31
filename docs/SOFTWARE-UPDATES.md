@@ -65,7 +65,7 @@ A security advisory can warn prominently that an urgent update exists and sugges
 
 ## 5. Platform-specific behavior
 
-### Native Debian / Ubuntu (mandatory P0)
+### Native Ubuntu Server LTS x86-64 and ARM64 (mandatory P0; bare metal and VM). Debian is not a confirmed native 1.0 target.
 
 - Implement a local release-check/download agent with nonprivileged `systemd` service + timer, or equivalent least-privilege scheduled process.
 - A dedicated restricted staging directory holds signed packages/downloads. The timer performs ONLY metadata fetch and optional download+signature verification.
