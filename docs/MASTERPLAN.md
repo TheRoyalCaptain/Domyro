@@ -2,7 +2,7 @@
 
 **Document version:** 1.0 planning baseline  
 **Date:** 29 October 2026  
-**State:** review-ready; implementation gated pending project-owner sign-off  
+**State:** approved for limited M1 foundation development as of 2026-10-31; 1.0 release architecture/hardware gates remain pending  
 **Project:** TheRoyalCaptain/Domyro  
 **Tagline:** Your home. Your rules.
 
@@ -231,5 +231,7 @@ The detailed contracts are split into the adjoining architecture, integration, s
 - **Native Ubuntu installation, managed services and complete backup targets:** [PLATFORM-SERVICES-BACKUPS.md](PLATFORM-SERVICES-BACKUPS.md)
 - **Cumulative owner-approved features D-22 to D-39, release phasing and open decisions:** [PRODUCT-DECISIONS-22-39.md](PRODUCT-DECISIONS-22-39.md)
 - **Owner-approved D-40 to D-52 and the definitive compact 1.0 feature boundary:** [PRODUCT-DECISIONS-40-52.md](PRODUCT-DECISIONS-40-52.md)
+- **G0 limited foundation start:** [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md)
+- **First tested development preview:** [DEV-START.md](DEV-START.md)
 
-These are proposed detailed specifications. Formal G0 approval of remaining architecture decisions, hardware/compatibility prerequisites and dependency licensing remains outstanding. **GitHub branch protection was consciously deferred under GOV-01** and no longer blocks G0; the separate explicit owner code-authorization requirement is unchanged.
+The owner **explicitly authorized starting M1 foundation source code** on 31 October 2026 (see [G0-IMPLEMENTATION-START.md](G0-IMPLEMENTATION-START.md)); this does **not** constitute acceptance of all technical ADRs, production deployment, device access or public releases. GOV-01 branch protection was consciously deferred, and other engineering and release gates remain open.
