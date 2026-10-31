@@ -40,11 +40,15 @@ Additional **read-only lifecycle modules** are now present under `src/lifecycle/
 
 ## PostgreSQL and account-security foundation
 
-The preview now includes explicit **PostgreSQL migrations**, real persisted multi-site/area repository operations, Argon2id password and revocable hashed-session primitives. They are tested against disposable CI PostgreSQL 17 on amd64/ARM64. **No authentication endpoint or owner onboarding is exposed**, so `/api/v1/health/ready` must still return 503, even when a test DB is migrated. The preview does not install/configure PostgreSQL itself or run schema migrations automatically. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
+The preview now includes explicit **PostgreSQL migrations**, real persisted multi-site/area repository operations, Argon2id password and revocable hashed-session primitives. They are tested against disposable CI PostgreSQL 17 on amd64/ARM64. **An experimental loopback-only login and console-owned bootstrap now exist**, but production onboarding and recovery do not, so `/api/v1/health/ready` still returns 503, even when a test DB is migrated. The preview does not install/configure PostgreSQL itself or run schema migrations automatically. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
+
+## Local-only authentication preview
+
+The development server can expose `/login`, with console-created owner credentials, Argon2id login, revocable HttpOnly sessions, CSRF-checked writes and site/area views. **It never enables authentication on a 0.0.0.0/:: bind.** A real production login, HTTPS reverse-proxy handling, MFA, security audit, recovery and one-line installer are all still missing. Read [LOCAL-AUTH-FOUNDATION.md](LOCAL-AUTH-FOUNDATION.md) before treating any auth feature as complete.
 
 ## Explicitly not implemented yet
 
-No authentication/login API, secure admin setup, real device control/MQTT/Matter, secured rooms HTTP APIs, histories, secure WebSockets, React PWA, complete native installer, PostgreSQL managed provisioning, database restore, Docker/Umbrel production image or plugin installer. PostgreSQL schema and internal repository/session primitives exist, but are not a production app. This is a **foundation**, not version 0.1 released to users.
+No production-grade authentication/onboarding or admin recovery, real device control/MQTT/Matter, histories, secure WebSockets, React PWA, complete native installer, PostgreSQL managed provisioning, database restore, Docker/Umbrel production image or plugin installer. Loopback login/rooms are experimental, not a public release. PostgreSQL schema and internal repository/session primitives exist, but are not a production app. This is a **foundation**, not version 0.1 released to users.
 
 ## Next engineering milestone
 
