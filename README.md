@@ -6,6 +6,8 @@ Domyro is an open-source, local-first smart-home platform under active developme
 
 > **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **no login, database, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
 
+**Current installer progress:** Native Ubuntu inspection and isolated signed-release staging/rollback tests have been added. There is **no finished one-command installation or production-safe upgrade**. Do not install Domyro on your server yet. [See the implementation status](docs/SAFETY-FOUNDATION.md).
+
 ## Product commitments
 
 - Independent automation and device platform: not a Home Assistant frontend.
