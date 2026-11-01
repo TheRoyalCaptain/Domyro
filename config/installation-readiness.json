@@ -40,7 +40,10 @@
     "selectedEncryptedConfigFixtureTests": true,
     "failClosedRecoveryCoverageInventoryTests": true,
     "scratchOnlyEncryptedConfigRestoreAndPostWriteAuditTests": true,
-    "separatePostgresAndConfigScratchRecoveryIntegrationTests": true
+    "separatePostgresAndConfigScratchRecoveryIntegrationTests": true,
+    "signedReleaseEligibilityAndDownloadDelayPolicyTests": true,
+    "adminOnlyLocalUpdateStatusAndHardDeniedInstallTests": true,
+    "nativeUbuntuInstallerChoicePlanAndSystemdDraftTests": true
   },
-  "notes": "68 isolated CI tests passed on Ubuntu 24.04 amd64/arm64 and Node 22/24 as of latest checked integration run. New scratch-only config restore requires authenticated DOMYROS2 backup and restores selected test fixtures only to a NEW private test directory; original files and existing targets are untouched. Tests cover wrong passphrase, invalid manifest, failed mid-write cleanup, changed files, unauthorized extra files and independent post-write scratch file audit. One temporary CI environment restores a real PostgreSQL dump and a SEPARATE config fixture; it is NOT a coordinated full-system snapshot or production recovery. No real service keys/Matter fabrics, operational restoration, external backup targets, safe auto scheduler, signed native one-command installer, or verified safe live upgrades yet. D-53 remains CLOSED; no owner-server deployment consent."
+  "notes": "79 automated tests passed in all 4 CI jobs (Ubuntu 24.04 x86-64 and ARM64, Node.js 22/24) for the increment adding offline signed Ed25519 update eligibility, download-only scheduling policy, an owner/admin-only localhost Update Center status, explicit HTTP 423 refusal of install attempts, and an Ubuntu native dependency-choice planning/draft systemd unit. No official signing feed/key, real download worker, native one-line installer, privileged updater, full-system backup/recovery, Matter/hardware integration or owner deployment approval. All D-53 technical gate checks remain FALSE."
 }
