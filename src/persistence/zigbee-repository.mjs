@@ -91,7 +91,10 @@ export async function recordKnownZigbeeObservation(db, { integrationId, siteId, 
     'ON CONFLICT (device_id,field) DO UPDATE',
     'SET value_json=EXCLUDED.value_json,quality=EXCLUDED.quality,',
     'observed_at=EXCLUDED.observed_at,recorded_at=now()',
-    'WHERE domyro_observations.observed_at <= EXCLUDED.observed_at RETURNING device_id',
+    'WHERE domyro_observations.observed_at <= EXCLUDED.observed_at',
+    // Retained broker snapshots cannot replace a live confirmed observation,
+    // even if the broker delivers the old value at a newer receive time.
+    "AND (EXCLUDED.quality = 'confirmed' OR domyro_observations.quality <> 'confirmed') RETURNING device_id",
   ].join(' '), [integrationId,siteId,externalId.toLowerCase(),field,JSON.stringify(value),quality,observedAt]);
   return result.rowCount === 1;
 }
