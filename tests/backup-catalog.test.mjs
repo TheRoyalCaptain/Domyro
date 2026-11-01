@@ -94,3 +94,14 @@ test('plain PGDMP prefix is not classified as a valid encrypted backup', async t
   assert.equal(result[0].owned, false);
   assert.deepEqual(catalogRetentionSuggestions(result).proposedRemovals, []);
 });
+
+test('forged verified flags cannot enable pruning without independent restore-proof machinery', () => {
+  const rows = Array.from({length: 20}, (_,i)=>({
+    id:'forged-'+i+'.domyrobackup',filename:'forged-'+i+'.domyrobackup',
+    targetId:'local',completedAt:new Date(Date.UTC(2026,9,1+i)).toISOString(),
+    owned:true,completed:true,verified:true,authenticated:true,restoreTested:true,
+  }));
+  const plan=catalogRetentionSuggestions(rows,{daily:1,weekly:1,monthly:1});
+  assert.deepEqual(plan.proposedRemovals,[]);
+  assert.equal(plan.manualReview.length,20);
+});
