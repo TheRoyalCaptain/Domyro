@@ -28,9 +28,9 @@ A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a n
 
 A real PostgreSQL 17 `pg_dump` custom-format archive is encrypted with AES-256-GCM + scrypt, authenticated and checked with SHA-256, then restored via `pg_restore --single-transaction --exit-on-error` **only into a deliberately empty isolated test database**. Tests verify users, sites, rooms, Zigbee devices and observations across Ubuntu amd64/ARM64 with Node 22/24, reject tampering, and prove a malformed authenticated archive does not populate the target. See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
 
-The bounded encrypted archive can now be stored on disk using a **private, atomically published, no-overwrite backup file** and read back before restoration in CI. This is not a scheduled backup service or a replacement for streaming/remote-storage support.
+The earlier 20 MiB in-memory v1 and a **2 GiB bounded streaming v2** developer proof now coexist. Streaming v2 encrypts actual `pg_dump` output into a private no-overwrite file and authenticates it fully before passing an unpublished temporary archive to `pg_restore` for a disposable empty test database. A 27 MiB stream and failed-export/tampering tests run in CI. This is NOT a complete whole-system backup. See [STREAMED-BACKUP-V2.md](STREAMED-BACKUP-V2.md).
 
-**D-53 remains CLOSED:** this early 20 MiB in-memory proof does **not** restore full Domyro configuration/integration secrets/Matter fabrics, cannot safely recover a populated live DB, and is not wired to an installer/manual-updater/rollback flow. Do not call it a complete backup system.
+**D-53 remains CLOSED:** neither the v1 nor v2 proof restores full Domyro configuration/integration secrets/Matter fabrics, safely recovers a populated live DB, or integrates with a complete installer/manual-updater/rollback transaction. Do not call either a complete backup system.
 
 ### PostgreSQL milestone (still not an installation)
 
