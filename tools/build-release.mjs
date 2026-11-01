@@ -5,29 +5,62 @@
  * The signing private key must never be added to the repository.
  */
 import { createHash, createPrivateKey, sign } from 'node:crypto';
-import { readFile, mkdir, writeFile, lstat } from 'node:fs/promises';
+import { readFile, readdir, mkdir, writeFile, lstat } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { verifySignedManifest, verifyArtifactBytes } from '../src/lifecycle/release.mjs';
 
-const ALLOWLIST = Object.freeze([
-  'package.json', 'src/server.mjs', 'src/lib/http.mjs',
-  'src/domain/permissions.mjs', 'src/domain/state.mjs',
-  'web/index.html', 'web/assets/app.js', 'web/assets/styles.css', 'web/favicon.svg',
-]);
+const ROOT_FILES = Object.freeze(['package.json']);
+const ROOT_DIRS = Object.freeze(['src', 'web']);
+const EXTENSIONS = new Set(['.mjs', '.js', '.json', '.sql', '.html', '.css', '.svg']);
 const FILE_LIMIT = 8 * 1024 * 1024;
 const BUNDLE_LIMIT = 64 * 1024 * 1024;
+const MAX_FILE_COUNT = 800;
 
 async function collectFiles(projectRoot) {
-  const files = [];
-  for (const path of ALLOWLIST) {
+  const collected = [];
+  async function addFile(path) {
+    if (collected.length >= MAX_FILE_COUNT) throw new Error('release_too_many_files');
     const absolute = join(projectRoot, path);
     const info = await lstat(absolute);
-    if (!info.isFile() || info.isSymbolicLink() || info.size < 1 || info.size > FILE_LIMIT) throw new Error('release_file_invalid:' + path);
+    if (!info.isFile() || info.isSymbolicLink() || info.size < 1 || info.size > FILE_LIMIT) {
+      throw new Error('release_file_invalid:' + path);
+    }
     const bytes = await readFile(absolute);
-    files.push({ path, base64: bytes.toString('base64') });
+    collected.push({ path, base64: bytes.toString('base64') });
   }
-  return files;
+  async function walk(directory) {
+    const entries = await readdir(join(projectRoot, directory), { withFileTypes: true });
+    entries.sort((a,b)=>a.name.localeCompare(b.name, 'en'));
+    for (const item of entries) {
+      const path = directory + '/' + item.name;
+      if (!/^[a-zA-Z0-9_.-]+$/.test(item.name) || item.name.startsWith('.')) {
+        throw new Error('release_entry_name_invalid:' + directory);
+      }
+      if (item.isSymbolicLink()) throw new Error('release_symlink_forbidden:' + path);
+      if (item.isDirectory()) {
+        await walk(path);
+      } else if (item.isFile()) {
+        if (!EXTENSIONS.has(item.name.slice(item.name.lastIndexOf('.')))) {
+          throw new Error('unsupported_release_source_file:' + path);
+        }
+        await addFile(path);
+      } else {
+        throw new Error('unsupported_release_entry:' + path);
+      }
+    }
+  }
+  for (const path of ROOT_FILES) await addFile(path);
+  for (const path of ROOT_DIRS) await walk(path);
+  const required = [
+    'src/server.mjs', 'src/lib/http.mjs', 'src/security/http-auth.mjs',
+    'src/persistence/migrator.mjs', 'src/lifecycle/release.mjs',
+    'web/index.html', 'web/login.html', 'web/assets/app.js',
+    'web/assets/login.js', 'web/assets/styles.css',
+  ];
+  const names = new Set(collected.map(x => x.path));
+  for (const file of required) if (!names.has(file)) throw new Error('release_missing_required_file:' + file);
+  return collected.sort((a,b)=>a.path.localeCompare(b.path,'en'));
 }
 
 export async function buildSignedSourceRelease({ projectRoot, version, channel, publishedAt, privateKeyPem }) {
