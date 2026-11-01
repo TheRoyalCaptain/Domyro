@@ -59,6 +59,11 @@ test('Zigbee inventory is durably site-scoped, preserves IEEE ID after rename an
       value:false,quality:'stale',observedAt:'2026-10-31T14:00:00.000Z',
     }),false); // Retained older data cannot overwrite newer confirmed observation.
     assert.equal((await listZigbeeStateForUser(pool,ownerA,siteA.id))[0].value_json,true);
+    assert.equal(await recordKnownZigbeeObservation(pool,{
+      integrationId:integration.id,siteId:siteA.id,externalId:ieee,field:'state',
+      value:false,quality:'stale',observedAt:'2026-11-01T18:00:00.000Z',
+    }),false); // Even a newer receive time cannot legitimize retained stale state.
+    assert.equal((await listZigbeeStateForUser(pool,ownerA,siteA.id))[0].value_json,true);
 
     await reconcileZigbeeInventory(pool,{
       integrationId:integration.id,siteId:siteA.id,devices:[{...row,friendlyName:'kitchen/renamed'}],
