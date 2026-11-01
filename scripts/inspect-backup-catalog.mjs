@@ -39,8 +39,8 @@ async function main() {
     total: entries.length,
     authenticated: entries.filter(x => x.authenticated).length,
     provenRestorable: entries.filter(x => x.restoreTested).length,
-    catalog: entries.map(({ filename, authenticated, restoreTested, reason }) =>
-      ({ filename, authenticated, restoreTested, reason })),
+    catalog: entries.map(({ filename, kind, components, authenticated, restoreTested, reason }) =>
+      ({ filename, kind:kind??null, components:components??[], authenticated, restoreTested, reason })),
     retention: { candidateRemovals: suggestions.proposedRemovals,
       requiresManualReview: suggestions.manualReview },
   }, null, 2));
