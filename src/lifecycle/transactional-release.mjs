@@ -4,7 +4,7 @@
  * No systemd, DB migration, process control, host package changes, network or OS writes.
  * No database recovery exists here, so never use this for a live upgrade.
  */
-import { mkdir, mkdtemp, readFile, realpath, rename, lstat, open, rm, symlink, readlink } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, realpath, rename, lstat, open, rm, symlink, readlink } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
@@ -132,31 +132,63 @@ async function changePointer(root, version) {
  * In-memory health callback, manual confirmation and a caller-supplied backup
  * flag are NOT yet sufficient to update a real production server.
  */
+/**
+ * Re-authenticate every staged file before a test service starts or an
+ * isolated pointer switch. Rejects extra files and symlinked directories.
+ * No production install or update authorization is ever returned.
+ */
+export async function inspectVerifiedStagedBundle({root,version,trustedPublicKeyPem,expectedArch=null}) {
+  checkedVersion(version);
+  if(typeof trustedPublicKeyPem!=='string'||!trustedPublicKeyPem)throw new Error('pinned_trust_root_required');
+  const base=await safeRoot(root);
+  if(await readFile(join(base,MARKER),'utf8')!=='Domyro isolated release prototype v1\n')throw new Error('invalid_release_root_marker');
+  const releaseRoot=join(base,'releases'),release=join(releaseRoot,version);
+  await checkReleaseDirectory(releaseRoot);
+  await checkReleaseDirectory(release);
+  let receipt;
+  try{receipt=JSON.parse(await readFile(join(release,'.receipt.json'),'utf8'));}
+  catch{throw new Error('staged_release_receipt_missing');}
+  const manifestBytes=Buffer.from(receipt.manifest??'','base64');
+  const manifest=verifySignedManifest({manifestBytes,signatureBase64:receipt.signature,trustedPublicKeyPem});
+  if(manifest.version!==version)throw new Error('staged_release_version_changed');
+  if(expectedArch!==null && receipt.architecture!==expectedArch)throw new Error('staged_release_architecture_mismatch');
+  const bytes=Buffer.from(receipt.artifact??'','base64');
+  const artifact=manifest.artifacts.find(x=>x.os==='ubuntu'&&x.arch===receipt.architecture);
+  if(!artifact||!verifyArtifactBytes(artifact,bytes))throw new Error('staged_release_artifact_changed');
+  const expected=new Set(bundleFiles(bytes).map(x=>x.path));
+  for(const entry of bundleFiles(bytes)){
+    const filePath=join(release,...entry.path.split('/'));
+    const stat=await lstat(filePath);
+    if(!stat.isFile()||stat.isSymbolicLink()||stat.size!==entry.bytes.length)throw new Error('staged_release_file_changed');
+    if(!(await readFile(filePath)).equals(entry.bytes))throw new Error('staged_release_file_changed');
+  }
+  let found=0;
+  async function walk(folder,prefix=''){
+    for(const entry of await readdir(folder,{withFileTypes:true})){
+      if(!prefix&&entry.name==='.receipt.json')continue;
+      const relative=prefix+entry.name;
+      if(entry.isSymbolicLink())throw new Error('staged_release_symlink_forbidden');
+      if(entry.isDirectory())await walk(join(folder,entry.name),relative+'/');
+      else if(entry.isFile()){
+        if(!expected.has(relative))throw new Error('staged_release_unlisted_file');
+        found++;
+      }else throw new Error('staged_release_unknown_entry');
+    }
+  }
+  await walk(release);
+  if(found!==expected.size)throw new Error('staged_release_file_count_mismatch');
+  return Object.freeze({version,architecture:receipt.architecture,files:found,verified:true,installationApproved:false});
+}
+
 export async function switchActiveBundle({ root, version, confirmedVersion, verifiedBackup, trustedPublicKeyPem, probe }) {
   checkedVersion(version);
   if (confirmedVersion !== version) throw new Error('explicit_version_confirmation_required');
   if (verifiedBackup !== true) throw new Error('verified_backup_required');
   if (typeof trustedPublicKeyPem !== 'string' || !trustedPublicKeyPem) throw new Error('pinned_trust_root_required');
   if (typeof probe !== 'function') throw new Error('post_activation_probe_required');
-  const base = await safeRoot(root);
-  if (await readFile(join(base, MARKER), 'utf8') !== 'Domyro isolated release prototype v1\n') throw new Error('invalid_release_root_marker');
-  const release = join(base, 'releases', version);
-  await checkReleaseDirectory(release);
-  let receipt;
-  try { receipt = JSON.parse(await readFile(join(release, '.receipt.json'), 'utf8')); }
-  catch { throw new Error('staged_release_receipt_missing'); }
-  const manifestBytes = Buffer.from(receipt.manifest ?? '', 'base64');
-  const manifest = verifySignedManifest({ manifestBytes, signatureBase64: receipt.signature, trustedPublicKeyPem });
-  if (manifest.version !== version) throw new Error('staged_release_version_changed');
-  const bytes = Buffer.from(receipt.artifact ?? '', 'base64');
-  const artifact = manifest.artifacts.find(x => x.os === 'ubuntu' && x.arch === receipt.architecture);
-  if (!artifact || !verifyArtifactBytes(artifact, bytes)) throw new Error('staged_release_artifact_changed');
-  for (const entry of bundleFiles(bytes)) {
-    const filePath = join(release, ...entry.path.split('/'));
-    const stat = await lstat(filePath);
-    if (!stat.isFile() || stat.isSymbolicLink() || stat.size !== entry.bytes.length) throw new Error('staged_release_file_changed');
-    if (!(await readFile(filePath)).equals(entry.bytes)) throw new Error('staged_release_file_changed');
-  }
+  const base=await safeRoot(root);
+  await inspectVerifiedStagedBundle({root:base,version,trustedPublicKeyPem});
+  const release=join(base,'releases',version);
   const lock = await open(join(base, '.activation.lock'), 'wx', 0o600);
   let previous = null, switched = false, completed = false;
   try {
