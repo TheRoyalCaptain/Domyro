@@ -57,6 +57,7 @@ async function collectFiles(projectRoot) {
     'src/persistence/migrator.mjs', 'src/lifecycle/release.mjs',
     'web/index.html', 'web/login.html', 'web/assets/app.js',
     'web/assets/login.js', 'web/assets/styles.css',
+    'package-lock.json',
   ];
   const names = new Set(collected.map(x => x.path));
   for (const file of required) if (!names.has(file)) throw new Error('release_missing_required_file:' + file);
