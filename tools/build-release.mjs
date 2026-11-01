@@ -10,7 +10,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { verifySignedManifest, verifyArtifactBytes } from '../src/lifecycle/release.mjs';
 
-const ROOT_FILES = Object.freeze(['package.json']);
+const ROOT_FILES = Object.freeze(['package.json', 'package-lock.json']);
 const ROOT_DIRS = Object.freeze(['src', 'web']);
 const EXTENSIONS = new Set(['.mjs', '.js', '.json', '.sql', '.html', '.css', '.svg']);
 const FILE_LIMIT = 8 * 1024 * 1024;
