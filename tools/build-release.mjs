@@ -63,13 +63,33 @@ async function collectFiles(projectRoot) {
   return collected.sort((a,b)=>a.path.localeCompare(b.path,'en'));
 }
 
+async function currentSourceDatabaseSchema(projectRoot) {
+  const root = join(projectRoot,'src/persistence/migrations');
+  const files = (await readdir(root,{withFileTypes:true}))
+    .filter(x => x.name.endsWith('.sql'));
+  const versions = [];
+  for (const file of files) {
+    if (!file.isFile() || file.isSymbolicLink()) throw new Error('source_migration_not_regular');
+    const match = /^([0-9]{3})_[A-Za-z0-9_-]+\.sql$/.exec(file.name);
+    if (!match) throw new Error('source_migration_name_invalid');
+    versions.push(Number(match[1]));
+  }
+  versions.sort((a,b)=>a-b);
+  if (!versions.length || versions.some((v,i)=>v!==i+1)) {
+    throw new Error('source_migration_versions_not_contiguous');
+  }
+  return versions.at(-1);
+}
+
 export async function buildSignedSourceRelease({ projectRoot, version, channel, publishedAt, privateKeyPem }) {
   if (typeof version !== 'string' || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[A-Za-z0-9.-]+)?$/.test(version)) throw new Error('invalid_release_version');
   if (!['stable', 'beta'].includes(channel)) throw new Error('invalid_channel');
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(publishedAt) || !Number.isFinite(Date.parse(publishedAt))) throw new Error('invalid_release_timestamp');
   const key = createPrivateKey(privateKeyPem);
   if (key.asymmetricKeyType !== 'ed25519') throw new Error('ed25519_signing_key_required');
-  const sourceFiles = await collectFiles(resolve(projectRoot));
+  const resolvedRoot = resolve(projectRoot);
+  const sourceFiles = await collectFiles(resolvedRoot);
+  const databaseSchema = await currentSourceDatabaseSchema(resolvedRoot);
   const artifacts = [], artifactBytes = {};
   for (const arch of ['amd64', 'arm64']) {
     // JS source is architecture-neutral. Native Node runtimes and system
@@ -82,7 +102,9 @@ export async function buildSignedSourceRelease({ projectRoot, version, channel, 
   }
   const manifest = {
     schemaVersion: 1, version, channel, publishedAt,
-    database: { min: 0, max: 0, target: 0, migration: 'none' },
+    // No migration path is promised: the source artifact requires the current
+    // repository schema, and upgrades changing DB schema remain blocked.
+    database: { min: databaseSchema, max: databaseSchema, target: databaseSchema, migration: 'none' },
     artifacts,
   };
   const manifestBytes = Buffer.from(JSON.stringify(manifest));
