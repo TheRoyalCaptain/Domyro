@@ -71,4 +71,26 @@ assert_live
 PID_AFTER="$(sudo systemctl show --value --property MainPID "$UNIT.service")"
 [[ "$PID_AFTER" =~ ^[0-9]+$ && "$PID_AFTER" != 0 && "$PID_AFTER" != "$PID_BEFORE" ]]
 [[ "$(sudo systemctl show --value --property User "$UNIT.service")" == "runner" ]]
-echo "CI-only real systemd start/restart verified. Not a production installation."
+# A manual restart alone does not prove systemd will recover a crashed daemon.
+# Kill ONLY the transient CI unit's main process, never a system service.
+sudo systemctl kill --kill-whom=main --signal=SIGKILL "$UNIT.service"
+RECOVERED_PID=""
+for _ in $(seq 1 30); do
+  CANDIDATE_PID="$(sudo systemctl show --value --property MainPID "$UNIT.service")"
+  if [[ "$CANDIDATE_PID" =~ ^[0-9]+$ && "$CANDIDATE_PID" != 0 &&
+        "$CANDIDATE_PID" != "$PID_AFTER" ]] &&
+     curl --silent --fail --max-time 2 "$BASE/api/v1/health/live" | grep -q '"status":"alive"'; then
+    RECOVERED_PID="$CANDIDATE_PID"
+    break
+  fi
+  sleep 1
+done
+if [[ -z "$RECOVERED_PID" ]]; then
+  sudo journalctl -u "$UNIT.service" -n 50 --no-pager || true
+  echo "systemd did not automatically recover after the CI-only process crash" >&2
+  exit 1
+fi
+assert_live
+RESTARTS="$(sudo systemctl show --value --property NRestarts "$UNIT.service")"
+[[ "$RESTARTS" =~ ^[0-9]+$ && "$RESTARTS" -ge 1 ]]
+echo "CI-only systemd start, manual restart and automatic crash recovery verified. Not a production installation."
