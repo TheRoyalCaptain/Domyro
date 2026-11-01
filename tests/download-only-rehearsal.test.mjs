@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { generateKeyPairSync } from 'node:crypto';
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, writeFile, symlink } from 'node:fs/promises';
 import { arch as hostArch } from 'node:os';
 import { join } from 'node:path';
 import { buildSignedSourceRelease } from '../tools/build-release.mjs';
@@ -159,6 +159,28 @@ test('excess bytes, HTTP errors and injected staging failure are rejected with c
     },
   })), /injected_staging_failure/);
   await assert.rejects(() => access(scratch), /ENOENT/);
+});
+
+test('post-download source tampering and accidental activation are caught before success', async t => {
+  const source = await signed();
+  const origin = await fixture(t, (_req, res) => {
+    res.writeHead(200, { 'content-length': source.artifactBytes.length });
+    res.end(source.artifactBytes);
+  });
+  const url = origin + '/' + source.file;
+  let scratch;
+  await assert.rejects(() => rehearseSignedDownloadOnly(options(source, url, {
+    onStaged: async ({ sandbox, root, version }) => {
+      scratch = sandbox;
+      await writeFile(join(root, 'releases', version, 'src/server.mjs'), '// tampered after staging');
+    },
+  })), /staged_release_file_changed/);
+  await assert.rejects(() => access(scratch), /ENOENT/);
+  await assert.rejects(() => rehearseSignedDownloadOnly(options(source, url, {
+    onStaged: async ({ root, version }) => {
+      await symlink('releases/' + version, join(root, 'current'));
+    },
+  })), /download_hook_activated_release/);
 });
 
 test('unsupported host architecture never downloads', async () => {
