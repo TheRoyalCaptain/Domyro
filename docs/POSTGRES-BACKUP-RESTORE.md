@@ -20,6 +20,12 @@ De CI maakt een geïsoleerde bron- en doeldatabase op PostgreSQL 17, vult de bro
 
 In CI worden de pg-tools uit de **PostgreSQL 17 Docker-testimage** gebruikt, op Ubuntu x86-64/ARM64 met Node 22/24. Dit installeert niets op apparaten van de eigenaar. De gebruikte testwachtwoorden zijn tijdelijk en niet bedoeld voor productie.
 
+## Private, atomische opslag van versleutelde back-ups
+
+De module `src/lifecycle/backup-file-store.mjs` bewaart begrensde versleutelde bestanden alleen in een **privémap** (toegangsrechten 0700). Eerst wordt het volledige bestand naar een exclusief aangemaakt tijdelijk bestand met 0600-rechten geschreven en met `fsync` afgerond. Daarna wordt het doelbestand zonder overschrijven gepubliceerd via een exclusieve hardlink. Bestaande doelbestanden, ongeldige bestandsnamen, symbolische links, onveilige permissies en onversleutelde invoer worden geweigerd. Tests controleren dit op beide architecturen. De CI koppelt nu echte database-export, atomische opslag, opnieuw inlezen, verificatie en herstel naar een nieuwe testdatabase.
+
+Dit is nog **geen** automatische back-updienst, NAS-upload, retentiebeheer of noodherstel van een productie-installatie.
+
 ## Grenzen van deze eerste versie
 
 **Dit is een echte database-hersteldemonstratie, maar nog geen volledige Domyro-back-upoplossing.**
