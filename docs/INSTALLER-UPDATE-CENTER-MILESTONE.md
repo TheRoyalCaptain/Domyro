@@ -40,6 +40,10 @@ PostgreSQL is verplicht; MQTT en Matter kunnen in het toekomstige installatiepro
 
 Er is een tekstuele, **niet geïnstalleerde** systemd-unit voor technische beoordeling met loopbackbinding, minimale privileges en afgeschermde schrijfpaden. Dit is uitdrukkelijk geen gevalideerde productie-unit of uitvoerbare one-line installer.
 
+## Extra mijlpaal: geteste localhost-opstart vanuit volledige ondertekende ontwikkelbundel
+
+De source-release-builder bevat nu de volledige `src/`- en `web/`-bronnen, in plaats van de oorspronkelijke negen bestanden, en neemt de echte schema-3-reeks op in het release-manifest. De nieuwe `native-rehearsal.mjs` start de uitgepakte ondertekende code daadwerkelijk op een tijdelijke localhost-poort en controleert status-API, aanmeldscherm en assets. De proef blijft zonder database bewust `not_ready`. Ze installeert geen systemd, apt, dependencypackages of serverdiensten en vervangt geen volledige native VM-installatietest. Zie [NATIVE-INSTALL-REHEARSAL.md](NATIVE-INSTALL-REHEARSAL.md).
+
 ## Wat hierna nog verplicht is
 
 1. Officieel ondertekende, volledig uitvoerbare **Ubuntu Server LTS amd64/arm64-installatiebundel** inclusief Node-runtime, pakketafhankelijkheden, PostgreSQL-installatie/verbinding en foutafhandeling.
