@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID, createHash } from 'node:crypto';
+import { encryptBackupBytes } from '../src/lifecycle/encrypted-backup.mjs';
 import { Pool } from 'pg';
 import { loadMigrations, applyMigrations, inspectMigrationState } from '../src/persistence/migrator.mjs';
 import {
@@ -61,6 +62,31 @@ test('actual PostgreSQL 17 encrypted custom archive restores user, site, room, d
     const corrupt = Buffer.from(snapshot.encrypted);
     corrupt[corrupt.length-18] ^= 1;
     await assert.rejects(() => verifyEncryptedPostgresSnapshot(corrupt,password), /backup_authentication_failed/);
+
+    // Failure injection: a correctly encrypted and checksummed container with
+    // an invalid PG custom archive MUST fail before committing any tables.
+    const invalidArchive = Buffer.concat([Buffer.from('PGDMP'),Buffer.alloc(40)]);
+    const invalidEnvelope = Buffer.from(JSON.stringify({
+      metadata: {
+        schemaVersion:1,format:'postgresql-custom',databaseSchemaScope:'public',
+        archiveSha256:createHash('sha256').update(invalidArchive).digest('hex'),
+        archiveBytes:invalidArchive.length,createdAt:new Date().toISOString(),
+      },
+      archiveBase64:invalidArchive.toString('base64'),
+    }));
+    const failedRestore = await encryptBackupBytes(invalidEnvelope,password);
+    await assert.rejects(() => restoreEncryptedPostgresSnapshotToTestDatabase({
+      encrypted:failedRestore,password,targetUrl,tools:dockerTools,
+    }), /postgres_tool_failed/);
+    const emptyAfterFailure = new Pool({connectionString:targetUrl,max:1});
+    try {
+      const result = await emptyAfterFailure.query([
+        'SELECT count(*)::int AS n FROM pg_catalog.pg_class c',
+        'JOIN pg_catalog.pg_namespace ns ON ns.oid=c.relnamespace',
+        "WHERE ns.nspname='public' AND c.relkind IN ('r','p','v','m','f','S')",
+      ].join(' '));
+      assert.equal(result.rows[0].n,0);
+    } finally { await emptyAfterFailure.end(); }
 
     const restored = await restoreEncryptedPostgresSnapshotToTestDatabase({
       encrypted:snapshot.encrypted,password,targetUrl,tools:dockerTools,
