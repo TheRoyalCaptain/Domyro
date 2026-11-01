@@ -24,6 +24,7 @@ test('builds reproducible amd64 and arm64 source bundles with an external test s
   assert.equal(first.signatureBase64, second.signatureBase64);
   const manifest = verifySignedManifest({ manifestBytes: first.manifestBytes, signatureBase64: first.signatureBase64, trustedPublicKeyPem: publicPem });
   assert.deepEqual(manifest.artifacts.map(x => x.arch), ['amd64', 'arm64']);
+  assert.deepEqual(manifest.database, {min:3,max:3,target:3,migration:'none'});
   for (const art of manifest.artifacts) assert.equal(verifyArtifactBytes(art, first.artifactBytes[art.file]), true);
   const output = join(folder, 'package');
   const receipt = await writeSignedRelease(output, first);
