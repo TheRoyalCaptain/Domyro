@@ -75,6 +75,25 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   assert.equal(sites.status, 200);
   assert.equal((await sites.json()).sites[0].id, owner.siteId);
 
+  // Update Center is a local system-admin read, not an upgrade endpoint.
+  const updatesPath = '/api/v1/system/updates';
+  assert.equal((await fetch(base + updatesPath)).status, 401);
+  const updateStatus = await fetch(base + updatesPath, { headers: { cookie: sessionCookie } });
+  assert.equal(updateStatus.status, 200);
+  const updateState = await updateStatus.json();
+  assert.equal(updateState.installAllowed, false);
+  assert.equal(updateState.signedFeedConfigured, false);
+  assert.equal(updateState.installationGate, 'D-53');
+  assert.equal((await post(updatesPath + '/install', { confirmedVersion: '0.1.1' },
+    {}, sessionCookie)).status, 403); // CSRF required even though installation is blocked.
+  const blockedUpdate = await post(updatesPath + '/install',
+    { confirmedVersion: '0.1.1' }, { 'x-domyro-csrf': token.csrfToken }, sessionCookie);
+  assert.equal(blockedUpdate.status, 423);
+  assert.equal((await blockedUpdate.json()).decision, 'D-53');
+  assert.equal((await fetch(base + updatesPath, { method: 'POST',
+    headers: { ...jsonHeaders, cookie: sessionCookie, 'x-domyro-csrf': token.csrfToken },
+    body: '{}' })).status, 405);
+
   const areasPath = '/api/v1/sites/' + owner.siteId + '/areas';
   assert.equal((await post(areasPath, { displayName: 'Woonkamer' }, {}, sessionCookie)).status, 403);
   assert.equal((await post(areasPath, { displayName: 'Woonkamer' }, { 'x-domyro-csrf': 'wrong' }, sessionCookie)).status, 403);
@@ -96,6 +115,12 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
     [owner.siteId, guestId]);
   const guestSession = await createDbSession(db, guestId);
   const guestCookie = 'domyro_session=' + guestSession.token;
+  assert.equal((await fetch(base + '/api/v1/system/updates',
+    { headers: { cookie: guestCookie } })).status, 403);
+  assert.equal((await post('/api/v1/system/updates/install',
+    { confirmedVersion: '0.1.1' },
+    { 'x-domyro-csrf': (await (await fetch(base + '/api/v1/auth/me',
+      { headers: { cookie: guestCookie } })).json()).csrfToken }, guestCookie)).status, 403);
   const guestMe = await fetch(base + '/api/v1/auth/me', { headers: { cookie: guestCookie } });
   assert.equal(guestMe.status, 200);
   const guestCsrf = (await guestMe.json()).csrfToken;
