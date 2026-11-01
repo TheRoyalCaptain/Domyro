@@ -32,7 +32,10 @@
     "encryptedPostgres17CustomArchiveRestoredToEmptyTestDatabase": true,
     "postgresRestoreRejectsTamperExistingTargetAndMalformedArchive": true,
     "privateAtomicEncryptedBackupFileTests": true,
-    "postgres17DumpEncryptedFileReadbackAndNewDatabaseRestoreTests": true
+    "postgres17DumpEncryptedFileReadbackAndNewDatabaseRestoreTests": true,
+    "streamingAesGcmBackupOver20MiBAndTamperTests": true,
+    "streamingPostgres17ToVerifiedPrivateFileAndScratchRestore": true,
+    "failedExporterNeverPublishesAndAuthenticityRequiredBeforeRestore": true
   },
-  "notes": "45 isolated tests pass per CI on Ubuntu 24.04 amd64 and arm64 (Node 22/24) after private atomic encrypted file store and real Postgres 17 dump -> encrypted file -> clean scratch-DB restore. All archive and failure-injection tests use disposable databases. Strictly bounded 20 MiB in-memory source archive; no full-system config/integration secrets/Matter-fabric backup, scheduled storage, production restore, complete one-line native Ubuntu installer, verified manual-upgrade recovery or owner deployment consent. D-53 remains CLOSED."
+  "notes": "51 tests passed across Ubuntu 24.04 amd64/arm64 and Node 22/24. New v2 streamed AES-256-GCM backup encrypts a 27 MiB fixture with bounded memory, and successfully performs real pg_dump -> authenticated private file -> pg_restore into an EMPTY DISPOSABLE PostgreSQL 17 database. Failed exporters, invalid archives, wrong passphrases, tampering, existing filename/target protections are tested. V2 defaults to a 2 GiB development size cap and may write temporary plaintext to a private disk file during recovery. NO verified full-system secrets/configuration/Matter-fabric recovery, safe in-place rollback, native one-command installer, full updater, hardware integration tests or owner deployment consent. D-53 RELEASE/INSTALLATION GATE REMAINS CLOSED."
 }
