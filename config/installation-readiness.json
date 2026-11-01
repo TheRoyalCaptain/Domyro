@@ -46,7 +46,9 @@
     "nativeUbuntuInstallerChoicePlanAndSystemdDraftTests": true,
     "completeBoundedSignedDevelopmentSourceBundleTests": true,
     "signedManifestCurrentDatabaseSchemaTests": true,
-    "ephemeralNativeSourceBootAndActualHttpSmokeTests": true
+    "ephemeralNativeSourceBootAndActualHttpSmokeTests": true,
+    "disposableNativeServiceLayoutAndChildRestartTests": true,
+    "stagedBundleReverificationAndUnitTamperRejectionTests": true
   },
-  "notes": "83 isolated tests pass in all four GitHub Actions jobs (Ubuntu 24.04 amd64/arm64 with Node 22/24). The signed developer SOURCE release now includes src/, web/ and package.json, with database schema 3 inferred from contiguous migrations instead of incorrect 0. A new ephemeral signed-source rehearsal verifies Ed25519 signature+artifact SHA-256+native arch, boots the real extracted Domyro server on 127.0.0.1, checks health/status/login/static assets, requires DB-less readiness HTTP 503, and removes temporary files even after injected errors. This is NOT a one-command native installer or a complete runnable package: runtime dependency locking/provisioning, official release signing, systemd/account installation, trusted HTTPS onboarding, full-system backup, manual updater and production recovery remain unverified. All D53 checklist booleans remain false and no owner-server installation consent exists."
+  "notes": "90 automated tests passed across all four GitHub Actions CI jobs (Ubuntu 24.04 x86-64 and ARM64, Node 22/24). New sandboxed NATIVE SERVICE REHEARSAL creates private /opt,/etc,/var-like paths inside a disposable OS-created directory, stages the complete signed development source release, verifies idempotent layouts, refuses changes to unit or additional/tampered files, starts/stops/restarts the real extracted Domyro server in independent Node child processes and checks loopback health/login assets; cleanup covers injected failures. No real systemd service activated, apt/dependency provisioning, dedicated production user, server VM installation, official release key, safe production TLS/bootstrap, full-system backup/restore or working self-updater. This is NOT an Ubuntu one-line installer. All D53 gate checks remain FALSE, and owner-server deployment consent remains FALSE."
 }
