@@ -122,6 +122,11 @@ export async function rehearseSignedDownloadOnly({
     });
     if (await inspectActiveBundle(root) !== null) throw new Error('download_unexpected_activation');
     await onStaged({ sandbox, root, version: staged.version, artifactBytes: bytes });
+    // The test hook represents time spent awaiting an operator/worker.
+    // Re-authenticate the staged tree afterwards to catch TOCTOU tampering.
+    await inspectVerifiedStagedBundle({
+      root, version: staged.version, trustedPublicKeyPem, expectedArch: arch,
+    });
     if (await inspectActiveBundle(root) !== null) throw new Error('download_hook_activated_release');
     return Object.freeze({
       result: 'signed_download_only_rehearsal_passed',
