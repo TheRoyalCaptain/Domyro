@@ -4,6 +4,10 @@
 **Status:** Pure safety rules plus **isolated release directory staging**, **pointer-only test rollback**, a **development source-bundle signing utility** and a **bounded encrypted test snapshot primitive**. Tested on hosted Ubuntu x86-64/ARM64 CI, **but NOT** an installer, real updater, PostgreSQL backup/restore engine, production release or deployment approval.  
 **Owner deployment gate D-53:** CLOSED. No installation on the owner's own server until complete safe one-command installation and update/restore lifecycle is built, tested and separately approved.
 
+## New PostgreSQL 17 encrypted backup + restore proof (NOT deployable)
+
+`src/lifecycle/postgres-snapshot.mjs` now invokes real PostgreSQL 17 `pg_dump` and `pg_restore` tools with strictly local credentials; encrypts and authenticates a bounded custom-format dump; validates it; and restores **only into a new empty disposable test database**. CI tests on x86-64 and ARM64 verify actual user/site/room/device/observation data survives, incorrect passwords and damaged backups fail, an authenticated but invalid PostgreSQL archive leaves the target empty, and populated restore targets are rejected. **No complete service configuration/Matter/secrets backup, streaming large datasets, production restore or core-update integration exists yet.** See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
+
 ## Newly implemented (not deployable) building blocks
 
 - `src/lifecycle/native-preflight.mjs`: read-only Ubuntu LTS/architecture/resource eligibility, without changes to the host.
