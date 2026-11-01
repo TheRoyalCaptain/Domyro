@@ -1,6 +1,6 @@
 # Domyro — Delivery roadmap and executable backlog
 
-**Roadmap v1.1 · M1 foundation source development authorized on 2026-10-31, production/release gates open**
+**Roadmap v1.2 · M1 foundation source development authorized on 2026-10-31; production deployment/release gate D-53 CLOSED**
 
 ## 1. Planning method
 
@@ -98,7 +98,7 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 
 - **DOM-070 P0 M:** Reproducible multiarch OCI images with persistent data and health checks. Accept: documented cold install.
 - **DOM-071 P0 M:** Docker Compose production-like stack and secure config template. Accept: local onboarding and backup work.
-- **DOM-072 P0 L (in progress):** Ubuntu 24.04 amd64/arm64 read-only host and dependency-choice planning plus review-only systemd unit template now pass CI. **No privileged installer, .deb, dependency provisioning, actual unit deployment, upgrade/uninstall or verified bare-metal install exists.** Requirement: native Ubuntu Server LTS packaging, systemd and upgrade/uninstall path. Accept: bare-metal/VM native installs work without Docker on both architectures.
+- **DOM-072 P0 L (in progress):** Ubuntu 24.04 amd64/arm64 read-only host/dependency planning, signed source staging, integrity-locked disposable runtime dependencies and review-only systemd unit template pass CI. A separate disposable GitHub-hosted CI workflow starts and manually restarts a **real transient systemd service**; automatic crash-recovery checks have been added and require passing CI evidence. **No privileged installer, .deb, permanent systemd unit deployment, upgrade/uninstall or verified bare-metal install exists.** Requirement: native Ubuntu Server LTS packaging, systemd and upgrade/uninstall path. Accept: bare-metal/VM native installs work without Docker on both architectures.
 - **DOM-073 P0 L:** Umbrel app-store package and browser-based setup. Accept: install/update/restore without Portainer or SSH.
 - **DOM-074 P0 M:** Integration-specific network/USB/mDNS preflight and docs. Accept: actionable error rather than silent failure.
 - **DOM-075 P0 M (in progress):** Backups, integrity validation and restore wizard. **Implemented and verified in isolated CI:** encrypted PostgreSQL 17 custom-format dump, authenticated/archive-hash validation, `pg_restore --single-transaction` to an empty test DB and failure-injection checks. **Added:** a v2 streaming path for actual PostgreSQL dumps, private backup files, and verified scratch-database recovery, including a 27 MiB streaming fixture. **Added:** local immutable snapshot receipt catalog (PostgreSQL and selected config fixtures), reauthentication, encrypted selected-config fixture validation, a new disposable private test-directory config restore with per-file re-verification and interruption tests, and a full-system recovery coverage contract. The catalog **never offers pruning** without independently proven restoration. **Missing:** actual full configuration/Matter secrets capture and restore, multi-destination storage, scheduled backups, independent recovery attestations, deletion/retention execution, disaster recovery wizard and production tests.
