@@ -8,6 +8,10 @@
 
 The owner will **not install Domyro on their own server** until an official one-command Ubuntu Server installer and a verified manual update/recovery process are implemented. Checks and user-allowed downloads may happen automatically only as in D-13, but updating Domyro **always requires explicit administrator action**. Updating must preflight compatibility, make and verify an encrypted backup, stage authenticated binaries, confirm the requested installation, validate actual application/database/integration health, and either safely roll back or enter controlled recovery mode. Never discard post-backup user writes silently or claim an irreversible database migration can always roll back. [Installation and upgrade acceptance gate](INSTALL-UPGRADE-GATE.md).
 
+### Development implementation milestone (2026-11-01)
+
+The repository now has a **pure signed-release eligibility model** (Ed25519 signature verification, stable/beta, architecture, database compatibility and download delay) and an administrator-only `GET /api/v1/system/updates` route in the localhost development preview. The new **Systeemupdates** panel displays the missing signing feed and D-53 blocker, with **Install update disabled**. Even an authenticated CSRF-protected request to `POST /api/v1/system/updates/install` is refused with HTTP 423; it does not download, install or restart anything. This is not a working updater, official release discovery service or production-secure UI. See [INSTALLER-UPDATE-CENTER-MILESTONE.md](INSTALLER-UPDATE-CENTER-MILESTONE.md).
+
 ## 1. Non-negotiable rule
 
 **Domyro must NEVER automatically install a Domyro application update or restart its services as a result of automatic update discovery/download.** Installation requires an explicit, fresh decision by an authorized local owner/admin for every new release. This applies even if the release is a security fix or an opted-in beta. A download is NOT consent to install.
