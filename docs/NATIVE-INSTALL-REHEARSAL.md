@@ -31,6 +31,10 @@ De nieuwe module `src/lifecycle/native-rehearsal.mjs`:
 
 Dit test het **daadwerkelijk opstarten van de huidige development-frontend en API vanuit een signed sourcebundle**, niet PostgreSQL-connectiviteit of Zigbee- of Matter-aansturing. Er wordt niets op de host geïnstalleerd, geen `systemd`-unit geactiveerd en geen bestaande installatie vervangen. Het is geen test van langdurig draaien, opstarten na stroomuitval of de veilige updater.
 
+## Vervolg: zelfstandige native procesproef
+
+Er is nu ook een uitgebreidere, geïsoleerde proef die een privé-mappenstructuur naar Ubuntu-model aanmaakt, de concept-systemd-unit als tekstbestand schrijft, de ondertekende bestanden vlak vóór starten opnieuw verifieert, en Domyro als **zelfstandig Node-proces** start, stopt en opnieuw start. Deze is getest op Ubuntu amd64/ARM64, maar blijft geen echte systemd- of VM-installatie. Zie [NATIVE-SERVICE-REHEARSAL.md](NATIVE-SERVICE-REHEARSAL.md).
+
 ## Volgende noodzakelijke stappen
 
 1. Verifieerbare, gereproduceerde **native dependency-installatie** voor Ubuntu Server LTS amd64 en ARM64, inclusief complete pakket-lock/digest/pinning, Node-runtime en rechten.
