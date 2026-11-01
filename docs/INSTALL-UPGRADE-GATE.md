@@ -22,7 +22,7 @@ The versioned [installation-readiness.json](../config/installation-readiness.jso
 
 ### MQTT + site-scoped device registry progress (still NOT an installation)
 
-A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a new site-scoped PostgreSQL device/observation schema can store stable IEEE device identities. These are separate development capabilities: **no approved real-hardware Zigbee2MQTT integration, secure broker credentials, live persistent ingestion, user-authorized actuation or independent physical testing exists**. D-53 installation readiness remains **closed**. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
+A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a new site-scoped PostgreSQL device/observation schema can store stable IEEE device identities. These are separate development capabilities: **no approved real-hardware Zigbee2MQTT integration, secure broker credentials, automatically enabled site-bound broker-to-DB service, user-authorized actuation or independent physical testing exists**. D-53 installation readiness remains **closed**. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
 
 ### PostgreSQL milestone (still not an installation)
 
