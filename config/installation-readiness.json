@@ -43,7 +43,10 @@
     "separatePostgresAndConfigScratchRecoveryIntegrationTests": true,
     "signedReleaseEligibilityAndDownloadDelayPolicyTests": true,
     "adminOnlyLocalUpdateStatusAndHardDeniedInstallTests": true,
-    "nativeUbuntuInstallerChoicePlanAndSystemdDraftTests": true
+    "nativeUbuntuInstallerChoicePlanAndSystemdDraftTests": true,
+    "completeBoundedSignedDevelopmentSourceBundleTests": true,
+    "signedManifestCurrentDatabaseSchemaTests": true,
+    "ephemeralNativeSourceBootAndActualHttpSmokeTests": true
   },
-  "notes": "79 automated tests passed in all 4 CI jobs (Ubuntu 24.04 x86-64 and ARM64, Node.js 22/24) for the increment adding offline signed Ed25519 update eligibility, download-only scheduling policy, an owner/admin-only localhost Update Center status, explicit HTTP 423 refusal of install attempts, and an Ubuntu native dependency-choice planning/draft systemd unit. No official signing feed/key, real download worker, native one-line installer, privileged updater, full-system backup/recovery, Matter/hardware integration or owner deployment approval. All D-53 technical gate checks remain FALSE."
+  "notes": "83 isolated tests pass in all four GitHub Actions jobs (Ubuntu 24.04 amd64/arm64 with Node 22/24). The signed developer SOURCE release now includes src/, web/ and package.json, with database schema 3 inferred from contiguous migrations instead of incorrect 0. A new ephemeral signed-source rehearsal verifies Ed25519 signature+artifact SHA-256+native arch, boots the real extracted Domyro server on 127.0.0.1, checks health/status/login/static assets, requires DB-less readiness HTTP 503, and removes temporary files even after injected errors. This is NOT a one-command native installer or a complete runnable package: runtime dependency locking/provisioning, official release signing, systemd/account installation, trusted HTTPS onboarding, full-system backup, manual updater and production recovery remain unverified. All D53 checklist booleans remain false and no owner-server installation consent exists."
 }
