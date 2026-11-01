@@ -228,7 +228,9 @@ export function catalogRetentionSuggestions(records, policy) {
   const prepared = records.map(r => ({
     id: r.id, targetId: r.targetId,
     completedAt: r.completedAt ?? '1970-01-01T00:00:00.000Z',
-    owned: r.owned === true, verified: r.verified === true,
+    // Independent restore-proof registration does not exist yet, so this
+    // development catalog can NEVER make a backup a pruning candidate.
+    owned: r.owned === true, verified: false,
     completed: r.completed === true, hold: r.hold === true,
   }));
   return planBackupRetention(prepared, policy);
