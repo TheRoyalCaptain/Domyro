@@ -17,14 +17,14 @@ import { loadMigrations, inspectMigrationState } from '../persistence/migrator.m
 // Base64 expands a 20 MiB archive to <27 MiB, leaving room for metadata.
 const MAX_ARCHIVE_BYTES = 20 * 1024 * 1024;
 const TIMEOUT_MS = 45_000;
-const RESTORE_PREFIX = /^domyro_restore_test_[a-z0-9_]{6,40}$/;
+export const RESTORE_PREFIX = /^domyro_restore_test_[a-z0-9_]{6,40}$/;
 const SAFE_IDENTIFIER = /^[a-z_][a-z0-9_]{0,62}$/;
 const DEFAULT_TOOLS = Object.freeze({
   dump: Object.freeze({ executable: 'pg_dump', prefix: [] }),
   restore: Object.freeze({ executable: 'pg_restore', prefix: [] }),
 });
 
-function localDatabase(connectionString) {
+export function localDatabase(connectionString) {
   if (typeof connectionString !== 'string') throw new TypeError('database_connection_required');
   let url;
   try { url = new URL(connectionString); }
@@ -45,7 +45,7 @@ function localDatabase(connectionString) {
     connectionString,
   });
 }
-function selectedTool(spec, fallback) {
+export function selectedTool(spec, fallback) {
   const selected = spec ?? fallback;
   if (!selected || typeof selected.executable !== 'string' || !selected.executable ||
       !Array.isArray(selected.prefix) || selected.prefix.some(x => typeof x !== 'string')) {
@@ -93,7 +93,7 @@ async function runPostgresTool(tool, args, password, stdin = null) {
     else child.stdin.end();
   });
 }
-function cliDatabaseArgs(db) {
+export function cliDatabaseArgs(db) {
   return ['--host', db.host, '--port', db.port, '--username', db.username, '--dbname', db.database];
 }
 function isCustomArchive(bytes) {
