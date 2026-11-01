@@ -2,6 +2,10 @@
 
 Domyro is free software licensed under **GNU Affero General Public License version 3 only (AGPL-3.0-only)**. You may inspect, use, fork, modify and redistribute it under the license. The official repository and its releases are maintained exclusively by **@TheRoyalCaptain**.
 
+## AI development disclosure
+
+Domyro is an **AI-developed open-source project**, built with AI assistance in direct collaboration with, and under the supervision of, **[@TheRoyalCaptain](https://github.com/TheRoyalCaptain)**. AI may help generate code, tests, documentation and proposals. The human maintainer sets requirements and retains responsibility for official project decisions, reviews and releases. All contributions, including AI-assisted changes, still require appropriate testing, security assessment and licensing checks. See [AI development disclosure](docs/AI-DEVELOPMENT.md).
+
 ## Authority and approval
 
 - Everyone can propose issues, ideas, documentation fixes and pull requests; contributions are welcome.
