@@ -2,7 +2,7 @@
 
 **Decision:** D-53 · **Owner approved** · 31 October 2026  
 **Priority:** P0 **hard blocker for installing Domyro on the owner's server or recommending production installation**.  
-**Status:** Acceptance specification; **deployment gate CLOSED**. Development now includes Ubuntu host preflight, a signer for multiarch **source** bundles, Ed25519 verification, an isolated test-directory release switch and pointer-only rollback, authenticated encryption of small synthetic backup fixtures, and a machine-readable blocklist. **These do not yet comprise a complete installer, integrated updater, PostgreSQL backup/restore or production-safe rollback**. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md) and [../config/installation-readiness.json](../config/installation-readiness.json).  
+**Status:** Acceptance specification; **deployment gate CLOSED**. Development now includes Ubuntu host preflight, a signer for multiarch **source** bundles, Ed25519 verification, an isolated test-directory release switch and pointer-only rollback, authenticated encryption of small synthetic backup fixtures, and a machine-readable blocklist. **These do not yet comprise a complete installer, integrated updater, production-grade full-system PostgreSQL/config restore or safe production rollback**. See [SAFETY-FOUNDATION.md](SAFETY-FOUNDATION.md) and [../config/installation-readiness.json](../config/installation-readiness.json).  
 **Does not authorize:** any install/deployment on the owner's Ubuntu Server, VM, Umbrel, Home Assistant environment or physical devices.
 
 ## Owner's explicit requirement
@@ -23,6 +23,10 @@ The versioned [installation-readiness.json](../config/installation-readiness.jso
 ### MQTT + site-scoped device registry progress (still NOT an installation)
 
 A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a new site-scoped PostgreSQL device/observation schema can store stable IEEE device identities. These are separate development capabilities: **no approved real-hardware Zigbee2MQTT integration, secure broker credentials, automatically enabled site-bound broker-to-DB service, user-authorized actuation or independent physical testing exists**. D-53 installation readiness remains **closed**. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
+
+### Private scratch-only configuration restoration milestone (2026-11-01)
+
+The development module now restores explicitly selected **encrypted test-only** Domyro/Mosquitto/Zigbee2MQTT configuration files into a newly created private test directory, never to existing service paths. Full AES-GCM authentication and per-file hashes are validated before/after writing; existing targets are rejected, interruptions clean up their own partial output, and a completion marker is only created last. An on-disk audit checks the file set, hashes and restrictive permissions. An isolated CI test restores a separate PostgreSQL 17 database backup **and** a separate config fixture in one disposable test environment. These are **not** coordinated or full-system snapshots, not actual service restarts, and not proof of a safe real disaster recovery. D-53 remains CLOSED. See [SCRATCH-CONFIG-RESTORE.md](SCRATCH-CONFIG-RESTORE.md).
 
 ### Local catalog and configuration fixture milestone (2026-11-01)
 
