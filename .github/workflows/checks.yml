@@ -33,6 +33,7 @@ jobs:
       # against new disposable databases in CI. Never set this on owner hosts.
       DOMYRO_PG_CLI_TEST: '1'
       DOMYRO_NATIVE_DEPS_TEST: '1'
+      DOMYRO_SYSTEMD_VERIFY: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
