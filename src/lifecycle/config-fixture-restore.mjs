@@ -6,7 +6,7 @@
  */
 import {createHash} from 'node:crypto';
 import {constants as fs} from 'node:fs';
-import {lstat,realpath,mkdir,open,readFile,rm} from 'node:fs/promises';
+import {lstat,realpath,mkdir,open,readFile,readdir,rm} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {withVerifiedPrivateBackup} from './streamed-backup.mjs';
 const MAGIC=Buffer.from('DOMCONF1\n','ascii');
