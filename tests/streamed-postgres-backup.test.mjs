@@ -5,6 +5,8 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
+import { encryptStreamToPrivateFile } from '../src/lifecycle/streamed-backup.mjs';
 import { Pool } from 'pg';
 import { applyMigrations, loadMigrations } from '../src/persistence/migrator.mjs';
 import { dumpPostgresToStreamedBackup, restoreStreamedBackupToTestDatabase } from '../src/lifecycle/streamed-postgres-backup.mjs';
@@ -82,4 +84,29 @@ test('real PostgreSQL streaming dump, encrypted file, authenticated scratch rest
     await admin.query('DROP DATABASE IF EXISTS "'+sourceName+'"');
     await admin.end();
   }
+});
+
+
+test('failed pg_dump and authenticated non-Postgres archive cannot publish or restore',async t=>{
+  const dir=await mkdtemp(join(tmpdir(),'domyro-failed-dump-'));
+  t.after(()=>rm(dir,{recursive:true,force:true}));
+  const sourceUrl='postgresql://dev:temporary-password@127.0.0.1:5432/nonproduction',
+    targetUrl='postgresql://dev:temporary-password@127.0.0.1:5432/domyro_restore_test_abcdef1234',
+    password='only-isolated-development-backup-secret';
+  const broken={
+    dump:{executable:process.execPath,prefix:['-e',"process.stdout.write('PGDMP incomplete'); process.exit(9);"]},
+    restore:{executable:'never-invoked',prefix:[]},
+  };
+  await assert.rejects(()=>dumpPostgresToStreamedBackup({
+    sourceUrl,directory:dir,name:'failed-pg.domyrobackup',password,tools:broken,
+  }),/postgres_tool_failed/);
+  assert.deepEqual(await readdir(dir),[]);
+  await encryptStreamToPrivateFile({
+    source:Readable.from([Buffer.from('HELLO this-is-authenticated-nonpg')]),
+    directory:dir,name:'not-pg.domyrobackup',password,
+  });
+  await assert.rejects(()=>restoreStreamedBackupToTestDatabase({
+    directory:dir,name:'not-pg.domyrobackup',password,targetUrl,tools:broken,
+  }),/not_a_postgresql_custom_archive/);
+  assert.deepEqual(await readdir(dir),['not-pg.domyrobackup']);
 });
