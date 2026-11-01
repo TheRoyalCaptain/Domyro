@@ -7,7 +7,8 @@
  * no permissions expansion, and no interaction with a live home installation.
  */
 import { randomBytes } from 'node:crypto';
-import { open, lstat, link, unlink, realpath, readFile } from 'node:fs/promises';
+import { constants as fileFlags } from 'node:fs';
+import { open, lstat, link, unlink, realpath } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 const MAX_ENCRYPTED_FILE = 34 * 1024 * 1024;
 const NAME = /^[a-z0-9][a-z0-9_-]{1,90}\.domyrobackup$/;
@@ -65,7 +66,8 @@ export async function readEncryptedBackupFile({ directory, name }) {
   const st = await lstat(path);
   if (!st.isFile() || st.isSymbolicLink() || (st.mode & 0o077) !== 0 ||
       st.size < 29 || st.size > MAX_ENCRYPTED_FILE) throw new Error('backup_file_untrusted');
-  const fd = await open(path,'r');
+  // O_NOFOLLOW closes the symlink-swap gap between lstat() and open().
+  const fd = await open(path,fileFlags.O_RDONLY | fileFlags.O_NOFOLLOW);
   try {
     const after = await fd.stat();
     if (!after.isFile() || after.ino !== st.ino || after.dev !== st.dev ||
