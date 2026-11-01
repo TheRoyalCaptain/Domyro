@@ -47,6 +47,10 @@ Dit is bovendien **geen volledige Ubuntu-VM-installatie**: de tests draaien rech
 
 Een geslaagde unit-/procesproef kan niet als bewijs dienen voor veilige productie-updates of terugzetten van een complete smart-home-installatie.
 
+## Nieuwe vervolgproef: vergrendelde dependencies en herstelbare proceswissel
+
+De repo heeft nu een reproduceerbare npm-lockfile en een extra proef die vanuit een ondertekende ontwikkelbundel daadwerkelijk alle **production npm-dependencies** installeert in een tijdelijke directory en native Argon2-functionaliteit test op amd64 en ARM64. Een afzonderlijke proef schakelt tussen twee ondertekende releases en test na een fout een volledige herstart van het **oude proces**. De testconcept-unit wordt door `systemd-analyze verify` nagekeken, met een tijdelijk Node-uitvoerpad dat op de CI-runner bestaat. Dit zijn nog **geen** VM-installatie, productie-updater of geteste terugrol van echte databasegegevens. Zie [NATIVE-DEPENDENCIES-AND-UPDATE-REHEARSAL.md](NATIVE-DEPENDENCIES-AND-UPDATE-REHEARSAL.md).
+
 ## Volgende stappen tot de echte installatie
 
 1. Maak een reproduceerbare, geteste en **vergrendelde dependencybundel**, inclusief Node-runtime en native PostgreSQL-/Argon2-/MQTT-dependencies voor amd64 en ARM64.
