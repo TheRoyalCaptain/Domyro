@@ -66,3 +66,34 @@ test('unsupported native architecture is rejected',async()=>{
     ...args,arch:arch==='amd64'?'arm64':'amd64',
   }),/native_architecture_mismatch/);
 });
+
+test('modifying signed source after layout but before launch fails closed and cleans sandbox',async()=>{
+  const args=await signed();
+  let temp;
+  await assert.rejects(()=>rehearseNativeServiceLayout({
+    ...args,onPrepared:async({sandbox,release})=>{
+      temp=sandbox;
+      await writeFile(join(release,'src/server.mjs'),'// injected untrusted code\n',{mode:0o600});
+    },
+  }),/staged_release_file_changed/);
+  await assert.rejects(()=>access(temp),/ENOENT/);
+});
+test('tampering with prepared unit is detected before the test process starts',async()=>{
+  const args=await signed();
+  let temp;
+  await assert.rejects(()=>rehearseNativeServiceLayout({
+    ...args,onPrepared:async({sandbox,unitPath})=>{
+      temp=sandbox;
+      await writeFile(unitPath,'[Service]\nExecStart=/tmp/untrusted\n',{mode:0o600});
+    },
+  }),/rehearsal_existing_file_changed/);
+  await assert.rejects(()=>access(temp),/ENOENT/);
+});
+test('adding unlisted code to signed release fails even if signed files are intact',async()=>{
+  const args=await signed();
+  await assert.rejects(()=>rehearseNativeServiceLayout({
+    ...args,onPrepared:async({release})=>{
+      await writeFile(join(release,'src/surprise.mjs'),'export const unsafe = true;\n',{mode:0o600});
+    },
+  }),/staged_release_unlisted_file/);
+});
