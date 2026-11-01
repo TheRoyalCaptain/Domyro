@@ -3,7 +3,9 @@
  * Local-only backup catalogue for the disposable development environment.
  * A receipt is NEVER enough to claim a restorable snapshot. Only a successful
  * fresh AES-GCM verification and PostgreSQL header/size/hash check may mark it
- * verified during an inspection. No deletes and no automatic restore.
+ * cryptographically authenticated during an inspection. Authentication is
+ * NOT proof of successful pg_restore, so retention never authorizes removal.
+ * No deletes and no automatic restore.
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { constants as flags } from 'node:fs';
@@ -156,7 +158,8 @@ export async function inspectLocalBackupCatalog({ directory, password = null }) 
   const records = [];
   for (const name of names) {
     const row = { id: name, filename: name, targetId: 'local',
-      owned: false, completed: false, verified: false, hold: false, reason: 'unknown_or_unverified' };
+      owned: false, completed: false, verified: false, authenticated: false,
+      restoreTested: false, hold: false, reason: 'unknown_or_unverified' };
     try {
       const receipt = await readReceipt(dir, name);
       const digest = await hashEncryptedFile(join(dir, name));
@@ -167,8 +170,12 @@ export async function inspectLocalBackupCatalog({ directory, password = null }) 
       } else {
         await verifyPgArchive({ directory: dir, name, password,
           expectedSha256: receipt.plaintextSha256, expectedBytes: receipt.plaintextBytes });
-        Object.assign(row, { owned: true, completed: true, verified: true,
-          completedAt: receipt.completedAt, plaintextBytes: receipt.plaintextBytes, reason: 'authenticated_pg_archive' });
+        Object.assign(row, { owned: true, completed: true, authenticated: true,
+          // Not a verified recovery point until a separate actual restore test
+          // succeeds. Do not let a valid-but-unrestorable PGDMP prefix prune.
+          verified: false, restoreTested: false,
+          completedAt: receipt.completedAt, plaintextBytes: receipt.plaintextBytes,
+          reason: 'authenticated_not_restore_tested' });
       }
     } catch {
       row.reason = 'invalid_or_missing_receipt_or_backup';
