@@ -13,6 +13,7 @@ import { open, lstat, realpath, readdir, link, unlink } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { withVerifiedPrivateBackup } from './streamed-backup.mjs';
 import { planBackupRetention } from './backup-retention.mjs';
+import { inspectEncryptedConfigFixture } from './config-fixture-backup.mjs';
 
 const NAME = /^[a-z0-9][a-z0-9_-]{1,90}\.domyrobackup$/;
 const SHA = /^[a-f0-9]{64}$/;
@@ -62,7 +63,7 @@ async function hashEncryptedFile(path) {
   } finally { await fd.close(); }
 }
 function validReceipt(receipt, expectedName) {
-  if (!receipt || receipt.schemaVersion !== 1 || receipt.kind !== 'postgresql-custom' ||
+  if (!receipt || receipt.schemaVersion !== 1 || !['postgresql-custom', 'domyro-selected-config-fixture'].includes(receipt.kind) ||
       receipt.name !== expectedName || receipt.targetId !== 'local' ||
       !SHA.test(receipt.encryptedSha256 ?? '') || !SHA.test(receipt.plaintextSha256 ?? '') ||
       !Number.isSafeInteger(receipt.encryptedBytes) || receipt.encryptedBytes < 32 ||
@@ -103,6 +104,20 @@ async function verifyPgArchive({ directory, name, password, expectedSha256, expe
       return { plaintextSha256: sha256, plaintextBytes };
     },
   });
+}
+async function verifyConfigArchive({directory,name,password,expectedSha256,expectedBytes}) {
+  // This validates every included file's own SHA-256 and the AES-GCM envelope.
+  const detail = await inspectEncryptedConfigFixture({directory,name,password});
+  const archive = await withVerifiedPrivateBackup({
+    directory,name,password,maxPlainBytes:8*1024*1024,
+    callback:async ({sha256,plaintextBytes})=>{
+      if(expectedSha256 && expectedSha256!==sha256 ||
+         expectedBytes!==undefined && expectedBytes!==plaintextBytes)
+        throw new Error('catalog_archive_digest_changed');
+      return {plaintextSha256:sha256,plaintextBytes};
+    },
+  });
+  return {...archive,components:[...new Set(detail.files.map(x=>x.role))]};
 }
 async function publishReceipt(dir, name, receipt) {
   const bytes = Buffer.from(JSON.stringify(receipt) + '\n');
@@ -145,6 +160,22 @@ export async function registerVerifiedPostgresBackup({ directory, name, password
   await publishReceipt(dir, name, receipt);
   return receipt;
 }
+/** Register selected configuration fixtures, without claiming a working restore. */
+export async function registerVerifiedConfigFixture({directory,name,password,completedAt=new Date().toISOString()}) {
+  checkedName(name);
+  if(!Number.isFinite(Date.parse(completedAt)) ||
+     !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d/.test(completedAt)) throw new TypeError('invalid_backup_timestamp');
+  const dir=await privateDirectory(directory);
+  const archive=await verifyConfigArchive({directory:dir,name,password});
+  const encrypted=await hashEncryptedFile(join(dir,name));
+  const receipt=Object.freeze({
+    schemaVersion:1,kind:'domyro-selected-config-fixture',name,targetId:'local',completedAt,
+    encryptedSha256:encrypted.checksum,encryptedBytes:encrypted.encryptedBytes,
+    plaintextSha256:archive.plaintextSha256,plaintextBytes:archive.plaintextBytes,
+  });
+  await publishReceipt(dir,name,receipt);
+  return receipt;
+}
 /**
  * Enumerate backups, including unknown and corrupted ones. Never trust receipt
  * metadata as an authentication guarantee. Without a password, all are
@@ -168,9 +199,13 @@ export async function inspectLocalBackupCatalog({ directory, password = null }) 
       } else if (password === null) {
         row.reason = 'authentication_not_checked';
       } else {
-        await verifyPgArchive({ directory: dir, name, password,
-          expectedSha256: receipt.plaintextSha256, expectedBytes: receipt.plaintextBytes });
-        Object.assign(row, { owned: true, completed: true, authenticated: true,
+        const inspected=receipt.kind==='postgresql-custom'
+          ? await verifyPgArchive({directory:dir,name,password,
+              expectedSha256:receipt.plaintextSha256,expectedBytes:receipt.plaintextBytes})
+          : await verifyConfigArchive({directory:dir,name,password,
+              expectedSha256:receipt.plaintextSha256,expectedBytes:receipt.plaintextBytes});
+        Object.assign(row, { kind:receipt.kind,components:inspected.components??[],
+          owned: true, completed: true, authenticated: true,
           // Not a verified recovery point until a separate actual restore test
           // succeeds. Do not let a valid-but-unrestorable PGDMP prefix prune.
           verified: false, restoreTested: false,
