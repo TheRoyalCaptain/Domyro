@@ -26,19 +26,40 @@ if [[ "$NODE_BIN" != /opt/hostedtoolcache/node/* && "$NODE_BIN" != /usr/bin/node
   echo "Unapproved runner Node runtime path" >&2
   exit 94
 fi
+# Build a disposable signed developer source bundle and verify it BEFORE
+# running it through real systemd. The test key is ephemeral, not official.
 UNIT="domyro-ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-PORT="$(node -e 'const net=require("node:net");const s=net.createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')"
-BASE="http://127.0.0.1:$PORT"
+STAGING_BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
 cleanup() {
   sudo systemctl stop "$UNIT.service" >/dev/null 2>&1 || true
   sudo systemctl reset-failed "$UNIT.service" >/dev/null 2>&1 || true
   rm -f "/tmp/domyro-ci-ready-$GITHUB_RUN_ID"
+  if [[ -n "$STAGING_BASE" && "$STAGING_BASE" == "$GITHUB_WORKSPACE"/.domyro-ci-signed-* ]]; then
+    rm -rf -- "$STAGING_BASE"
+  fi
 }
 trap cleanup EXIT
-echo "Starting CI-only systemd unit $UNIT on loopback port $PORT"
+RELEASE_ROOT="$(node scripts/ci-stage-signed-source.mjs "$STAGING_BASE/release-store")"
+[[ -f "$RELEASE_ROOT/src/server.mjs" && -f "$RELEASE_ROOT/package-lock.json" ]]
+# The dependency install must not change any signed source files.
+SOURCE_DIGESTS="$STAGING_BASE/source.sha256"
+(
+  cd "$RELEASE_ROOT"
+  find src web -type f -print0 | sort -z | xargs -0 sha256sum
+  sha256sum package.json package-lock.json
+) > "$SOURCE_DIGESTS"
+npm ci --prefix "$RELEASE_ROOT" --omit=dev --ignore-scripts --no-audit --no-fund
+(
+  cd "$RELEASE_ROOT"
+  find src web -type f -print0 | sort -z | xargs -0 sha256sum
+  sha256sum package.json package-lock.json
+) | diff -u "$SOURCE_DIGESTS" -
+PORT="$(node -e 'const net=require("node:net");const s=net.createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')"
+BASE="http://127.0.0.1:$PORT"
+echo "Starting verified signed developer source via CI-only systemd unit $UNIT on loopback port $PORT"
 sudo systemd-run --unit="$UNIT" --collect --quiet \
   --property="User=runner" \
-  --property="WorkingDirectory=$GITHUB_WORKSPACE" \
+  --property="WorkingDirectory=$RELEASE_ROOT" \
   --property="Environment=NODE_ENV=test DOMYRO_HOST=127.0.0.1 DOMYRO_PORT=$PORT" \
   --property="NoNewPrivileges=yes" \
   --property="PrivateTmp=yes" \
@@ -47,7 +68,7 @@ sudo systemd-run --unit="$UNIT" --collect --quiet \
   --property="UMask=0077" \
   --property="Restart=on-failure" \
   --property="RestartSec=1" \
-  "$NODE_BIN" "$GITHUB_WORKSPACE/src/server.mjs"
+  "$NODE_BIN" "$RELEASE_ROOT/src/server.mjs"
 assert_live() {
   local found=0
   for _ in $(seq 1 30); do
@@ -93,4 +114,4 @@ fi
 assert_live
 RESTARTS="$(sudo systemctl show --value --property NRestarts "$UNIT.service")"
 [[ "$RESTARTS" =~ ^[0-9]+$ && "$RESTARTS" -ge 1 ]]
-echo "CI-only systemd start, manual restart and automatic crash recovery verified. Not a production installation."
+echo "CI-only SIGNED source systemd start, manual restart and crash recovery verified. Not a production installation."
