@@ -48,7 +48,11 @@
     "signedManifestCurrentDatabaseSchemaTests": true,
     "ephemeralNativeSourceBootAndActualHttpSmokeTests": true,
     "disposableNativeServiceLayoutAndChildRestartTests": true,
-    "stagedBundleReverificationAndUnitTamperRejectionTests": true
+    "stagedBundleReverificationAndUnitTamperRejectionTests": true,
+    "committedIntegrityLockedDependencyGraphAndNpmCiTests": true,
+    "verifiedNativeArgon2PgMqttRuntimeInDisposableSignedBundle": true,
+    "verifiedTwoSignedReleaseRealProcessUpdateAndFailureRollback": true,
+    "parsedSystemdUnitDraftWithUbuntuSystemdAnalyze": true
   },
-  "notes": "90 automated tests passed across all four GitHub Actions CI jobs (Ubuntu 24.04 x86-64 and ARM64, Node 22/24). New sandboxed NATIVE SERVICE REHEARSAL creates private /opt,/etc,/var-like paths inside a disposable OS-created directory, stages the complete signed development source release, verifies idempotent layouts, refuses changes to unit or additional/tampered files, starts/stops/restarts the real extracted Domyro server in independent Node child processes and checks loopback health/login assets; cleanup covers injected failures. No real systemd service activated, apt/dependency provisioning, dedicated production user, server VM installation, official release key, safe production TLS/bootstrap, full-system backup/restore or working self-updater. This is NOT an Ubuntu one-line installer. All D53 gate checks remain FALSE, and owner-server deployment consent remains FALSE."
+  "notes": "96/96 isolated automated tests now pass on 4/4 GitHub CI combinations (Ubuntu 24.04 amd64 and ARM64, Node.js 22/24). The repository commits a complete npm package-lock with registry integrity hashes and uses npm ci. Signed developer source bundles include lockfile. Real npm ci --omit=dev runs inside disposable signed-release directories and verifies native Argon2id password hashing, pg, MQTT imports on each architecture. A two-version signed-source update rehearsal starts the previous real Node process, switches to a new release, then on injected candidate failure restores the pointer AND restarts/verifies the previous process. The draft unit is parsed using systemd-analyze verify. NO actual systemd install, privileged native one-command installer, production release trust root, synchronized database/config/Matter backup recovery, official secure self-updater or independent VM/bare-metal testing. D-53 checks all FALSE and owner deployment consent FALSE."
 }
