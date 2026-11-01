@@ -26,7 +26,9 @@
     "isolatedEncryptedFixtureTests": true,
     "isolatedPostgresMigrationsAndSitePermissions": true,
     "argon2idAndHashedSessionTests": true,
-    "localBootstrapAndAuthApiIntegrationTests": true
+    "localBootstrapAndAuthApiIntegrationTests": true,
+    "disposableMqttBrokerReadOnlyProtocolTests": true,
+    "siteScopedZigbeeRegistryAndExplicitIngestionTests": true
   },
-  "notes": "M1 foundation now has isolated PostgreSQL owner bootstrap, Argon2id, loopback-only login/logout with HttpOnly SameSite sessions, CSRF/Origin/Host checks and authorization-tested room endpoints, on Ubuntu amd64/ARM64 CI. No production TLS/cookie/proxy solution, MFA/recovery, complete native installer, real device integrations, full data backup or proven live updater. D-53 technical readiness remains FALSE and personal deployment consent remains FALSE."
+  "notes": "M2 software proof: opt-in read-only MQTT.js 3.1.1 client and Zigbee2MQTT observer tested with disposable Aedes broker on Ubuntu amd64/ARM64, plus schema v3 and explicit site-owned PostgreSQL ingestion tests. This is NOT an approved production/hardware connection. Real MQTT device functionality, TLS credentials, full adapter command/ack, Matter, one-line Ubuntu installer, full backups and reliable production updates remain unverified. D-53 stays CLOSED; owner deployment consent stays FALSE."
 }
