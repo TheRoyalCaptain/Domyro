@@ -24,6 +24,10 @@ Matter/Thread is not identical to Zigbee; Thread devices need an existing Thread
 
 Proof: switch simulated using local broker AND real smart device; value read, action, response, broker restart, retained state and permission denial tested.
 
+## 2A. M2 early implementation (2026-11-01)
+
+The repository now contains an **explicit opt-in read-only localhost MQTT.js subscriber**, a limited Zigbee2MQTT bridge/device/state observer keyed by stable IEEE address, a disposable real MQTT broker protocol test, and a separate site-scoped PostgreSQL registry (migration v3) tested against an isolated PostgreSQL database. The transport **never publishes** messages, does not control Zigbee hardware or pair devices, and does not auto-create browser-visible devices. Real credentials/TLS, trusted site assignment UX, live DB persistence wiring, device compatibility and physical acceptance tests remain unimplemented. This is not approval to access the owner's operational broker. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
+
 ## 3. Zigbee2MQTT adapter
 
 Zigbee2MQTT retains sole ownership of its coordinator and Zigbee mesh. Domyro subscribes to broker topics and controls devices via the published Zigbee2MQTT MQTT API.
