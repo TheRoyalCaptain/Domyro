@@ -4,6 +4,10 @@
 **Official owner / sole final approver: @TheRoyalCaptain**  
 **Source license: GNU Affero General Public License version 3 only (SPDX AGPL-3.0-only)**
 
+## AI-built project and human maintainer
+
+Domyro is explicitly an **AI-developed project**, created with AI assistance under the direction, supervision and collaboration of **@TheRoyalCaptain**. AI can produce code, tests and documentation, but it is not a project owner or an independent official approver. **@TheRoyalCaptain** directs development and remains the sole final decision-maker for official repository changes and releases under this project's policy. AI-generated changes require independent review and testing; they do not inherently count as verified or production-ready. See [AI development disclosure](AI-DEVELOPMENT.md).
+
 ## 1. What this means
 
 This is real free and open-source software. Anyone may fork, change, use, share and redistribute code under the AGPLv3 terms, and modified network-served versions have the applicable source offer obligations. The project owner **cannot prohibit lawful AGPL forks or edits in their repositories**.
