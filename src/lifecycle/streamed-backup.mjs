@@ -80,11 +80,12 @@ export async function encryptStreamToPrivateFile({source,directory,name,password
       digest.update(chunk);
       await writeAll(fd,cipher.update(chunk));
     }
-    if(total<8)throw new Error('backup_stream_empty');
     await writeAll(fd,cipher.final());
     await writeAll(fd,cipher.getAuthTag());
-    // A failed pg_dump must never leave a published backup.
+    // Check exporter exit status before classifying its empty stdout.
+    // Neither condition can publish a backup file.
     await beforePublish();
+    if(total<8)throw new Error('backup_stream_empty');
     await fd.sync();await fd.close();fd=null;
     await link(temp,join(dir,name)); // EEXIST, never replace
     await syncDir(dir);
