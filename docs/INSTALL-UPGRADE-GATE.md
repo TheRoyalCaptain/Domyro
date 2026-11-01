@@ -24,6 +24,10 @@ The versioned [installation-readiness.json](../config/installation-readiness.jso
 
 A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a new site-scoped PostgreSQL device/observation schema can store stable IEEE device identities. These are separate development capabilities: **no approved real-hardware Zigbee2MQTT integration, secure broker credentials, automatically enabled site-bound broker-to-DB service, user-authorized actuation or independent physical testing exists**. D-53 installation readiness remains **closed**. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
 
+### Local catalog and configuration fixture milestone (2026-11-01)
+
+A read-only local backup catalog now detects encrypted PostgreSQL backups and explicitly selected small Domyro/Mosquitto/Zigbee2MQTT **test configuration fixtures**, authenticates each snapshot, and stores non-secret immutable checksum receipts. A separate recovery coverage contract enumerates PostgreSQL, app configuration, auth/recovery keys, uploads, Mosquitto, Zigbee2MQTT and Matter fabrics. Since an authenticated file is **not** a proven end-to-end recovery, all backup removal suggestions remain **hard-disabled**. None of the fixture code captures live service secrets or restores a running installation. See [BACKUP-CATALOG-RECOVERY.md](BACKUP-CATALOG-RECOVERY.md).
+
 ### Tested PostgreSQL archive/restore milestone (2026-11-01)
 
 A real PostgreSQL 17 `pg_dump` custom-format archive is encrypted with AES-256-GCM + scrypt, authenticated and checked with SHA-256, then restored via `pg_restore --single-transaction --exit-on-error` **only into a deliberately empty isolated test database**. Tests verify users, sites, rooms, Zigbee devices and observations across Ubuntu amd64/ARM64 with Node 22/24, reject tampering, and prove a malformed authenticated archive does not populate the target. See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
