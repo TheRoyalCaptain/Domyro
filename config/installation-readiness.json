@@ -38,7 +38,9 @@
     "failedExporterNeverPublishesAndAuthenticityRequiredBeforeRestore": true,
     "authenticatedLocalBackupCatalogAndNoPruningTests": true,
     "selectedEncryptedConfigFixtureTests": true,
-    "failClosedRecoveryCoverageInventoryTests": true
+    "failClosedRecoveryCoverageInventoryTests": true,
+    "scratchOnlyEncryptedConfigRestoreAndPostWriteAuditTests": true,
+    "separatePostgresAndConfigScratchRecoveryIntegrationTests": true
   },
-  "notes": "Development: 62+ isolated automated tests passed on Ubuntu 24.04 amd64/arm64 with Node.js 22/24, including real PostgreSQL scratch restore, streaming AES-GCM, immutable local catalog receipts, authenticated PostgreSQL/config fixtures, and conservative recovery coverage. Backup catalog explicitly cannot propose deletion without independent restoration proof. Only selected private test fixture configs are encrypted; no real operational Zigbee2MQTT/Mosquitto/Matter secrets or full application restore, no backup scheduler, external storage, complete one-line native Ubuntu installer, safe live updater/rollback or owner deployment consent. D-53 REMAINS CLOSED."
+  "notes": "68 isolated CI tests passed on Ubuntu 24.04 amd64/arm64 and Node 22/24 as of latest checked integration run. New scratch-only config restore requires authenticated DOMYROS2 backup and restores selected test fixtures only to a NEW private test directory; original files and existing targets are untouched. Tests cover wrong passphrase, invalid manifest, failed mid-write cleanup, changed files, unauthorized extra files and independent post-write scratch file audit. One temporary CI environment restores a real PostgreSQL dump and a SEPARATE config fixture; it is NOT a coordinated full-system snapshot or production recovery. No real service keys/Matter fabrics, operational restoration, external backup targets, safe auto scheduler, signed native one-command installer, or verified safe live upgrades yet. D-53 remains CLOSED; no owner-server deployment consent."
 }
