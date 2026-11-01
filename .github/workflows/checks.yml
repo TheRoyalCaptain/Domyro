@@ -37,8 +37,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Install development-only pinned database driver
-        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Install exact integrity-locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check
       - name: Read-only host diagnostic (informational, no install)
         run: npm run preflight:read-only
