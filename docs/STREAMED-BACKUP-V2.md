@@ -34,7 +34,7 @@ This is an **additive v2 format** alongside the earlier 20 MiB in-memory v1 prot
 
 ## Next implementation priorities
 
-1. Complete backup catalog and storage targets, safe retention and monitoring.
+1. **A read-only, local-only catalog and selected config fixture proof now exist**. Still missing: real service ownership and secrets capture, actual full-config restore, external storage targets, independent restore attestations, scheduler, tested multi-target retention and recovery monitoring. See [BACKUP-CATALOG-RECOVERY.md](BACKUP-CATALOG-RECOVERY.md).
 2. Capture and restore **all** application secrets/configuration, Zigbee2MQTT-managed state and Matter fabric identity consistently with PostgreSQL.
 3. Safe owner-authorized disaster restore to a **new dedicated Domyro instance**, with key recovery, full application health checks and later a supported manual upgrade rollback strategy.
 4. Native Ubuntu LTS one-command installer for amd64/arm64 with signed immutable releases, selectable dependencies, owner onboarding, service health, and independent VM/hardware tests.
