@@ -24,6 +24,12 @@ The versioned [installation-readiness.json](../config/installation-readiness.jso
 
 A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a new site-scoped PostgreSQL device/observation schema can store stable IEEE device identities. These are separate development capabilities: **no approved real-hardware Zigbee2MQTT integration, secure broker credentials, automatically enabled site-bound broker-to-DB service, user-authorized actuation or independent physical testing exists**. D-53 installation readiness remains **closed**. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
 
+### Tested PostgreSQL archive/restore milestone (2026-11-01)
+
+A real PostgreSQL 17 `pg_dump` custom-format archive is encrypted with AES-256-GCM + scrypt, authenticated and checked with SHA-256, then restored via `pg_restore --single-transaction --exit-on-error` **only into a deliberately empty isolated test database**. Tests verify users, sites, rooms, Zigbee devices and observations across Ubuntu amd64/ARM64 with Node 22/24, reject tampering, and prove a malformed authenticated archive does not populate the target. See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
+
+**D-53 remains CLOSED:** this early 20 MiB in-memory proof does **not** restore full Domyro configuration/integration secrets/Matter fabrics, cannot safely recover a populated live DB, and is not wired to an installer/manual-updater/rollback flow. Do not call it a complete backup system.
+
 ### PostgreSQL milestone (still not an installation)
 
 A development-only PostgreSQL schema/migrator, internal user/site/area/session primitives, **console-only first-owner initialization and an experimental localhost login/room interface** now exist. The schema migrator runs **only through an explicit CLI invocation** on a separately configured local test DB; no automatic DB setup takes place at server startup or during update polling. **Real PostgreSQL backup, restore, migration recovery, secure production onboarding/MFA/account recovery and the one-line native installer remain unfinished**. Do not mark D-53 as passed based on these CI tests. See [PERSISTENCE-FOUNDATION.md](PERSISTENCE-FOUNDATION.md).
