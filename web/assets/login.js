@@ -21,6 +21,7 @@ function setAuthenticated(authenticated) {
     get('rooms-panel').hidden = true;
     get('sites').replaceChildren();
     get('rooms').replaceChildren();
+    get('updates-panel').hidden = true;
   }
 }
 async function api(path, { method = 'GET', body, csrf = false } = {}) {
@@ -101,6 +102,29 @@ async function loadSites() {
   }
   await selectSite(sites[0]);
 }
+async function loadUpdateCenter() {
+  const panel = get('updates-panel');
+  panel.hidden = true;
+  try {
+    const status = await api('system/updates');
+    panel.hidden = false;
+    get('updates-version').textContent = status.currentVersion ?? 'Onbekend';
+    get('updates-feed').textContent = status.signedFeedConfigured ? 'Vertrouwde bron ingesteld' : 'Nog niet ingesteld';
+    get('updates-gate').textContent = status.installationGate + (status.installAllowed ? ' open' : ' gesloten');
+    get('updates-status').textContent = status.installAllowed
+      ? 'Handmatig installeren vereist afzonderlijke toestemming.'
+      : 'Updaten is geblokkeerd totdat de volledige installatie- en hersteltests zijn goedgekeurd.';
+    get('update-install').disabled = !status.installAllowed;
+    get('update-install').setAttribute('aria-disabled', String(!status.installAllowed));
+  } catch (error) {
+    // Guests are not system administrators; don't show an admin-only panel.
+    if (error.status !== 403 && error.status !== 401) {
+      panel.hidden = false;
+      get('updates-status').textContent = 'Updatecentrum momenteel niet beschikbaar.';
+    }
+  }
+}
+
 async function initialize() {
   try {
     const me = await api('auth/me');
@@ -108,6 +132,7 @@ async function initialize() {
     get('welcome-heading').textContent = 'Welkom, ' + me.login;
     setAuthenticated(true);
     await loadSites();
+    await loadUpdateCenter();
   } catch (error) {
     setAuthenticated(false);
     if (error.status && error.status !== 401 && error.status !== 404) showMessage(explain(error));
@@ -128,6 +153,7 @@ get('login-form').addEventListener('submit', async event => {
     get('welcome-heading').textContent = 'Welkom, ' + data.user.login;
     setAuthenticated(true);
     await loadSites();
+    await loadUpdateCenter();
     showMessage('Je bent aangemeld bij de lokale ontwikkelomgeving.', true);
   } catch (error) {
     get('password').value = '';
