@@ -26,11 +26,15 @@ De module `src/lifecycle/backup-file-store.mjs` bewaart begrensde versleutelde b
 
 Dit is nog **geen** automatische back-updienst, NAS-upload, retentiebeheer of noodherstel van een productie-installatie.
 
+## Nieuwe streaming-back-up v2
+
+De extra `DOMYROS2`-route verwerkt de output van echte `pg_dump` als versleutelde datastroom rechtstreeks naar een privébestand. Een volledig geauthenticeerd tijdelijk archief wordt pas na GCM-verificatie aangeboden aan `pg_restore`, en alleen voor een lege testdatabase. De nieuwe ontwikkellimiet is **2 GiB** en een **27 MiB** stroom is in CI getest; de bestaande v1-route blijft beperkt tot 20 MiB. Zie [STREAMED-BACKUP-V2.md](STREAMED-BACKUP-V2.md). Tijdens herstel staat het ontsleutelde archief tijdelijk op privé-opslag, wat voor productie extra beveiliging en crashherstel vereist.
+
 ## Grenzen van deze eerste versie
 
 **Dit is een echte database-hersteldemonstratie, maar nog geen volledige Domyro-back-upoplossing.**
 
-- De huidige in-memory AES-module ondersteunt maximaal 32 MiB plaintext. Daarom is het PostgreSQL-custom-archief voorlopig conservatief begrensd op **20 MiB**, en worden backups geheel in RAM verwerkt. Grote huishoudelijke historie en mediabestanden werken hiermee niet. De productieversie moet versleuteling en verwerking streamen, met redelijke RAM- en schijflimieten.
+- De **oude v1-route** ondersteunt maximaal 32 MiB plaintext, met een limiet van **20 MiB** voor het PostgreSQL-archief. De nieuwe v2-streamingroute gebruikt een ontwikkellimiet van **2 GiB** zonder het hele archief in RAM op te slaan. Productiegebruik met grote datasets en volledige recovery is nog niet getest.
 - Alleen het PostgreSQL-`public`-schema is opgenomen. **Niet** afgedekt zijn OS/service-instellingen, MQTT-brokerconfiguratie, externe Zigbee2MQTT-data, Matter-fabrics en sleutels, bestandsuploads, certificaten en secrets buiten PostgreSQL. Die zijn noodzakelijk voor herstel van een compleet smart-home-systeem.
 - De ontwikkelmodule beheert geen opslagbestemming, periodieke jobs, USB/NAS/SMB, back-upretentie, key-rotatie, secure keystore, hostinstallatie, databaserollen of al bestaande databases.
 - Er is geen veilig herstel van een operationele database en geen automatische database-terugrol tijdens een software-update. **Dit prototype weigert juist een niet-lege restore-database.**
@@ -39,7 +43,7 @@ Dit is nog **geen** automatische back-updienst, NAS-upload, retentiebeheer of no
 
 ## Volgende noodzakelijke stappen
 
-1. Versleutelde **streaming** back-up met aangewezen veilige opslag en limieten.
+1. **V2-streaming is geïsoleerd getest.** Nog nodig: veilige externe opslagdoelen, vrijeschijfruimtecontrole, terugvinden/opruimen van onafgemaakte tijdelijke bestanden, back-upbeheer en sleutelherstel.
 2. Uitbreiden naar alle Domyro-configuratie, integratiesleutels, Matter-fabric data en persistentie buiten PostgreSQL.
 3. Een gecontroleerde `domyro repair`/restore-wizard naar een **nieuwe geïsoleerde installatie**, inclusief hersteltesten van sessies, permissies, integraties en migraties.
 4. Manuele updater met compatibiliteitspreflight, back-upverificatie, herstelbare schema-migraties, healthchecks en rollback of veilige herstelmodus.
