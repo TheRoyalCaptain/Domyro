@@ -105,6 +105,23 @@ test('high-water mark never allows selecting an older version when a newer one i
   assert.equal(got.state, 'no_supported_release');
   assert.equal(got.selected, null);
 });
+test('previously trusted signed version cannot be silently replaced across catalog reads', () => {
+  const previous = signed('1.8.0', { file: 'old.bundle' });
+  const receipt = choose([previous]);
+  const pinnedDigest = receipt.selected.manifestSha256;
+  const replacement = signed('1.8.0', { file: 'new.bundle' });
+  const blocked = choose([replacement], {
+    highestSeenVersion: '1.8.0', highestSeenManifestSha256: pinnedDigest,
+  });
+  assert.equal(blocked.state, 'trusted_release_receipt_mismatch');
+  assert.equal(blocked.selected, null);
+  assert.deepEqual(blocked.blockers, ['previously_trusted_manifest_changed']);
+  const accepted = choose([previous], {
+    highestSeenVersion: '1.8.0', highestSeenManifestSha256: pinnedDigest,
+  });
+  assert.equal(accepted.selected.version, '1.8.0');
+  assert.equal(accepted.installAllowed, false);
+});
 test('download delay only enables downloading and never installation', () => {
   const got = choose([signed('1.5.0', { publishedAt: '2026-11-02T00:00:00Z' })], {
     now: new Date('2026-11-02T03:00:00Z'),
@@ -135,6 +152,8 @@ test('invalid trust, date, installed version, high-water mark and unbounded cata
   assert.throws(() => choose([], { now: new Date(NaN) }), /release_catalog_time_invalid/);
   assert.throws(() => choose([], { currentVersion: 'invalid' }), /version/);
   assert.throws(() => choose([], { highestSeenVersion: 'invalid' }), /version/);
+  assert.throws(() => choose([], { highestSeenManifestSha256: 'a'.repeat(64) }), /trusted_release_receipt_invalid/);
+  assert.throws(() => choose([], { highestSeenVersion: '1.2.0', highestSeenManifestSha256: 'INVALID' }), /trusted_release_receipt_invalid/);
   assert.throws(() => choose(Array(65).fill(signed('1.1.0'))), /release_catalog_size_invalid/);
   assert.throws(() => choose([], { preferences: { automaticChecks: false, automaticDownloads: true } }), /downloads_require_automatic_checks/);
   assert.equal(choose([]).installAllowed, false);
