@@ -2,6 +2,12 @@
 
 **Your home. Your rules.**
 
+> **AI-DEVELOPED PROJECT · HUMAN-LED**
+>
+> **Domyro is built using AI, in close collaboration with and under the supervision of [@TheRoyalCaptain](https://github.com/TheRoyalCaptain).** @TheRoyalCaptain sets the requirements, directs development and holds final responsibility for official project decisions, review and releases. AI helps create code, designs, tests and documentation; its output is not assumed to be error-free or production-ready.
+>
+> [Read the full AI development disclosure](docs/AI-DEVELOPMENT.md).
+
 Domyro is an open-source, local-first smart-home platform under active development. The repository includes an early executable **development-only foundation** and detailed specifications for the eventual full product.
 
 > **Status: 0.1 development foundation.** @TheRoyalCaptain explicitly authorized M1 foundation coding on 31 October 2026. The preview has **experimental localhost login and PostgreSQL, but no production onboarding, real protocol integration or device control**. **D-53 hard gate:** the owner will **not install Domyro on their own server** until a verified complete one-command Ubuntu installer and tested **manual safe-upgrade + backup/recovery lifecycle** exist, followed by a separate owner deployment approval. See [D-53 installation gate](docs/INSTALL-UPGRADE-GATE.md).
@@ -71,6 +77,7 @@ Then open `http://127.0.0.1:8844` **on the same computer**. The experimental loc
 28. [PostgreSQL 17 encrypted backup and empty-test-database restore](docs/POSTGRES-BACKUP-RESTORE.md): genuine pg_dump/pg_restore integration tests with failure injection; **not complete-home backup or safe production update**.
 29. [Streaming encrypted PostgreSQL backup v2](docs/STREAMED-BACKUP-V2.md): real streaming pg_dump, authenticated private-file restore in an empty test database; **not production backup/restore**.
 30. [Backupcatalogus en configuratieherstelvoorbereiding](docs/BACKUP-CATALOG-RECOVERY.md): immutable encrypted backup receipts, selected development config fixtures, fail-closed coverage checks; **no automated deletion or production restore**.
+31. [AI development disclosure](docs/AI-DEVELOPMENT.md): clear AI-built project attribution, human direction, supervision and official maintainer responsibility of @TheRoyalCaptain.
 
 **Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
