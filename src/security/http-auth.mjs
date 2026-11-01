@@ -5,6 +5,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createDbSession, resolveDbSession, revokeDbSession, hashPassword, verifyPassword, hashSessionToken } from './credentials.mjs';
 import { listSitesForUser, listAreasForUser, createAreaForUser } from '../persistence/site-repository.mjs';
+import { getDevelopmentUpdateStatus } from '../lifecycle/update-center.mjs';
 
 const LOGIN = /^[a-z0-9][a-z0-9._-]{2,63}$/;
 const LOCAL_HOST = /^(?:localhost|127\.0\.0\.1|\[::1\])(?::[0-9]{1,5})?$/;
@@ -107,7 +108,8 @@ export async function createLocalAuthService(db, sendJson) {
      * @returns {Promise<boolean>} whether this route has been handled
      */
     async route(req, res, pathname) {
-      const known = pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/logout' ||
+      const known = pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install' ||
+        pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/logout' ||
         pathname === '/api/v1/auth/me' || pathname === '/api/v1/sites' ||
         /^\/api\/v1\/sites\/[^/]+\/areas$/.test(pathname);
       if (!known) return false;
@@ -150,6 +152,33 @@ export async function createLocalAuthService(db, sendJson) {
 
       const actor = await authenticated(req, res, { checkCsrf: isWrite });
       if (!actor) return true;
+
+      if (pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install') {
+        // System-wide information requires an enabled account with owner/admin
+        // membership. Mere login, resident and guest roles are insufficient.
+        const authorization = await db.query(`
+          SELECT 1 FROM domyro_site_memberships m
+          JOIN domyro_users u ON u.id = m.user_id
+          WHERE m.user_id=$1 AND u.disabled_at IS NULL
+            AND m.role IN ('owner','admin') LIMIT 1
+        `, [actor.user_id]);
+        if (authorization.rowCount !== 1) {
+          sendJson(res, 403, { error: 'system_administrator_required' });
+          return true;
+        }
+        if (pathname.endsWith('/install')) {
+          // Neither authenticated session nor CSRF token bypasses D-53.
+          // Explicitly blocked: NO file I/O, package installs or restarts.
+          sendJson(res, 423, { error: 'installation_gate_closed', decision: 'D-53' });
+          return true;
+        }
+        if (req.method !== 'GET') {
+          sendJson(res, 405, { error: 'method_not_allowed' });
+          return true;
+        }
+        sendJson(res, 200, getDevelopmentUpdateStatus());
+        return true;
+      }
 
       if (pathname === '/api/v1/auth/logout') {
         if (!isWrite) { sendJson(res, 405, { error: 'method_not_allowed' }); return true; }
