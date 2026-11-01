@@ -53,13 +53,13 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 - **DOM-023 P0 L:** Command dispatcher, idempotency and observed-vs-requested ledger. Accept: no false confirmation and unsafe retry.
 - **DOM-024 P0 M:** Transactional event outbox/automation event subscription. Accept: recovery after crash avoids silent lost critical events.
 - **DOM-025 P0 M:** History, retention policy, numeric measurement storage. Accept: bounded queries and owner-managed retention.
-- **DOM-026 P0 M (in progress):** Device discovery reconciliation, grouping and removal. **Implemented in isolated tests:** stable IEEE-address identity and transactional update/rename in site-owned PostgreSQL registry. **Missing:** live broker-to-DB wiring, deletion reconciliation, group ownership and UI.
+- **DOM-026 P0 M (in progress):** Device discovery reconciliation, grouping and removal. **Implemented in isolated tests:** stable IEEE-address identity and transactional update/rename in site-owned PostgreSQL registry. **Added:** explicit site-bound snapshot ingestor and PostgreSQL integration tests. **Missing:** automatic trusted broker lifecycle wiring, deletion reconciliation, group ownership and UI.
 
 ### EPIC MQTT — Real first hardware
 
 - **DOM-030 P0 M (in progress):** Configurable TLS capable MQTT connection, broker health and resubscription. **Implemented:** MQTT.js read-only 3.1.1 client, strictly localhost and opt-in for test broker, subscription and offline status. **Still missing:** authenticated/TLS LAN broker connections, durable reconnect/replay validation, credential vault and real Mosquitto compatibility tests.
 - **DOM-031 P0 M:** Generic MQTT discovery/config and mapping UI. Accept: real or simulated switch read+write with validation.
-- **DOM-032 P0 M (in progress):** Zigbee2MQTT discovery and exposes parser. **Implemented:** read-only bridge inventory and whitelist of observed state fields keyed by IEEE address; duplicate/invalid-message rejection and stable rename identity; site-bound PostgreSQL inventory/observations with cross-site access tests. **Still missing:** full exposes parser, live DB ingestion, real battery/lamp mapping and hardware evidence.
+- **DOM-032 P0 M (in progress):** Zigbee2MQTT discovery and exposes parser. **Implemented:** read-only bridge inventory and whitelist of observed state fields keyed by IEEE address; duplicate/invalid-message rejection and stable rename identity; site-bound PostgreSQL inventory/observations with cross-site access tests. **Added:** explicit read-only observer-snapshot → site-owned PostgreSQL ingestion proof. **Still missing:** secure automatic broker-to-DB lifecycle, full exposes parser, real battery/lamp mapping and hardware evidence.
 - **DOM-033 P0 M:** Zigbee2MQTT command/acknowledgment and observations. Accept: physical device state confirmed independently.
 - **DOM-034 P0 M:** Zigbee2MQTT timed pairing and lifecycle. Accept: permit_join ends and rename stable.
 - **DOM-035 P0 S:** E2E hardware proof video/test report. Accept: real bulb+sensor, no HA needed, restart and reconnect pass.
