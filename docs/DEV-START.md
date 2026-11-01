@@ -20,7 +20,11 @@ npm start
 
 Open http://127.0.0.1:8844 in the browser. Use `DOMYRO_PORT=8845 npm start` to choose another local port.
 
-The preview binds only to **127.0.0.1** by default. **Do not expose it directly to the Internet**: login, access controls, persistence and device control are *not implemented yet*. For isolated lab LAN testing only, an administrator may explicitly set `DOMYRO_HOST=0.0.0.0` with an appropriate VM/firewall. This is **not** the final Ubuntu installer and does **not** modify existing Home Assistant, MQTT brokers, Zigbee mesh or OS services.
+The preview binds only to **127.0.0.1** by default. **Do not expose it directly to the Internet**: localhost-only experimental authentication and database support exist, but production-grade security, account recovery, device control and the installer are *not implemented yet*. For isolated lab LAN testing only, an administrator may explicitly set `DOMYRO_HOST=0.0.0.0` with an appropriate VM/firewall. This is **not** the final Ubuntu installer and does **not** modify existing Home Assistant, MQTT brokers, Zigbee mesh or OS services.
+
+## Isolated PostgreSQL restore testing
+
+CI now performs a real PostgreSQL 17 custom-format `pg_dump`, AES-256-GCM encrypted snapshot and `pg_restore` **only into a fresh empty test database**, with malformed-archive failure injection and data verification. This is a restricted development proof, not a user restoration command or a safe full-system backup. See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
 
 ## Development-only installer readiness
 
