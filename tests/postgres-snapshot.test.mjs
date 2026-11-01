@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { encryptBackupBytes } from '../src/lifecycle/encrypted-backup.mjs';
 import { Pool } from 'pg';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { storeEncryptedBackupFile, readEncryptedBackupFile } from '../src/lifecycle/backup-file-store.mjs';
 import { loadMigrations, applyMigrations, inspectMigrationState } from '../src/persistence/migrator.mjs';
 import {
   createEncryptedPostgresSnapshot,
@@ -17,7 +21,7 @@ const dockerTools = {
   restore: { executable: 'docker', prefix: ['run', '--rm', '--network=host', '-i', '-e', 'PGPASSWORD', 'postgres:17-alpine', 'pg_restore'] },
 };
 
-test('actual PostgreSQL 17 encrypted custom archive restores user, site, room, device and observations on a NEW test database', { skip: !enabled }, async () => {
+test('actual PostgreSQL 17 encrypted custom archive restores user, site, room, device and observations on a NEW test database', { skip: !enabled }, async t => {
   const base = process.env.DOMYRO_TEST_DATABASE_URL;
   const name = randomBytes(6).toString('hex');
   const sourceName = 'domyro_source_test_' + name;
@@ -54,6 +58,11 @@ test('actual PostgreSQL 17 encrypted custom archive restores user, site, room, d
 
     const snapshot = await createEncryptedPostgresSnapshot({ sourceUrl, password, tools: dockerTools });
     assert.equal(snapshot.restorable, false);
+    const backupDirectory = await mkdtemp(join(tmpdir(),'domyro-complete-db-backup-'));
+    t.after(() => rm(backupDirectory,{recursive:true,force:true}));
+    await storeEncryptedBackupFile({ directory:backupDirectory,name:'pg-fixture.domyrobackup',encrypted:snapshot.encrypted });
+    const storedBytes = await readEncryptedBackupFile({ directory:backupDirectory,name:'pg-fixture.domyrobackup' });
+    assert.deepEqual(storedBytes,snapshot.encrypted);
     assert.equal(snapshot.encrypted.subarray(0,8).toString(), 'DOMYROB1');
     const verified = await verifyEncryptedPostgresSnapshot(snapshot.encrypted, password);
     assert.equal(verified.archive.subarray(0,5).toString(), 'PGDMP');
@@ -89,7 +98,7 @@ test('actual PostgreSQL 17 encrypted custom archive restores user, site, room, d
     } finally { await emptyAfterFailure.end(); }
 
     const restored = await restoreEncryptedPostgresSnapshotToTestDatabase({
-      encrypted:snapshot.encrypted,password,targetUrl,tools:dockerTools,
+      encrypted:storedBytes,password,targetUrl,tools:dockerTools,
     });
     assert.equal(restored.verifiedRestore,true);
     assert.equal(restored.schemaVersion,3);
