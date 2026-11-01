@@ -16,7 +16,12 @@ test('Ubuntu systemd actually parses hardened Domyro unit draft without enabling
   t.after(()=>rm(directory,{recursive:true,force:true}));
   const unit=join(directory,'domyro.service');
   const text=renderNativeSystemdDraft({port:8844});
-  await writeFile(unit,text,{mode:0o600,flag:'wx'});
+  // Ubuntu CI obtains Node from actions/setup-node. systemd-analyze verifies
+  // the drafted directives against the actual *test* executable; the real
+  // package must later provide /usr/bin/node as specified by the unit.
+  assert.match(text,/ExecStart=\/usr\/bin\/node/);
+  const testUnit = text.replace('ExecStart=/usr/bin/node ', 'ExecStart='+process.execPath+' ');
+  await writeFile(unit,testUnit,{mode:0o600,flag:'wx'});
   const version=await exec('systemd-analyze',['--version'],{timeout:5000});
   assert.match(version.stdout,/systemd [0-9]+/);
   // Parses only. No systemctl, daemon-reload, service creation or host writes.
