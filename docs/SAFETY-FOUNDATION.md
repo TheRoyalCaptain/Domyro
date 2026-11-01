@@ -4,6 +4,10 @@
 **Status:** Pure safety rules plus **isolated release directory staging**, **pointer-only test rollback**, a **development source-bundle signing utility** and a **bounded encrypted test snapshot primitive**. Tested on hosted Ubuntu x86-64/ARM64 CI, **but NOT** an installer, real updater, PostgreSQL backup/restore engine, production release or deployment approval.  
 **Owner deployment gate D-53:** CLOSED. No installation on the owner's own server until complete safe one-command installation and update/restore lifecycle is built, tested and separately approved.
 
+## Streaming PostgreSQL backup v2 (still NOT deployable)
+
+`src/lifecycle/streamed-backup.mjs` and `src/lifecycle/streamed-postgres-backup.mjs` encrypt real PostgreSQL output in chunks to an atomic private no-overwrite file. An authenticated temporary plaintext archive is passed to scratch-only `pg_restore` **after** AES-GCM verification. The v2 path is capped at 2 GiB by default; a 27 MiB streaming fixture, a real PostgreSQL round-trip, failed exporters, malformed archives and tampering are covered by isolated tests. This is NOT a full-system back-up or production restore. See [STREAMED-BACKUP-V2.md](STREAMED-BACKUP-V2.md).
+
 ## New PostgreSQL 17 encrypted backup + restore proof (NOT deployable)
 
 `src/lifecycle/postgres-snapshot.mjs` now invokes real PostgreSQL 17 `pg_dump` and `pg_restore` tools with strictly local credentials; encrypts and authenticates a bounded custom-format dump; validates it; and restores **only into a new empty disposable test database**. CI tests on x86-64 and ARM64 verify actual user/site/room/device/observation data survives, incorrect passwords and damaged backups fail, an authenticated but invalid PostgreSQL archive leaves the target empty, and populated restore targets are rejected. **No complete service configuration/Matter/secrets backup, streaming large datasets, production restore or core-update integration exists yet.** See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
