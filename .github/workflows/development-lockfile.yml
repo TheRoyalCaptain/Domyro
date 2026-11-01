@@ -1,0 +1,28 @@
+name: Temporary reproducible dependency lock generation
+on:
+  push:
+    paths:
+      - .github/workflows/development-lockfile.yml
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate registry-integrity locked dependencies
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Emit lockfile to audited CI logs for exact repository commit
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            import crypto from "node:crypto";
+            const raw=fs.readFileSync("package-lock.json");
+            const base64=raw.toString("base64");
+            for(let offset=0;offset<base64.length;offset+=6000)
+              process.stdout.write("DOMYRO_LOCK_CHUNK|" + base64.slice(offset,offset+6000) + "\n");
+            process.stdout.write("DOMYRO_LOCK_SHA256|"+crypto.createHash("sha256").update(raw).digest("hex")+"\n");
+          '
