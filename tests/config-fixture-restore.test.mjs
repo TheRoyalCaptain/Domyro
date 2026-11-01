@@ -7,7 +7,7 @@ import {join} from 'node:path';
 import {Readable} from 'node:stream';
 import {createHash} from 'node:crypto';
 import {createEncryptedConfigFixture} from '../src/lifecycle/config-fixture-backup.mjs';
-import {restoreConfigFixtureToScratch} from '../src/lifecycle/config-fixture-restore.mjs';
+import {restoreConfigFixtureToScratch,inspectScratchConfigRestore} from '../src/lifecycle/config-fixture-restore.mjs';
 import {encryptStreamToPrivateFile} from '../src/lifecycle/streamed-backup.mjs';
 
 const pass='isolated-config-recovery-dev-only-password';
@@ -64,6 +64,9 @@ test('fully authenticated config archive restores selected file bytes into NEW p
   assert.equal(marker.files.length,3);
   assert.equal(marker.files[0].sha256,createHash('sha256').update(env.fixture['settings.json']).digest('hex'));
   assert.equal((await stat(target)).mode&0o077,0);
+  const checked=await inspectScratchConfigRestore({scratchParent:env.scratchParent,targetName:cfg.targetName});
+  assert.equal(checked.scratchFilesMatchManifest,true);
+  assert.equal(checked.productionRestoreApproved,false);
   await assert.rejects(()=>restoreConfigFixtureToScratch(cfg),/EEXIST/);
   assert.deepEqual(await readFile(join(target,'domyro_core','settings.json')),env.fixture['settings.json']);
 });
@@ -106,4 +109,19 @@ test('authenticated but malformed fixture entries cannot create scratch target',
   });
   await assert.rejects(()=>restoreConfigFixtureToScratch({...cfg,backupName:badName}),/restore_config_entry_invalid/);
   assert.deepEqual(await readdir(env.scratchParent),[]);
+});
+
+
+test('post-restoration audit refuses changed files and incomplete or fabricated markers',async t=>{
+  const env=await setup(t),cfg=options(env);
+  await restoreConfigFixtureToScratch(cfg);
+  const root=join(env.scratchParent,cfg.targetName);
+  const altered=join(root,'domyro_core','settings.json');
+  await writeFile(altered,'{"home":"tampered"}',{mode:0o600});
+  await assert.rejects(()=>inspectScratchConfigRestore({scratchParent:env.scratchParent,targetName:cfg.targetName}),
+    /scratch_restore_file_digest_mismatch/);
+  await writeFile(altered,env.fixture['settings.json'],{mode:0o600});
+  await writeFile(join(root,'domyro_core','unexpected.txt'),'not from backup',{mode:0o600});
+  await assert.rejects(()=>inspectScratchConfigRestore({scratchParent:env.scratchParent,targetName:cfg.targetName}),
+    /scratch_restore_extra_files/);
 });
