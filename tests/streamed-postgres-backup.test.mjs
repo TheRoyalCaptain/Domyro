@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { encryptStreamToPrivateFile } from '../src/lifecycle/streamed-backup.mjs';
+import { registerVerifiedPostgresBackup, inspectLocalBackupCatalog, catalogRetentionSuggestions } from '../src/lifecycle/backup-catalog.mjs';
 import { Pool } from 'pg';
 import { applyMigrations, loadMigrations } from '../src/persistence/migrator.mjs';
 import { dumpPostgresToStreamedBackup, restoreStreamedBackupToTestDatabase } from '../src/lifecycle/streamed-postgres-backup.mjs';
@@ -49,6 +50,15 @@ test('real PostgreSQL streaming dump, encrypted file, authenticated scratch rest
     assert.ok(saved.plaintextBytes>1000);
     assert.equal(saved.restorable,false);
     assert.deepEqual(await readdir(dir),['real-pg-stream.domyrobackup']);
+    const receipt = await registerVerifiedPostgresBackup({
+      directory:dir,name:'real-pg-stream.domyrobackup',password:passphrase,
+    });
+    assert.equal(receipt.encryptedSha256.length,64);
+    const catalog = await inspectLocalBackupCatalog({directory:dir,password:passphrase});
+    assert.equal(catalog.length,1);
+    assert.equal(catalog[0].authenticated,true);
+    assert.equal(catalog[0].verified,false); // Actual restore proof not recorded in catalogue.
+    assert.deepEqual(catalogRetentionSuggestions(catalog).proposedRemovals,[]);
     await assert.rejects(()=>dumpPostgresToStreamedBackup({
       sourceUrl,directory:dir,name:'real-pg-stream.domyrobackup',password:passphrase,tools,
     }),/EEXIST/);
