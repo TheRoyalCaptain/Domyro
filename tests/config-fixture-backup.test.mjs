@@ -5,6 +5,7 @@ import { mkdtemp, writeFile, symlink, chmod, readdir, rm } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createEncryptedConfigFixture, inspectEncryptedConfigFixture } from '../src/lifecycle/config-fixture-backup.mjs';
+import { registerVerifiedConfigFixture, inspectLocalBackupCatalog, catalogRetentionSuggestions } from '../src/lifecycle/backup-catalog.mjs';
 const password = 'isolated-dev-only-config-fixture-secret';
 
 async function fixtures(t) {
@@ -26,6 +27,17 @@ test('config fixture encrypts selected owner-controlled files and validates dige
   assert.equal(inspected.restoreTested,false);
   assert.deepEqual(inspected.files.map(x=>x.role),['domyro_core','zigbee2mqtt']);
   assert.deepEqual(await readdir(directory),['fixture-config.domyrobackup']);
+  const receipt=await registerVerifiedConfigFixture({
+    directory,name:'fixture-config.domyrobackup',password,
+  });
+  assert.equal(receipt.kind,'domyro-selected-config-fixture');
+  const catalog=await inspectLocalBackupCatalog({directory,password});
+  assert.equal(catalog[0].kind,'domyro-selected-config-fixture');
+  assert.deepEqual(catalog[0].components,['domyro_core','zigbee2mqtt']);
+  assert.equal(catalog[0].authenticated,true);
+  assert.equal(catalog[0].verified,false);
+  assert.equal(catalog[0].restoreTested,false);
+  assert.deepEqual(catalogRetentionSuggestions(catalog).proposedRemovals,[]);
   await assert.rejects(()=>createEncryptedConfigFixture({root,directory,
     files:[{role:'domyro_core',name:'core.json'}],name:'fixture-config.domyrobackup',password}),/EEXIST/);
   await assert.rejects(()=>inspectEncryptedConfigFixture({
