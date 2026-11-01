@@ -13,7 +13,9 @@ import { Pool } from 'pg';
 import { encryptBackupBytes, decryptBackupBytes } from './encrypted-backup.mjs';
 import { loadMigrations, inspectMigrationState } from '../persistence/migrator.mjs';
 
-const MAX_ARCHIVE_BYTES = 24 * 1024 * 1024;
+// The pre-existing in-memory encryption primitive has a 32 MiB cap.
+// Base64 expands a 20 MiB archive to <27 MiB, leaving room for metadata.
+const MAX_ARCHIVE_BYTES = 20 * 1024 * 1024;
 const TIMEOUT_MS = 45_000;
 const RESTORE_PREFIX = /^domyro_restore_test_[a-z0-9_]{6,40}$/;
 const SAFE_IDENTIFIER = /^[a-z_][a-z0-9_]{0,62}$/;
