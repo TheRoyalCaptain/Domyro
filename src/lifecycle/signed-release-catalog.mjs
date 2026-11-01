@@ -34,6 +34,7 @@ export function selectSignedUpdateFromCatalog({
   releases, trustedPublicKeyPem, currentVersion,
   os = 'ubuntu', arch, currentDatabaseSchema,
   preferences = {}, now = new Date(), highestSeenVersion = null,
+  highestSeenManifestSha256 = null,
 } = {}) {
   if (!Array.isArray(releases) || releases.length > MAX_CATALOG_ENTRIES) {
     throw new TypeError('release_catalog_size_invalid');
@@ -49,6 +50,11 @@ export function selectSignedUpdateFromCatalog({
   compareVersions(currentVersion, currentVersion);
   if (highestSeenVersion !== null) {
     compareVersions(highestSeenVersion, highestSeenVersion);
+  }
+  if (highestSeenManifestSha256 !== null &&
+      (highestSeenVersion === null || typeof highestSeenManifestSha256 !== 'string' ||
+       !/^[a-f0-9]{64}$/.test(highestSeenManifestSha256))) {
+    throw new TypeError('trusted_release_receipt_invalid');
   }
 
   const seen = new Map();
@@ -83,6 +89,16 @@ export function selectSignedUpdateFromCatalog({
       }
       duplicateCount++;
       continue;
+    }
+    // A validly signed replacement for a version already observed is still
+    // suspicious: signatures prove publisher origin, not release immutability.
+    if (highestSeenManifestSha256 !== null && manifest.version === highestSeenVersion &&
+        digest !== highestSeenManifestSha256) {
+      return result('trusted_release_receipt_mismatch', {
+        blockers: Object.freeze(['previously_trusted_manifest_changed']),
+        selected: null, highestSeenVersion, untrustedCount, duplicateCount,
+        trustedCount: seen.size,
+      });
     }
     seen.set(manifest.version, digest);
     if (newestTrusted === null || compareVersions(manifest.version, newestTrusted) > 0) {
