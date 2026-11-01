@@ -11,7 +11,7 @@ import {mkdtemp,mkdir,lstat,readFile,writeFile,symlink,rm,realpath} from 'node:f
 import {join} from 'node:path';
 import {tmpdir,arch as hostArch} from 'node:os';
 import {pathToFileURL} from 'node:url';
-import {stageVerifiedBundle,inspectActiveBundle} from './transactional-release.mjs';
+import {stageVerifiedBundle,inspectActiveBundle,inspectVerifiedStagedBundle} from './transactional-release.mjs';
 import {renderNativeSystemdDraft} from './native-install-plan.mjs';
 
 const ARCH=Object.freeze({x64:'amd64',arm64:'arm64'});
@@ -141,10 +141,14 @@ export async function rehearseNativeServiceLayout({
     if(await inspectActiveBundle(root)!==staged.version)throw new Error('native_staged_release_not_active_in_sandbox');
     const directory=join(root,'current');
     await onPrepared({sandbox,release:directory,unitPath:join(sandbox,'etc/systemd/system/domyro.service')});
+    const checked=await layoutSandbox(sandbox,root,staged.version);
+    if(!checked.reusedPointer||!checked.reusedUnit)throw new Error('native_layout_changed_after_preflight');
+    await inspectVerifiedStagedBundle({root,version:staged.version,trustedPublicKeyPem,expectedArch:arch});
     const first=await startChild(directory,sandbox);child=first.child;
     await probe(first.ready.port);
     const pid=first.ready.pid;
     await stopChild(child);child=null;
+    await inspectVerifiedStagedBundle({root,version:staged.version,trustedPublicKeyPem,expectedArch:arch});
     const next=await startChild(directory,sandbox);child=next.child;
     if(next.ready.pid===pid)throw new Error('native_service_child_not_restarted');
     await probe(next.ready.port);
