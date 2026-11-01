@@ -7,7 +7,8 @@ import { validateSiteInput } from '../src/persistence/site-repository.mjs';
 
 test('migration files are consecutive, nonempty and checksummed', async () => {
   const migrations = await loadMigrations();
-  assert.deepEqual(migrations.map(m => m.version), [1, 2]);
+  assert.deepEqual(migrations.map(m => m.version), [1, 2, 3]);
+  assert.match(migrations[2].sql, /CREATE TABLE domyro_devices/);
   assert.equal(migrations[0].checksum.length, 64);
   assert.match(migrations[0].sql, /CREATE TABLE domyro_site_memberships/);
   assert.match(migrations[1].sql, /ON CONFLICT/);
@@ -27,17 +28,17 @@ test('migrator is explicit, atomic and refuses old migration rewrites', async ()
     return { rows: [] };
   }};
   const first = await applyMigrations(client, migrations);
-  assert.deepEqual(first.newlyApplied, [1, 2]);
-  assert.equal(first.currentVersion, 2);
+  assert.deepEqual(first.newlyApplied, [1, 2, 3]);
+  assert.equal(first.currentVersion, 3);
   const second = await applyMigrations(client, migrations);
   assert.deepEqual(second.newlyApplied, []);
   assert.equal(commits, 2);
   assert.equal(locks, 0);
-  await assert.rejects(() => applyMigrations(client, [{ ...migrations[0], checksum: 'a'.repeat(64) }, migrations[1]]), /migration_checksum_mismatch_v1/);
+  await assert.rejects(() => applyMigrations(client, [{ ...migrations[0], checksum: 'a'.repeat(64) }, ...migrations.slice(1)]), /migration_checksum_mismatch_v1/);
   assert.equal(rollbacks, 1);
   assert.equal(inTransaction, false);
   assert.equal(locks, 0);
-  assert.equal(state.length, 2);
+  assert.equal(state.length, 3);
 });
 
 test('unsafe database settings fail before any network connection', () => {
@@ -68,11 +69,11 @@ test('postgres integration requires isolated explicit test database', { skip: !p
     const client = await pool.connect();
     try {
       const applied = await applyMigrations(client, migrations);
-      assert.equal(applied.currentVersion, 2);
+      assert.equal(applied.currentVersion, 3);
       // Another test file may apply the same migrations first, in parallel.
       // The advisory-locked migrator is idempotent; both outcomes are valid.
-      assert.ok(applied.newlyApplied.every(version => [1, 2].includes(version)));
-      assert.ok(applied.newlyApplied.length === 0 || applied.newlyApplied.length === 2);
+      assert.ok(applied.newlyApplied.every(version => [1, 2, 3].includes(version)));
+      assert.ok(applied.newlyApplied.length === 0 || applied.newlyApplied.length === 3);
       assert.deepEqual((await applyMigrations(client, migrations)).newlyApplied, []);
       assert.equal((await inspectMigrationState(client, migrations)).ready, true);
     } finally { client.release(); }
@@ -99,7 +100,7 @@ test('postgres integration requires isolated explicit test database', { skip: !p
     // Explicitly modified historical migrations MUST block later attempts.
     await assert.rejects(async () => {
       const c = await pool.connect();
-      try { await applyMigrations(c, [{ ...migrations[0], checksum: '0'.repeat(64) }, migrations[1]]); }
+      try { await applyMigrations(c, [{ ...migrations[0], checksum: '0'.repeat(64) }, ...migrations.slice(1)]); }
       finally { c.release(); }
     }, /migration_checksum_mismatch_v1/);
     assert.equal((await pool.query('SELECT count(*)::int AS n FROM domyro_sites')).rows[0].n, 1);
