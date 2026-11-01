@@ -2,7 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, rm, writeFile, readFile } from 'node:fs/promises';
+import {createEncryptedConfigFixture} from '../src/lifecycle/config-fixture-backup.mjs';
+import {restoreConfigFixtureToScratch} from '../src/lifecycle/config-fixture-restore.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -82,6 +84,31 @@ test('real PostgreSQL streaming dump, encrypted file, authenticated scratch rest
       assert.equal((await target.query("SELECT display_name FROM domyro_areas WHERE site_id=$1",[siteId])).rows[0].display_name,'Garage');
       assert.equal((await target.query('SELECT login FROM domyro_users WHERE id=$1',[uid])).rows[0].login,'stream-owner');
     }finally{await target.end();}
+    // Additional disconnected proof: a separately captured encrypted config
+    // fixture can be restored alongside this disposable PostgreSQL database.
+    // This is NOT coordinated full-system crash recovery.
+    const configRoot=await mkdtemp(join(tmpdir(),'domyro-combined-config-'));
+    const scratchParent=await mkdtemp(join(tmpdir(),'domyro-combined-restore-'));
+    t.after(async()=>{
+      await rm(configRoot,{recursive:true,force:true});
+      await rm(scratchParent,{recursive:true,force:true});
+    });
+    await writeFile(join(configRoot,'core.json'), '{"fixture":"only","token":"disposable"}',{mode:0o600});
+    await writeFile(join(configRoot,'mosquitto.conf'), 'listener 1883 localhost',{mode:0o600});
+    await createEncryptedConfigFixture({
+      root:configRoot,directory:dir,name:'combined-config.domyrobackup',password:passphrase,
+      files:[{role:'domyro_core',name:'core.json'},{role:'mosquitto',name:'mosquitto.conf'}],
+    });
+    const configResult=await restoreConfigFixtureToScratch({
+      backupDirectory:dir,backupName:'combined-config.domyrobackup',password:passphrase,
+      scratchParent,targetName:'domyro_restore_test_abcdef123456',
+    });
+    assert.equal(configResult.scratchRestored,true);
+    assert.equal(configResult.productionRestoreApproved,false);
+    assert.equal((await readFile(join(scratchParent,'domyro_restore_test_abcdef123456','domyro_core','core.json'),'utf8')),
+      '{"fixture":"only","token":"disposable"}');
+    assert.equal((await readFile(join(scratchParent,'domyro_restore_test_abcdef123456','mosquitto','mosquitto.conf'),'utf8')),
+      'listener 1883 localhost');
     await assert.rejects(()=>restoreStreamedBackupToTestDatabase({
       directory:dir,name:'real-pg-stream.domyrobackup',password:passphrase,targetUrl,tools,
     }),/restore_target_not_empty/);
