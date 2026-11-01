@@ -28,7 +28,9 @@
     "argon2idAndHashedSessionTests": true,
     "localBootstrapAndAuthApiIntegrationTests": true,
     "disposableMqttBrokerReadOnlyProtocolTests": true,
-    "siteScopedZigbeeRegistryAndExplicitIngestionTests": true
+    "siteScopedZigbeeRegistryAndExplicitIngestionTests": true,
+    "encryptedPostgres17CustomArchiveRestoredToEmptyTestDatabase": true,
+    "postgresRestoreRejectsTamperExistingTargetAndMalformedArchive": true
   },
-  "notes": "M2 software proof: opt-in read-only MQTT.js 3.1.1 client and Zigbee2MQTT observer tested with disposable Aedes broker on Ubuntu amd64/ARM64, plus schema v3 and explicit site-owned PostgreSQL ingestion tests. This is NOT an approved production/hardware connection. Real MQTT device functionality, TLS credentials, full adapter command/ack, Matter, one-line Ubuntu installer, full backups and reliable production updates remain unverified. D-53 stays CLOSED; owner deployment consent stays FALSE."
+  "notes": "43 isolated CI tests pass on Ubuntu 24.04 amd64+arm64, Node 22+24, including real PostgreSQL 17 pg_dump/pg_restore of users/sites/rooms/Zigbee observations, AES-256-GCM encryption, and malformed-archive rejection with an empty target. This is a MAX 20 MiB development proof, NOT production backup of files, secrets, Matter fabrics, or a safe restore of existing databases. Real hardware compatibility, secure managed services, the complete one-command Ubuntu installer and independently verified production updates/rollback remain unbuilt. D-53 readiness stays FALSE; owner deployment consent stays FALSE."
 }
