@@ -8,6 +8,8 @@
 
 `src/lifecycle/postgres-snapshot.mjs` now invokes real PostgreSQL 17 `pg_dump` and `pg_restore` tools with strictly local credentials; encrypts and authenticates a bounded custom-format dump; validates it; and restores **only into a new empty disposable test database**. CI tests on x86-64 and ARM64 verify actual user/site/room/device/observation data survives, incorrect passwords and damaged backups fail, an authenticated but invalid PostgreSQL archive leaves the target empty, and populated restore targets are rejected. **No complete service configuration/Matter/secrets backup, streaming large datasets, production restore or core-update integration exists yet.** See [POSTGRES-BACKUP-RESTORE.md](POSTGRES-BACKUP-RESTORE.md).
 
+The separate `src/lifecycle/backup-file-store.mjs` and tests now also prove **private 0600 encrypted file persistence, fsync-before-publication, atomic no-overwrite hardlink publishing, symlink rejection and saved-file-to-clean-database restore**. This does not implement scheduled jobs, external backup targets or full-system recovery.
+
 ## Newly implemented (not deployable) building blocks
 
 - `src/lifecycle/native-preflight.mjs`: read-only Ubuntu LTS/architecture/resource eligibility, without changes to the host.
