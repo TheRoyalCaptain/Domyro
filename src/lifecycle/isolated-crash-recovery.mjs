@@ -78,6 +78,14 @@ export async function rehearseInterruptedPointerRecovery({
   // The inode belongs to this recovery invocation. Never remove a lock that
   // has been replaced while we were running (even on a disposable fixture).
   const ownedLock = await lock.stat();
+  async function assertOwnedRecoveryLock() {
+    const currentLock = await lstat(lockPath);
+    if (!currentLock.isFile() || currentLock.isSymbolicLink() ||
+        currentLock.dev !== ownedLock.dev || currentLock.ino !== ownedLock.ino ||
+        currentLock.nlink !== 1 || (currentLock.mode & 0o077) !== 0) {
+      throw new Error('isolated_recovery_lock_changed');
+    }
+  }
   try {
     const diagnosis = await inspectInterruptedActivation({ root: base, trustedPublicKeyPem });
     if (diagnosis.state !== 'interrupted') throw new Error('isolated_recovery_no_interrupted_intent');
@@ -126,6 +134,8 @@ export async function rehearseInterruptedPointerRecovery({
     // A second crash window: stale activation lock is gone, but the journal
     // must still be present until the signed old pointer has been verified.
     if (onTestCheckpoint) await onTestCheckpoint('activation_lock_removed');
+    // Do not erase the durable intent if our recovery lock was replaced.
+    await assertOwnedRecoveryLock();
     // Keep the recovery lock held until the intent is durably cleared.
     await clearActivationIntent(base, expected);
     return Object.freeze({
@@ -136,12 +146,7 @@ export async function rehearseInterruptedPointerRecovery({
     });
   } finally {
     try {
-      const currentLock = await lstat(lockPath);
-      if (!currentLock.isFile() || currentLock.isSymbolicLink() ||
-          currentLock.dev !== ownedLock.dev || currentLock.ino !== ownedLock.ino ||
-          currentLock.nlink !== 1 || (currentLock.mode & 0o077) !== 0) {
-        throw new Error('isolated_recovery_lock_changed');
-      }
+      await assertOwnedRecoveryLock();
     } finally {
       await lock.close();
     }
