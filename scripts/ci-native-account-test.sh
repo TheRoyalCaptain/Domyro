@@ -38,6 +38,23 @@ STATE_ROOT="/var/lib/$UNIT"
 UNIT_FILE="/run/systemd/system/$UNIT.service"
 STAGING_BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
 CI_PG_MODE="${DOMYRO_CI_PG_ONBOARDING:-0}"
+CI_FAILPOINT="${DOMYRO_CI_FAILPOINT:-}"
+# Controlled failure injection is limited to disposable PostgreSQL integration CI.
+case "$CI_FAILPOINT" in
+  ''|after-db-bootstrap|after-db-role|after-unit-start|after-restart) ;;
+  *) echo "Unknown CI installer fault point" >&2; exit 98 ;;
+esac
+if [[ -n "$CI_FAILPOINT" &&
+      ( "${DOMYRO_CI_FAULT_MATRIX:-0}" != 1 || "$CI_PG_MODE" != 1 ) ]]; then
+  echo "Installer fault injection requires disposable PostgreSQL CI" >&2
+  exit 98
+fi
+ci_fault() {
+  if [[ "$CI_FAILPOINT" == "$1" ]]; then
+    echo "Expected disposable CI installer failure: $1" >&2
+    exit 86
+  fi
+}
 CI_DB_NAME=""
 CI_DB_URI=""
 CI_APP_DB_URI=""
@@ -116,6 +133,7 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   ( umask 077; node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url"))' > "$CI_PASSWORD_FILE" )
   DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" \
     --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null
+  ci_fault after-db-bootstrap
   # A second attempt must NOT silently replace the initialized owner.
   if DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" \
     --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null 2>&1; then
@@ -124,6 +142,7 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   fi
   node scripts/ci-native-restricted-db-role.mjs create
   node scripts/ci-native-restricted-db-role.mjs verify
+  ci_fault after-db-role
   CI_APP_DB_URI="$(CI_DB_URI="$CI_DB_URI" node -e '
     const url=new URL(process.env.CI_DB_URI);
     url.username=process.env.CI_RUNTIME_ROLE;
@@ -207,6 +226,7 @@ assert_live
 if [[ "$CI_PG_MODE" == 1 ]]; then
   node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" initial
 fi
+ci_fault after-unit-start
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
 [[ "$(sudo systemctl show --value -p NoNewPrivileges "$UNIT.service")" == "yes" ]]
 [[ "$(sudo systemctl show --value -p ProtectSystem "$UNIT.service")" == "strict" ]]
@@ -234,6 +254,7 @@ assert_live
 if [[ "$CI_PG_MODE" == 1 ]]; then
   node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-restart
 fi
+ci_fault after-restart
 PID2="$(sudo systemctl show --value -p MainPID "$UNIT.service")"
 [[ "$PID2" =~ ^[0-9]+$ && "$PID2" != 0 && "$PID2" != "$PID1" ]]
 sudo systemctl kill --kill-whom=main --signal=SIGKILL "$UNIT.service"
