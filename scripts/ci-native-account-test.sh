@@ -89,27 +89,28 @@ if id "$SERVICE_USER" >/dev/null 2>&1 ||
   exit 93
 fi
 RELEASE_ROOT="$(node scripts/ci-stage-signed-source.mjs "$STAGING_BASE/release-store")"
-[[ -f "$RELEASE_ROOT/src/server.mjs" && -f "$RELEASE_ROOT/package-lock.json" ]]
+[[ -f "$RELEASE_ROOT/src/server.mjs" && -f "$RELEASE_ROOT/package-lock.json" && \
+   -f "$RELEASE_ROOT/scripts/migrate-db.mjs" && -f "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" ]]
 (
   cd "$RELEASE_ROOT"
-  find src web -type f -print0 | sort -z | xargs -0 sha256sum
+  find src web scripts -type f -print0 | sort -z | xargs -0 sha256sum
   sha256sum package.json package-lock.json
 ) > "$STAGING_BASE/signed-files.sha256"
 npm ci --prefix "$RELEASE_ROOT" --omit=dev --ignore-scripts --no-audit --no-fund
 (
   cd "$RELEASE_ROOT"
-  find src web -type f -print0 | sort -z | xargs -0 sha256sum
+  find src web scripts -type f -print0 | sort -z | xargs -0 sha256sum
   sha256sum package.json package-lock.json
 ) | diff -u "$STAGING_BASE/signed-files.sha256" -
 if [[ "$CI_PG_MODE" == 1 ]]; then
   # Migrate and bootstrap only the freshly created disposable CI database.
-  DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/migrate-db.mjs --apply > /dev/null
-  DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/migrate-db.mjs --check > /dev/null
+  DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/migrate-db.mjs" --apply > /dev/null
+  DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/migrate-db.mjs" --check > /dev/null
   ( umask 077; node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url"))' > "$CI_PASSWORD_FILE" )
-  DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/bootstrap-owner.mjs \
+  DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" \
     --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null
   # A second attempt must NOT silently replace the initialized owner.
-  if DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/bootstrap-owner.mjs \
+  if DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" \
     --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null 2>&1; then
     echo "CI owner bootstrap was erroneously reusable" >&2
     exit 97
