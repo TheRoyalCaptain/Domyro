@@ -121,6 +121,13 @@ async function main() {
   await inspectVerifiedStagedBundle({
     root, version: staged.version, trustedPublicKeyPem, expectedArch: platform,
   });
+  // Evidence for the CI-only first-boot journal. This file lives OUTSIDE the
+  // immutable signed package, is never shipped, and is never installer authority.
+  await writeFile(join(root,'..','ci-signed-admission.json'),JSON.stringify({
+    verified:true,gate:'D-53',version:approved.version,
+    architecture:platform,manifestSha256:approved.manifestSha256,
+    publisherKeySha256:approved.publisherFingerprint,
+  })+'\\n',{flag:'wx',mode:0o600});
   // Only emit the verified path. The private test signing key is discarded.
   process.stdout.write(join(root, 'releases', staged.version) + '\n');
 }
