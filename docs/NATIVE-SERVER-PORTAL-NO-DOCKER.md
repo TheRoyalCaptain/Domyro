@@ -20,11 +20,13 @@ Deze code is een vrijwillig te starten **ontwikkelpreview**. De officiële produ
 Vooraf bewust apart installeren en controleren:
 - Ubuntu Server 24.04 LTS, met systemd.
 - Node.js >=22.12 en npm. Gebruik een betrouwbaar native Ubuntu/Node.js-pakket; niet via Docker.
-- PostgreSQL >=16 als Ubuntu service (bijvoorbeeld `sudo apt install postgresql postgresql-client`).
+- PostgreSQL >=16 als Ubuntu-service. **Als PostgreSQL nog niet is geïnstalleerd**, installeert de nieuwe ontwikkelstarter PostgreSQL uit de officiële Ubuntu 24.04 pakketbron. Hij start geen bestaande, uitgeschakelde PostgreSQL-dienst zonder onderzoek.
 - Git en curl.
 - Een gebruiker met sudo-rechten en SSH-toegang.
 
 De native preview installeert geen OS-pakketten, laat bestaande PostgreSQL-databases met rust en gebruikt geen automatische Docker-installatie.
+
+**Nieuw:** `scripts/native-preview-setup.sh` is één commando **nadat je de broncode hebt gecloned**, uitgevoerd als normale gebruiker. Het script vraagt expliciet sudo-bevoegdheid voor Ubuntu's eigen PostgreSQL-pakketten en de Domyro-preview. Bij een bestaande preview of een onverwachte serverinrichting stopt het. Dit is **niet** een openbare `curl | bash`-productie-installer en het kan geen Node.js downloaden.
 
 ## Native ontwikkelpreview installeren
 
@@ -33,8 +35,7 @@ Op de server, in de shell van je normale gebruiker:
 ```bash
 git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
 cd Domyro
-npm ci --omit=dev --ignore-scripts --no-audit --no-fund
-sudo bash scripts/native-preview-install.sh --install-native-preview
+bash scripts/native-preview-setup.sh --install-native-preview
 ```
 
 **Let op:** het commando met `sudo` maakt een *nieuwe*, afzonderlijke database, twee PostgreSQL-rollen, een eigen systeemgebruiker, bestanden onder `/opt` en `/etc` en een actieve systemd-service. Het is expliciet **niet** bedoeld voor een al in gebruik zijnde Domyro-installatie. Bij bestaande doelpaden/rollen/database/poort weigert het script vóór installatie te beginnen. Bij een onderbroken eerste installatie blijven eventueel reeds aangemaakte onderdelen staan; ze worden **niet** automatisch verwijderd of overschreven.
