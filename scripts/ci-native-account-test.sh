@@ -37,6 +37,20 @@ CONFIG_ROOT="/etc/$UNIT"
 STATE_ROOT="/var/lib/$UNIT"
 UNIT_FILE="/run/systemd/system/$UNIT.service"
 STAGING_BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
+CI_PG_MODE="${DOMYRO_CI_PG_ONBOARDING:-0}"
+CI_DB_NAME=""
+CI_DB_URI=""
+CI_PASSWORD_FILE="$STAGING_BASE/native-owner-password"
+# Only the exact disposable Docker-backed test database can be used here.
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  if [[ "${DOMYRO_TEST_DATABASE_URL:-}" != "postgresql://domyro_test:ci-throwaway-test-only@127.0.0.1:5432/domyro_test" ]]; then
+    echo "Refusing any non-disposable CI PostgreSQL target" >&2
+    exit 96
+  fi
+  CI_DB_NAME="domyro_native_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+  [[ "$CI_DB_NAME" =~ ^domyro_native_[0-9]+_[0-9]+$ ]]
+  CI_DB_URI="$(node -e 'const u=new URL(process.env.DOMYRO_TEST_DATABASE_URL);u.pathname="/"+process.argv[1];console.log(u.href)' "$CI_DB_NAME")"
+fi
 PORT="$(node -e 'const net=require("node:net");const s=net.createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')"
 BASE="http://127.0.0.1:$PORT"
 cleanup() {
@@ -47,8 +61,28 @@ cleanup() {
   if id "$SERVICE_USER" >/dev/null 2>&1; then sudo userdel "$SERVICE_USER" >/dev/null 2>&1 || true; fi
   sudo rm -rf -- "$INSTALL_ROOT" "$CONFIG_ROOT" "$STATE_ROOT"
   rm -rf -- "$STAGING_BASE"
+  if [[ "$CI_PG_MODE" == 1 && -n "$CI_DB_NAME" ]]; then
+    CI_DB_NAME="$CI_DB_NAME" node --input-type=module -e '
+      import {Pool} from "pg";
+      const name=process.env.CI_DB_NAME;
+      if(!/^domyro_native_[0-9]+_[0-9]+$/.test(name))process.exit(2);
+      const db=new Pool({connectionString:process.env.DOMYRO_TEST_DATABASE_URL});
+      try {await db.query("DROP DATABASE IF EXISTS "+String.fromCharCode(34)+name+String.fromCharCode(34)+" WITH (FORCE)");}
+      finally {await db.end();}
+    ' >/dev/null 2>&1 || true
+  fi
 }
 trap cleanup EXIT
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  CI_DB_NAME="$CI_DB_NAME" node --input-type=module -e '
+    import {Pool} from "pg";
+    const name=process.env.CI_DB_NAME;
+    if(!/^domyro_native_[0-9]+_[0-9]+$/.test(name))process.exit(2);
+    const db=new Pool({connectionString:process.env.DOMYRO_TEST_DATABASE_URL});
+    try{await db.query("CREATE DATABASE "+String.fromCharCode(34)+name+String.fromCharCode(34));}
+    finally{await db.end();}
+  '
+fi
 if id "$SERVICE_USER" >/dev/null 2>&1 ||
    [[ -e "$INSTALL_ROOT" || -e "$CONFIG_ROOT" || -e "$STATE_ROOT" || -e "$UNIT_FILE" ]]; then
   echo "Unexpected pre-existing CI identity or paths; refusing to overwrite" >&2
@@ -67,6 +101,20 @@ npm ci --prefix "$RELEASE_ROOT" --omit=dev --ignore-scripts --no-audit --no-fund
   find src web -type f -print0 | sort -z | xargs -0 sha256sum
   sha256sum package.json package-lock.json
 ) | diff -u "$STAGING_BASE/signed-files.sha256" -
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  # Migrate and bootstrap only the freshly created disposable CI database.
+  DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/migrate-db.mjs --apply > /dev/null
+  DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/migrate-db.mjs --check > /dev/null
+  ( umask 077; node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url"))' > "$CI_PASSWORD_FILE" )
+  DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/bootstrap-owner.mjs \
+    --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null
+  # A second attempt must NOT silently replace the initialized owner.
+  if DOMYRO_DATABASE_URL="$CI_DB_URI" node scripts/bootstrap-owner.mjs \
+    --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null 2>&1; then
+    echo "CI owner bootstrap was erroneously reusable" >&2
+    exit 97
+  fi
+fi
 # All privileged changes are confined to a disposable hosted CI VM.
 sudo useradd --system --user-group --no-create-home \
   --home-dir /nonexistent --shell /usr/sbin/nologin "$SERVICE_USER"
@@ -76,8 +124,12 @@ sudo chown -R root:root "$INSTALL_ROOT"
 sudo chmod -R go-w "$INSTALL_ROOT"
 sudo chmod -R a+rX "$INSTALL_ROOT"
 sudo install -d -o root -g root -m 0755 "$CONFIG_ROOT"
-printf 'DOMYRO_HOST=127.0.0.1\nDOMYRO_PORT=%s\n' "$PORT" |
-  sudo tee "$CONFIG_ROOT/development.env" >/dev/null
+{
+  printf 'DOMYRO_HOST=127.0.0.1\nDOMYRO_PORT=%s\n' "$PORT"
+  if [[ "$CI_PG_MODE" == 1 ]]; then
+    printf 'DOMYRO_DATABASE_URL=%s\n' "$CI_DB_URI"
+  fi
+} | sudo tee "$CONFIG_ROOT/development.env" >/dev/null
 sudo chmod 0600 "$CONFIG_ROOT/development.env"
 # systemd PID 1 reads the root-owned environment file, not the service user.
 sudo tee "$UNIT_FILE" >/dev/null <<EOF
@@ -136,6 +188,9 @@ assert_live() {
   curl -fsS --max-time 3 "$BASE/login" | grep -q 'Domyro'
 }
 assert_live
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" initial
+fi
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
 [[ "$(sudo systemctl show --value -p NoNewPrivileges "$UNIT.service")" == "yes" ]]
 [[ "$(sudo systemctl show --value -p ProtectSystem "$UNIT.service")" == "strict" ]]
@@ -160,6 +215,9 @@ PID1="$(sudo systemctl show --value -p MainPID "$UNIT.service")"
 [[ "$PID1" =~ ^[0-9]+$ && "$PID1" != 0 ]]
 sudo systemctl restart "$UNIT.service"
 assert_live
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-restart
+fi
 PID2="$(sudo systemctl show --value -p MainPID "$UNIT.service")"
 [[ "$PID2" =~ ^[0-9]+$ && "$PID2" != 0 && "$PID2" != "$PID1" ]]
 sudo systemctl kill --kill-whom=main --signal=SIGKILL "$UNIT.service"
@@ -175,5 +233,8 @@ for _ in $(seq 1 30); do
 done
 [[ -n "$RECOVERED" ]]
 assert_live
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-crash
+fi
 [[ "$(sudo systemctl show --value -p NRestarts "$UNIT.service")" -ge 1 ]]
 echo "Disposable native account, root-owned source, private state/config, real unit, restart and crash recovery verified; D-53 CLOSED."
