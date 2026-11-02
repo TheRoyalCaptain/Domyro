@@ -126,7 +126,7 @@ DOMYRO_CI_FIRSTBOOT_JOURNAL_DIR="$JOURNAL_DIR" \
     const report=await inspectFirstBootIntent({
       directory:process.env.DOMYRO_CI_FIRSTBOOT_JOURNAL_DIR,
     });
-    if(!report || report.phase!=="http_login_and_persistence_verified" ||
+    if(!report || report.phase!=="postgres_scratch_restore_verified" ||
        report.nextPhase!=="test_completed" ||
        report.installationAllowed!==false ||
        report.automaticRecoveryAllowed!==false) {
@@ -138,6 +138,14 @@ id "$SERVICE_USER" >/dev/null 2>&1
 [[ -f "$UNIT_FILE" && -d "$INSTALL_ROOT" && -d "$CONFIG_ROOT" ]]
 sudo systemctl is-active --quiet "$UNIT.service"
 database present
+# The installer was killed AFTER writing a verifiably restored encrypted
+# snapshot. Recover it AGAIN into an empty scratch DB in this independent
+# parent process. No restore into the existing installed database.
+SNAPSHOT_STAGING="$(find "$GITHUB_WORKSPACE" -maxdepth 1 -mindepth 1 -type d \
+  -name '.domyro-ci-signed-*' -print -quit)"
+[[ -n "$SNAPSHOT_STAGING" && -f "$SNAPSHOT_STAGING/ci-native-restored-backup.json" ]]
+DOMYRO_CI_STAGING_BASE="$SNAPSHOT_STAGING" DOMYRO_CI_NATIVE_BACKUP=1 \
+  node scripts/ci-native-backup-restore-proof.mjs verify
 ENV_SHA="$(sudo sha256sum "$CONFIG_ROOT/development.env" | cut -d' ' -f1)"
 UNIT_SHA="$(sudo sha256sum "$UNIT_FILE" | cut -d' ' -f1)"
 PORT="$(sudo sed -n 's/^DOMYRO_PORT=//p' "$CONFIG_ROOT/development.env")"
