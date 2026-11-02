@@ -8,8 +8,8 @@
  * A crashed writer leaves a lock that MUST be investigated manually.
  */
 import { constants } from 'node:fs';
-import { createHash, randomBytes } from 'node:crypto';
-import { lstat, mkdir, open, readFile, realpath, rename, rm } from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
+import { lstat, mkdir, open, realpath, rename, rm, rmdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve, sep } from 'node:path';
 import { compareVersions } from './release.mjs';
@@ -137,7 +137,7 @@ export async function createFirstBootIntent({
   } finally {
     // On uncertain durability the crash-visible lock must remain.
     if (safeToUnlock) {
-      await rm(join(root,LOCK),{recursive:false});
+      await rmdir(join(root,LOCK));
       await syncDirectory(root);
     }
   }
@@ -148,7 +148,7 @@ export async function advanceFirstBootIntent({ directory, expectedPhase, nextPha
     throw new TypeError('firstboot_phase_required');
   }
   await mkdir(join(root,LOCK), { mode:0o700 });
-  let safeToUnlock = false, temporary = null;
+  let safeToUnlock = false, published = false, temporary = null;
   try {
     await syncDirectory(root);
     const current = await readIntent(root);
@@ -167,6 +167,7 @@ export async function advanceFirstBootIntent({ directory, expectedPhase, nextPha
     try { await fd.writeFile(JSON.stringify(next)+'\n'); await fd.sync(); }
     finally { await fd.close(); }
     await rename(temporary,join(root,INTENT));
+    published=true;
     temporary=null;
     await syncDirectory(root);
     safeToUnlock=true;
@@ -174,12 +175,12 @@ export async function advanceFirstBootIntent({ directory, expectedPhase, nextPha
   } catch (error) {
     // Failed validation and failure before rename leave the old journal intact.
     // A failure AFTER rename leaves a lock for manual recovery/investigation.
-    if (temporary !== null) safeToUnlock=true;
+    if (!published) safeToUnlock=true;
     throw error;
   } finally {
     if (temporary) await rm(temporary,{force:true});
     if (safeToUnlock) {
-      await rm(join(root,LOCK),{recursive:false});
+      await rmdir(join(root,LOCK));
       await syncDirectory(root);
     }
   }
