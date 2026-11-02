@@ -1,0 +1,55 @@
+name: Disposable native signed package admission
+on:
+  pull_request:
+    paths:
+      - 'scripts/ci-stage-signed-source.mjs'
+      - 'scripts/ci-signed-package-admission-matrix.sh'
+      - 'src/lifecycle/native-release-verifier.mjs'
+      - 'src/lifecycle/transactional-release.mjs'
+      - 'tools/build-release.mjs'
+      - '.github/workflows/native-signed-admission.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package-admission-and-native-boot:
+    name: Signed package admission and native systemd / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: domyro_test
+          POSTGRES_PASSWORD: ci-throwaway-test-only
+          POSTGRES_DB: domyro_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U domyro_test -d domyro_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DOMYRO_CI_SYSTEMD_ALLOWED: '1'
+      DOMYRO_CI_SIGNED_ADMISSION_MATRIX: '1'
+      DOMYRO_CI_PG_ONBOARDING: '1'
+      DOMYRO_TEST_DATABASE_URL: postgresql://domyro_test:ci-throwaway-test-only@127.0.0.1:5432/domyro_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install exactly locked build/test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check script syntax
+        run: |
+          bash -n scripts/ci-signed-package-admission-matrix.sh scripts/ci-native-account-test.sh
+          node --check scripts/ci-stage-signed-source.mjs
+      - name: Signed package accepted; modified packages refused without staging
+        run: bash scripts/ci-signed-package-admission-matrix.sh
+      - name: Run actual native systemd with PostgreSQL from file-backed signed source
+        run: bash scripts/ci-native-account-test.sh
