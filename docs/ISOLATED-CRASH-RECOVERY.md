@@ -58,3 +58,26 @@ attestation, one-line installer, or permission to deploy. The current
 
 Run locally only inside disposable test fixtures via `npm test`.
 Do not copy this procedure to an owner server or use it on live services.
+
+## Interrupted recovery retry and lock-ownership regression (2026-11-02)
+
+The recovery test suite now terminates a **separate recovery process with
+SIGKILL** at two deliberately injected, test-only checkpoints: immediately
+after the old source pointer is restored and after the stale activation lock
+has been removed but **before** the durable activation intent is cleared.
+Both windows must retain the intent and exclusive recovery lock. A second
+recovery attempt fails closed while the lock remains. In the disposable test,
+an operator then removes the confirmed stale lock and explicitly retries the
+same signed previous version; the retry completes and the read-only diagnosis
+returns to `clean`. These tests do **not** automatically clear stale locks.
+
+The recovery function also compares the recovery-lock inode it originally
+created with the inode present during cleanup. A replaced lock is not
+silently deleted, and the intent remains for manual investigation. This is a
+**fixture-only defensive check, not an atomic host process fence**: an
+adversarial concurrent filesystem writer can still race between checking and
+unlinking, so this function must not be repurposed for live updates.
+
+The `onTestCheckpoint` callback exists solely to exercise these controlled
+crash windows inside the disposable recovery rehearsal. It does not grant
+permission to touch production services or relax D-53.
