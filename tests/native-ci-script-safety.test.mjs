@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const script=resolve('scripts/ci-native-account-test.sh');
@@ -38,4 +39,22 @@ test('native account rehearsal refuses a non-hosted workspace without sudo',()=>
   });
   // The script may reject earlier if the current user is not the hosted runner.
   assert.ok([90,91].includes(result.status),result.stderr);
+});
+
+test('existing install is refused before any temporary staging or cleanup trap',()=>{
+  const source=readFileSync(script,'utf8');
+  const collision=source.indexOf('# Collision checks MUST happen before staging');
+  const stage=source.indexOf('STAGING_BASE="$(mktemp');
+  const cleanup=source.indexOf('trap cleanup EXIT');
+  const database=source.indexOf('CREATE DATABASE ');
+  assert.ok(collision > 0);
+  assert.ok(stage > collision);
+  assert.ok(cleanup > collision);
+  assert.ok(database > collision);
+  for(const path of ['INSTALL_ROOT','CONFIG_ROOT','STATE_ROOT','UNIT_FILE']){
+    assert.match(source,new RegExp('-L "\\$'+path+'"'));
+  }
+  assert.match(source,/exit 93/);
+  assert.match(source,/SECOND_INSTALL_STATUS.*93/);
+  assert.ok(source.includes('kill -s KILL "$BASHPID"'));
 });
