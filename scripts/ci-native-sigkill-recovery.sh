@@ -71,6 +71,8 @@ database() {
   '
 }
 database absent
+# Parent owns the private journal so SIGKILL cannot erase the crash record.
+JOURNAL_DIR="$(mktemp -d /tmp/domyro-firstboot-test-XXXXXX)"
 cleanup() {
   local original="$?"
   local cleanup_error=0
@@ -86,6 +88,7 @@ cleanup() {
     -name '.domyro-ci-signed-*' -print0 | xargs -0 -r rm -rf -- || cleanup_error=1
   database delete || cleanup_error=1
   database absent || cleanup_error=1
+  rm -rf -- "$JOURNAL_DIR" || cleanup_error=1
   if id "$SERVICE_USER" >/dev/null 2>&1 ||
      sudo test -e "$INSTALL_ROOT" || sudo test -e "$CONFIG_ROOT" ||
      sudo test -e "$STATE_ROOT" || sudo test -e "$UNIT_FILE" ||
@@ -105,6 +108,7 @@ trap cleanup EXIT
 CRASH_LOG="$(mktemp "$GITHUB_WORKSPACE/.domyro-ci-crash-XXXXXX")"
 set +e
 DOMYRO_CI_FAILPOINT=after-unit-start-sigkill \
+  DOMYRO_CI_FIRSTBOOT_JOURNAL_DIR="$JOURNAL_DIR" \
   bash scripts/ci-native-account-test.sh >"$CRASH_LOG" 2>&1
 CRASH_CODE="$?"
 set -e
@@ -115,6 +119,21 @@ if [[ "$CRASH_CODE" != 137 ]]; then
   exit 93
 fi
 rm -f -- "$CRASH_LOG"
+# Firstboot intent survived because the child was killed before its EXIT trap.
+DOMYRO_CI_FIRSTBOOT_JOURNAL_DIR="$JOURNAL_DIR" \
+  node --input-type=module -e '
+    import {inspectFirstBootIntent} from "./src/lifecycle/native-firstboot-journal.mjs";
+    const report=await inspectFirstBootIntent({
+      directory:process.env.DOMYRO_CI_FIRSTBOOT_JOURNAL_DIR,
+    });
+    if(!report || report.phase!=="http_login_and_persistence_verified" ||
+       report.nextPhase!=="test_completed" ||
+       report.installationAllowed!==false ||
+       report.automaticRecoveryAllowed!==false) {
+      throw Error("ci_killed_installer_firstboot_phase_not_retained");
+    }
+    process.stdout.write("SIGKILL preserved fsynced verified firstboot phase\\n");
+  '
 id "$SERVICE_USER" >/dev/null 2>&1
 [[ -f "$UNIT_FILE" && -d "$INSTALL_ROOT" && -d "$CONFIG_ROOT" ]]
 sudo systemctl is-active --quiet "$UNIT.service"
