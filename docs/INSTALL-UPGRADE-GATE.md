@@ -24,6 +24,10 @@ The versioned [installation-readiness.json](../config/installation-readiness.jso
 
 A read-only MQTT.js Zigbee2MQTT client has passed ephemeral broker tests and a new site-scoped PostgreSQL device/observation schema can store stable IEEE device identities. These are separate development capabilities: **no approved real-hardware Zigbee2MQTT integration, secure broker credentials, automatically enabled site-bound broker-to-DB service, user-authorized actuation or independent physical testing exists**. D-53 installation readiness remains **closed**. See [MQTT-READONLY-FOUNDATION.md](MQTT-READONLY-FOUNDATION.md).
 
+### Signed source and rollback-integrity hardening (2026-11-02)
+
+The isolated signed release prototype now rejects symlinked or hardlinked receipts and files, group/world-writable release content, unlisted empty directories and oversized receipts. It verifies the **previous signed source release before any candidate pointer change**, checks candidate integrity again after a successful health probe and detects a corrupted rollback target after a failed probe while cleaning up the test activation lock. These are development-only integrity checks, **not** a durable power-loss recovery journal, complete database/config/Matter restoration or permission to deploy. See [SIGNED-RELEASE-ROLLBACK-HARDENING.md](SIGNED-RELEASE-ROLLBACK-HARDENING.md). **D-53 remains CLOSED.**
+
 ### Signed download-only and real transient systemd crash-recovery CI (2026-11-02)
 
 A new **loopback-only** release-download rehearsal uses actual HTTP transfers from 127.0.0.1 and requires a verified Ed25519 signature, matching signed artifact filename, current schema/architecture, explicit automatic-download preferences and elapsed download delay. It enforces a strict byte ceiling and SHA-256 hash, stages the release into a private disposable directory, re-verifies staged files after the CI hook and **never activates the release or restarts a service**. This is **not a production network downloader**: remote URLs and redirects are deliberately refused. See [SIGNED-DOWNLOAD-REHEARSAL.md](SIGNED-DOWNLOAD-REHEARSAL.md).
