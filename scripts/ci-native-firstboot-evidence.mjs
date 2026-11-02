@@ -131,6 +131,27 @@ async function assertLive(){
     fail('ci_firstboot_http_liveness_unverified');
   }
 }
+
+async function validateRestoreReceipt(staging) {
+  const p=join(staging,'ci-native-restored-backup.json');
+  const st=await lstat(p);
+  if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||(st.mode&0o077)!==0||
+     st.uid!==process.getuid()||st.size<40||st.size>4096)
+    fail('ci_firstboot_backup_receipt_unsafe');
+  const value=JSON.parse(await readFile(p,'utf8'));
+  if(value?.kind!=='domyro-ci-native-scratch-restore'||
+     value?.verified!==true||value?.gate!=='D-53'||
+     !/^[a-f0-9]{64}$/.test(value?.sourceSha256??'')||
+     !/^[a-f0-9]{64}$/.test(value?.backupArchiveSha256??'')||
+     value?.counts?.users!==1||value?.counts?.sites!==1||
+     value?.counts?.memberships!==1||
+     !Number.isInteger(value?.counts?.areas)||value.counts.areas<1)
+    fail('ci_firstboot_backup_receipt_invalid');
+  const backup=await lstat(join(staging,'native-firstboot.domyrobackup'));
+  if(!backup.isFile()||backup.isSymbolicLink()||
+     (backup.mode&0o077)!==0||backup.size<100)
+    fail('ci_firstboot_backup_file_missing_or_unsafe');
+}
 async function validatePhase(next,staging){
   const root=join(staging,'release-store','releases','0.1.1');
   switch(next){
@@ -146,7 +167,14 @@ async function validatePhase(next,staging){
     case 'restricted_runtime_verified': await assertOwner();await assertRuntimeRole();break;
     case 'native_service_started': await assertRuntimeRole();assertSystemd();await assertLive();break;
     case 'http_login_and_persistence_verified': assertSystemd();await assertLive();await assertOwner();break;
-    case 'test_completed': assertSystemd();await assertLive();await assertOwner();await assertRuntimeRole();break;
+    case 'postgres_scratch_restore_verified':
+      assertSystemd();await assertLive();await assertOwner();
+      await validateRestoreReceipt(staging);
+      break;
+    case 'test_completed':
+      assertSystemd();await assertLive();await assertOwner();await assertRuntimeRole();
+      await validateRestoreReceipt(staging);
+      break;
     default: fail('ci_firstboot_phase_invalid');
   }
 }
