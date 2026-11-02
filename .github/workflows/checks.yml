@@ -41,6 +41,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Install exact integrity-locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Syntax-check CI-only native systemd scripts
+        run: bash -n scripts/ci-real-systemd-test.sh scripts/ci-native-account-test.sh
       - run: npm run check
       - name: Read-only host diagnostic (informational, no install)
         run: npm run preflight:read-only
