@@ -58,7 +58,7 @@ test('native installer and SIGKILL-parent require independent scratch recovery p
   assert.ok(installer.includes('DOMYRO_CI_NATIVE_BACKUP=1 node "$CI_BACKUP_BRIDGE" create'));
   assert.ok(installer.includes('ci_journal postgres_scratch_restore_verified'));
   assert.ok(outer.includes('node scripts/ci-native-backup-restore-proof.mjs verify'));
-  assert.ok(outer.includes('report.phase!=="postgres_scratch_restore_verified"'));
+  assert.ok(outer.includes('report.phase!=="config_scratch_restore_verified"'));
   const recovery=readFileSync(script,'utf8');
   assert.ok(recovery.includes('ci_native_backup_source_changed_during_restore'));
   assert.ok(recovery.includes('ci_native_backup_allowed_inplace_restore'));
@@ -70,4 +70,23 @@ test('backup proof and CI installer scripts parse without privileged execution',
   assert.equal(r.status,0,r.stderr);
   const b=spawnSync('bash',['-n',existing,crash],{timeout:5000,encoding:'utf8'});
   assert.equal(b.status,0,b.stderr);
+});
+
+test('actual native config recovery is independently encrypted and never restores into /etc',()=>{
+  const config=resolve('scripts/ci-native-config-restore-proof.mjs');
+  const source=readFileSync(config,'utf8');
+  assert.ok(source.includes('ci_native_config_requires_disposable_hosted_runner'));
+  assert.ok(source.includes('createEncryptedConfigFixture'));
+  assert.ok(source.includes('restoreConfigFixtureToScratch'));
+  assert.ok(source.includes("backupName:BACKUP_NAME"));
+  assert.ok(source.includes('ci_native_config_allowed_repeated_restore'));
+  assert.ok(source.includes('ci_native_config_accepted_wrong_password'));
+  const cli=spawnSync(process.execPath,['--check',config],{timeout:5000,encoding:'utf8'});
+  assert.equal(cli.status,0,cli.stderr);
+  const result=spawnSync(process.execPath,[config,'create'],{
+    cwd:process.cwd(),encoding:'utf8',timeout:5000,
+    env:{...env,GITHUB_ACTIONS:'false'},
+  });
+  assert.equal(result.status,1,result.stderr);
+  assert.match(result.stderr,/ci_native_config_requires_disposable_hosted_runner/);
 });
