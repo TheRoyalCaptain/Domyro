@@ -5,6 +5,9 @@ on:
       - 'scripts/ci-native-account-test.sh'
       - 'scripts/ci-native-firstboot-evidence.mjs'
       - 'scripts/ci-native-backup-restore-proof.mjs'
+      - 'scripts/ci-native-config-restore-proof.mjs'
+      - 'src/lifecycle/config-fixture-backup.mjs'
+      - 'src/lifecycle/config-fixture-restore.mjs'
       - 'src/lifecycle/streamed-postgres-backup.mjs'
       - 'scripts/ci-stage-signed-source.mjs'
       - 'src/lifecycle/native-firstboot-journal.mjs'
@@ -52,6 +55,7 @@ jobs:
         run: bash -n scripts/ci-native-account-test.sh scripts/ci-native-installer-fault-matrix.sh scripts/ci-native-sigkill-recovery.sh
           node --check scripts/ci-native-firstboot-evidence.mjs
           node --check scripts/ci-native-backup-restore-proof.mjs
+          node --check scripts/ci-native-config-restore-proof.mjs
       - name: Abort four first-install phases and verify complete disposable cleanup
         run: bash scripts/ci-native-installer-fault-matrix.sh
       - name: SIGKILL installer, verify preserved owner data, refuse retry, explicitly recover
