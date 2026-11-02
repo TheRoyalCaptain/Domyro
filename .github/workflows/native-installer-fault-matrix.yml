@@ -4,6 +4,7 @@ on:
     paths:
       - 'scripts/ci-native-account-test.sh'
       - 'scripts/ci-native-installer-fault-matrix.sh'
+      - 'scripts/ci-native-sigkill-recovery.sh'
       - '.github/workflows/native-installer-fault-matrix.yml'
   workflow_dispatch:
 permissions:
@@ -43,6 +44,8 @@ jobs:
       - name: Install locked dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Syntax check CI-only scripts
-        run: bash -n scripts/ci-native-account-test.sh scripts/ci-native-installer-fault-matrix.sh
+        run: bash -n scripts/ci-native-account-test.sh scripts/ci-native-installer-fault-matrix.sh scripts/ci-native-sigkill-recovery.sh
       - name: Abort four first-install phases and verify complete disposable cleanup
         run: bash scripts/ci-native-installer-fault-matrix.sh
+      - name: SIGKILL installer, verify preserved owner data, refuse retry, explicitly recover
+        run: bash scripts/ci-native-sigkill-recovery.sh
