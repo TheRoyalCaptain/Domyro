@@ -227,7 +227,17 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
     await changePointer(base, version);
     switched = true;
     let healthy = false;
-    try { healthy = await probe({ version, root: base, release }) === true; } catch { healthy = false; }
+    try {
+      healthy = await probe({ version, root: base, release }) === true;
+      if (healthy) {
+        // A healthy process is insufficient if the candidate or active pointer
+        // changed while the health probe was running.
+        healthy = (await currentVersion(base)) === version;
+        if (healthy) await inspectVerifiedStagedBundle({
+          root:base,version,trustedPublicKeyPem,
+        });
+      }
+    } catch { healthy = false; }
     if (!healthy) throw new Error('post_activation_health_failed_rolled_back_pointer');
     completed = true;
     return Object.freeze({ active: version, previous, healthy: true, serviceRestarted: false, databaseMigrated: false, installationApproved: false, gate: 'D-53' });
