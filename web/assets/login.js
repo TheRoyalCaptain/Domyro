@@ -23,6 +23,7 @@ function setAuthenticated(authenticated) {
     get('sites').replaceChildren();
     get('rooms').replaceChildren();
     get('updates-panel').hidden = true;
+    get('updates-check-result').textContent = 'Nog niet gecontroleerd. Er is geen automatische achtergrondcontrole actief.';
     get('user-devices').hidden = true;
     get('user-device-list').replaceChildren();
     get('rename-site-form').hidden = true;
@@ -237,6 +238,36 @@ get('login-form').addEventListener('submit', async event => {
     showMessage(explain(error));
   } finally { button.disabled = false; }
 });
+get('update-check').addEventListener('click',async()=>{
+  const button=get('update-check'),output=get('updates-check-result');
+  if(button.disabled||!state.csrf)return;
+  button.disabled=true;
+  output.textContent='Officiële GitHub-releases controleren…';
+  try{
+    const result=await api('system/updates/check',{
+      method:'POST',csrf:true,body:{},
+    });
+    // All information from a public release API is untrusted until its
+    // publisher signature and package contents have been verified.
+    const version=typeof result.latestVersion==='string'?result.latestVersion:'';
+    const messages={
+      no_official_release_published:'Er is nog geen publieke officiële Domyro-release beschikbaar.',
+      newer_release_advertised:'GitHub vermeldt versie '+version+
+        '. De handtekening is nog niet gecontroleerd. Installatie blijft geblokkeerd.',
+      already_latest:'GitHub vermeldt dezelfde versie. Dit is geen verificatie van de installatie.',
+      github_advertises_older_version:'De door GitHub vermelde versie is ouder dan deze ontwikkelversie.',
+      release_check_unavailable:'GitHub-releases zijn tijdelijk niet te controleren. Er is niets geïnstalleerd.',
+      check_rate_limited:'Er is zojuist al gecontroleerd. Probeer het over ongeveer '+
+        String(result.retryAfterSeconds??30)+' seconden opnieuw.',
+    };
+    output.textContent=messages[result.state]??'De updatecontrole gaf geen bruikbaar resultaat.';
+    get('update-install').disabled=true;
+    get('update-install').setAttribute('aria-disabled','true');
+  }catch{
+    output.textContent='Controle mislukt. Er zijn geen bestanden gedownload of geïnstalleerd.';
+  }finally{button.disabled=false;}
+});
+
 get('add-site-form').addEventListener('submit',async event=>{
   event.preventDefault();
   if(!state.csrf)return;
