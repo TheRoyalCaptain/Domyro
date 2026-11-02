@@ -56,4 +56,5 @@ test('existing install is refused before any temporary staging or cleanup trap',
   }
   assert.match(source,/exit 93/);
   assert.match(source,/SECOND_INSTALL_STATUS.*93/);
+  assert.ok(source.includes('kill -s KILL "$BASHPID"'));
 });
