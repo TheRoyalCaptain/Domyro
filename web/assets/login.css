@@ -38,3 +38,35 @@ footer{display:flex;justify-content:space-between;gap:10px;color:#71899f;font-si
 .update-details dt{color:#a0b7c4;font-size:12px}
 .update-details dd{margin:0;color:#e4f1ee;font-size:12px;font-weight:700}
 .update-warning{font-size:12px!important;color:#b5c3d2!important}
+
+/* Real local portal: actual homes, rooms, and read-only device observations. */
+[hidden]{display:none!important}
+.container{width:min(1000px,100%);}
+#signedin{display:grid;gap:5px}
+.portal-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:16px}
+.portal-heading h3{margin:10px 0 2px}
+.portal-heading p{font-size:12px;margin:3px 0 10px}
+.portal-shortcut{display:inline-flex;padding:9px 12px;border-radius:10px;border:1px solid #477466;font-size:12px;font-weight:700}
+.site-list{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:12px 0 5px}
+#rooms-panel{border-top:1px solid #344c62;margin-top:16px;padding-top:8px}
+#rename-site-form{padding:12px;border:1px solid #315365;border-radius:12px;background:#0f2031}
+.tiny-button{font-size:11px;padding:9px 12px;border-radius:9px}
+.rooms{list-style:none;margin:12px 0;padding:0;gap:8px}
+.room-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:13px 15px;border-radius:11px;border:1px solid #314b5e;background:#132d3d}
+.room-edit-form{flex-basis:100%;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding-top:9px}
+.room-edit-form input{flex:1 1 150px}
+.room-edit-form button{font-size:11px;padding:10px 12px}
+.devices-panel{border-top:1px solid #345064;margin-top:26px;padding-top:8px}
+.portal-device-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.portal-device-card{background:#10283b;border:1px solid #365466;border-radius:14px;padding:16px;min-width:0}
+.portal-device-card h4{margin:0 0 6px;font-size:15px;overflow-wrap:anywhere}
+.portal-device-card p{font-size:11px;margin:0 0 12px}
+.portal-device-card dl{display:grid;gap:8px;margin:0}
+.portal-device-card dl div{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #315065;padding-top:8px}
+.portal-device-card dt{font-size:11px;color:#a3b6c6}
+.portal-device-card dd{font-size:11px;text-align:right;margin:0;overflow-wrap:anywhere}
+button:not(:disabled),.portal-shortcut{transition:transform .16s ease,background .16s ease}
+button:hover:not(:disabled){transform:translateY(-1px)}
+@media(max-width:620px){.site-list{grid-template-columns:1fr 1fr}.container{padding:18px 13px}.panel{padding:19px}.portal-heading{align-items:flex-start}}
+@media(max-width:390px){.site-list{grid-template-columns:1fr}.room-edit-form input{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){button:not(:disabled){transition:none}button:hover:not(:disabled){transform:none}}
