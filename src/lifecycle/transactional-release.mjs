@@ -13,6 +13,7 @@ import { verifyArtifactBytes, verifySignedManifest } from './release.mjs';
 const MAX_BUNDLE_BYTES = 64 * 1024 * 1024;
 const MAX_FILES = 1500;
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const MAX_RECEIPT_BYTES = 96 * 1024 * 1024;
 const FILE_NAME = /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/;
 const VERSION_DIR = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$/;
 const MARKER = '.domyro-release-root';
@@ -66,7 +67,7 @@ function bundleFiles(input) {
 }
 async function checkReleaseDirectory(path) {
   const details = await lstat(path);
-  if (!details.isDirectory() || details.isSymbolicLink()) throw new Error('staged_release_not_directory');
+  if (!details.isDirectory() || details.isSymbolicLink() || (details.mode & 0o022) !== 0) throw new Error('staged_release_not_private_directory');
 }
 export async function stageVerifiedBundle({ root, manifestBytes, signatureBase64, trustedPublicKeyPem, artifactBytes, arch }) {
   const manifest = verifySignedManifest({ manifestBytes, signatureBase64, trustedPublicKeyPem });
@@ -149,7 +150,8 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
   const receiptPath=join(release,'.receipt.json');
   try {
     const receiptStat=await lstat(receiptPath);
-    if(!receiptStat.isFile()||receiptStat.isSymbolicLink()||receiptStat.nlink!==1)
+    if(!receiptStat.isFile()||receiptStat.isSymbolicLink()||receiptStat.nlink!==1||
+       receiptStat.size>MAX_RECEIPT_BYTES||(receiptStat.mode&0o022)!==0)
       throw new Error('staged_release_receipt_unsafe');
     receipt=JSON.parse(await readFile(receiptPath,'utf8'));
   } catch(error) {
@@ -176,7 +178,8 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
   for(const entry of entries){
     const filePath=join(release,...entry.path.split('/'));
     const stat=await lstat(filePath);
-    if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size!==entry.bytes.length)throw new Error('staged_release_file_changed');
+    if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||
+       (stat.mode&0o022)!==0||stat.size!==entry.bytes.length)throw new Error('staged_release_file_changed');
     if(!(await readFile(filePath)).equals(entry.bytes))throw new Error('staged_release_file_changed');
   }
   let found=0;
@@ -187,6 +190,8 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
       if(entry.isSymbolicLink())throw new Error('staged_release_symlink_forbidden');
       if(entry.isDirectory()){
         if(!expectedDirectories.has(relative))throw new Error('staged_release_unlisted_directory');
+        const stat=await lstat(join(folder,entry.name));
+        if((stat.mode&0o022)!==0)throw new Error('staged_release_directory_writable');
         await walk(join(folder,entry.name),relative+'/');
       } else if(entry.isFile()){
         if(!expected.has(relative))throw new Error('staged_release_unlisted_file');
