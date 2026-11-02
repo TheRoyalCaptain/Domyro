@@ -54,10 +54,10 @@ assert_cleaned() {
     const db=new Pool({connectionString:process.env.DOMYRO_TEST_DATABASE_URL,max:1});
     try {
       const result=await db.query(
-        "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname=$1) AS db, " +
-        "EXISTS(SELECT 1 FROM pg_roles WHERE rolname=$2) AS role",
+        "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname=$1) AS db_exists, " +
+        "EXISTS(SELECT 1 FROM pg_roles WHERE rolname=$2) AS role_exists",
         [process.env.CI_DB_NAME,process.env.CI_RUNTIME_ROLE]);
-      if(result.rows[0].db || result.rows[0].role){
+      if(result.rows[0].db_exists || result.rows[0].role_exists){
         process.stderr.write("Disposable PostgreSQL resources survived installer failure\\n");
         process.exitCode=94;
       }
