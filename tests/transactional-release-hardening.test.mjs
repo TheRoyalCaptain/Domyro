@@ -130,3 +130,15 @@ test('failed probe with corrupted rollback target raises critical error and rele
   await assert.rejects(()=>stat(join(root,'.activation.lock')),{code:'ENOENT'});
   await assert.rejects(()=>inspect(root),/staged_release_file_changed/);
 });
+
+test('candidate tampering during a healthy probe triggers pointer rollback',async t=>{
+  const {root}=await staged(t);
+  await activate(root,'0.1.0');
+  await stageVerifiedBundle({root,...signed('0.1.1')});
+  await assert.rejects(()=>activate(root,'0.1.1',async({release})=>{
+    await writeFile(join(release,'src/server.mjs'),'tampered candidate after boot');
+    return true;
+  }),/post_activation_health_failed_rolled_back_pointer/);
+  assert.equal(await inspectActiveBundle(root),'0.1.0');
+  await assert.rejects(()=>stat(join(root,'.activation.lock')),{code:'ENOENT'});
+});
