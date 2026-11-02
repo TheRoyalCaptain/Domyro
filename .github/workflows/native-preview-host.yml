@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'scripts/native-preview-install.sh'
+      - 'scripts/native-preview-refresh.sh'
       - 'scripts/ci-native-preview-smoke.mjs'
       - 'src/**'
       - 'web/**'
@@ -41,7 +42,7 @@ jobs:
         run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Reject invalid native setup script before privileged test
         run: |
-          bash -n scripts/native-preview-install.sh
+          bash -n scripts/native-preview-install.sh scripts/native-preview-refresh.sh
           node --check scripts/ci-native-preview-smoke.mjs
       - name: Run Docker-free native installation and authenticated portal smoke
         run: node scripts/ci-native-preview-smoke.mjs
