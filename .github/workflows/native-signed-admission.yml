@@ -5,6 +5,8 @@ on:
       - 'scripts/ci-stage-signed-source.mjs'
       - 'scripts/ci-native-account-test.sh'
       - 'scripts/ci-native-firstboot-evidence.mjs'
+      - 'scripts/ci-native-backup-restore-proof.mjs'
+      - 'src/lifecycle/streamed-postgres-backup.mjs'
       - 'src/lifecycle/native-firstboot-journal.mjs'
       - 'scripts/ci-signed-package-admission-matrix.sh'
       - 'src/lifecycle/native-release-verifier.mjs'
@@ -52,6 +54,7 @@ jobs:
         run: |
           bash -n scripts/ci-signed-package-admission-matrix.sh scripts/ci-native-account-test.sh
           node --check scripts/ci-stage-signed-source.mjs
+          node --check scripts/ci-native-backup-restore-proof.mjs
       - name: Signed package accepted; modified packages refused without staging
         run: bash scripts/ci-signed-package-admission-matrix.sh
       - name: Run actual native systemd with PostgreSQL from file-backed signed source
