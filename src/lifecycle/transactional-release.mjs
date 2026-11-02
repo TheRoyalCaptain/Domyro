@@ -9,6 +9,7 @@ import { join, resolve, dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { verifyArtifactBytes, verifySignedManifest } from './release.mjs';
+import { readActivationIntent, persistActivationIntent, clearActivationIntent, syncActivationDirectory } from './activation-journal.mjs';
 
 const MAX_BUNDLE_BYTES = 64 * 1024 * 1024;
 const MAX_FILES = 1500;
@@ -127,6 +128,7 @@ async function changePointer(root, version) {
       await symlink('releases/' + checkedVersion(version), temp);
       await rename(temp, join(root, 'current'));
     } else await rm(join(root, 'current'), { force: true });
+    await syncActivationDirectory(root);
   } finally { await rm(temp, { force: true }); }
 }
 /**
@@ -212,10 +214,13 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
   if (typeof probe !== 'function') throw new Error('post_activation_probe_required');
   const base=await safeRoot(root);
   await inspectVerifiedStagedBundle({root:base,version,trustedPublicKeyPem});
+  // An interrupted transaction is never implicitly overwritten or recovered.
+  if (await readActivationIntent(base)) throw new Error('interrupted_activation_requires_manual_recovery');
   const release=join(base,'releases',version);
   const lock = await open(join(base, '.activation.lock'), 'wx', 0o600);
-  let previous = null, switched = false, completed = false;
+  let previous = null, switched = false, completed = false, journalCreated = false;
   try {
+    if (await readActivationIntent(base)) throw new Error('interrupted_activation_requires_manual_recovery');
     previous = await currentVersion(base);
     if (previous === version) throw new Error('already_active');
     // A pointer rollback is not safe if the previous signed release has
@@ -224,6 +229,9 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
       root:base,version:previous,trustedPublicKeyPem,
     });
     if(await currentVersion(base)!==previous)throw new Error('active_release_changed_during_preflight');
+    // Persist and fsync the old/new intent BEFORE changing the live symlink.
+    await persistActivationIntent(base, {previous,target:version});
+    journalCreated = true;
     await changePointer(base, version);
     switched = true;
     let healthy = false;
@@ -239,6 +247,8 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
       }
     } catch { healthy = false; }
     if (!healthy) throw new Error('post_activation_health_failed_rolled_back_pointer');
+    await clearActivationIntent(base, {previous,target:version});
+    journalCreated = false;
     completed = true;
     return Object.freeze({ active: version, previous, healthy: true, serviceRestarted: false, databaseMigrated: false, installationApproved: false, gate: 'D-53' });
   } finally {
@@ -253,6 +263,8 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
           root:base,version:previous,trustedPublicKeyPem,
         });
       }
+      // Clear intent ONLY after the prior signed release is verified again.
+      if (journalCreated && !completed) await clearActivationIntent(base, {previous,target:version});
     } catch(error) { recoveryError = error; }
     try { await lock.close(); } catch(error) { recoveryError ??= error; }
     try { await rm(join(base, '.activation.lock'), { force: true }); }
@@ -262,4 +274,37 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
 }
 export async function inspectActiveBundle(root) {
   return currentVersion(await safeRoot(root));
+}
+
+/**
+ * Read-only crash diagnosis. An interrupted switch remains blocked even when
+ * the pointer happens to name the previous version. Never auto-repair a live
+ * service: process quiescence and database/config restore are not implemented.
+ */
+export async function inspectInterruptedActivation({root,trustedPublicKeyPem}) {
+  if(typeof trustedPublicKeyPem!=='string'||!trustedPublicKeyPem)throw new Error('pinned_trust_root_required');
+  // Unlike staging, inspection must not create an absent directory.
+  await lstat(resolve(root));
+  const base=await safeRoot(root);
+  if(await readFile(join(base,MARKER),'utf8')!=='Domyro isolated release prototype v1\\n')
+    throw new Error('invalid_release_root_marker');
+  const intent=await readActivationIntent(base);
+  const lockPresent=await lstat(join(base,'.activation.lock')).then(()=>true,e=>{
+    if(e.code==='ENOENT')return false;
+    throw e;
+  });
+  const active=await currentVersion(base);
+  if(!intent)return Object.freeze({state:lockPresent?'unresolved_lock':'clean',active,
+    lockPresent,automaticRecoveryAllowed:false,gate:'D-53'});
+  async function verified(version) {
+    if(version===null)return true;
+    try { await inspectVerifiedStagedBundle({root:base,version,trustedPublicKeyPem});return true; }
+    catch { return false; }
+  }
+  return Object.freeze({state:'interrupted',previous:intent.previous,target:intent.target,
+    active,activeMatchesIntent:active===intent.previous||active===intent.target,
+    previousSignedSourceVerified:await verified(intent.previous),
+    candidateSignedSourceVerified:await verified(intent.target),
+    lockPresent,automaticRecoveryAllowed:false,manualRecoveryRequired:true,
+    serviceQuiescenceProven:false,databaseRestoreProven:false,gate:'D-53'});
 }
