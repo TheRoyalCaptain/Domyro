@@ -5,12 +5,13 @@
  * or accepted as official release keys. No real system installation.
  */
 import { generateKeyPairSync, createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
-import { arch } from 'node:os';
+import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
+import { arch, tmpdir } from 'node:os';
 import { resolve, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildSignedSourceRelease, writeSignedRelease } from '../tools/build-release.mjs';
 import { inspectOfflineNativeSourceRelease } from '../src/lifecycle/native-release-verifier.mjs';
+import { recordTrustedReleaseReceipt, readTrustedReleaseReceipt } from '../src/lifecycle/trusted-release-receipt.mjs';
 import {
   stageVerifiedBundle, inspectVerifiedStagedBundle,
 } from '../src/lifecycle/transactional-release.mjs';
@@ -65,7 +66,7 @@ async function main() {
     await writeFile(join(packageDirectory, 'release-manifest.sig'), 'not-a-valid-ed25519-signature\\n');
   } else if (sabotage === 'extra') {
     await writeFile(join(packageDirectory, 'unlisted-source.js'), 'not admitted\\n');
-  } else if (sabotage !== '') {
+  } else if (sabotage !== '' && sabotage !== 'receipt') {
     throw new Error('ci_signed_package_fault_unknown');
   }
   const approved = await inspectOfflineNativeSourceRelease({
@@ -81,6 +82,37 @@ async function main() {
   // source tree again before the real (disposable) systemd test uses it.
   const manifestBytes = await readFile(join(packageDirectory, 'release-manifest.json'));
   const signatureBase64 = (await readFile(join(packageDirectory, 'release-manifest.sig'), 'utf8')).trimEnd();
+
+  // Demonstrate the durable release high-water receipt from PR #1 against
+  // the same authenticated *file-backed* bytes. Its test-only trust store
+  // is created outside the owner's host and discarded after the CI proof.
+  const receiptDir = await mkdtemp(join(tmpdir(), 'domyro-test-'));
+  try {
+    const stored = await recordTrustedReleaseReceipt({
+      directory: receiptDir, manifestBytes, signatureBase64, trustedPublicKeyPem,
+    });
+    if (stored.manifestSha256 !== approved.manifestSha256 ||
+        stored.publisherKeySha256 !== approved.publisherFingerprint ||
+        stored.version !== approved.version ||
+        stored.installAllowed !== false) {
+      throw new Error('ci_release_trust_receipt_mismatch');
+    }
+    if (sabotage === 'receipt') {
+      const filename = join(receiptDir, '.trusted-release-receipt.json');
+      const changed = JSON.parse(await readFile(filename, 'utf8'));
+      changed.manifestSha256 = 'f'.repeat(64);
+      await writeFile(filename, JSON.stringify(changed) + '\n', { mode: 0o600 });
+    }
+    const readBack = await readTrustedReleaseReceipt({
+      directory: receiptDir, trustedPublicKeyPem,
+    });
+    if (!readBack || readBack.version !== approved.version ||
+        readBack.manifestSha256 !== approved.manifestSha256 ||
+        readBack.publisherKeySha256 !== expectedPublicKeySha256) {
+      throw new Error('ci_release_trust_receipt_changed');
+    }
+  } finally { await rm(receiptDir, { recursive:true, force:true }); }
+
   const artifactBytes = await readFile(join(packageDirectory, artifact));
   const staged = await stageVerifiedBundle({
     root, manifestBytes, signatureBase64, trustedPublicKeyPem,
