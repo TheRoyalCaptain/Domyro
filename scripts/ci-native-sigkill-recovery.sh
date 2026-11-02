@@ -102,15 +102,19 @@ trap cleanup EXIT
 
 # The nested installer is killed after first HTTP login, room creation and
 # systemd startup. SIGKILL skips the installer's own EXIT trap.
+CRASH_LOG="$(mktemp "$GITHUB_WORKSPACE/.domyro-ci-crash-XXXXXX")"
 set +e
 DOMYRO_CI_FAILPOINT=after-unit-start-sigkill \
-  bash scripts/ci-native-account-test.sh >/dev/null 2>&1
+  bash scripts/ci-native-account-test.sh >"$CRASH_LOG" 2>&1
 CRASH_CODE="$?"
 set -e
 if [[ "$CRASH_CODE" != 137 ]]; then
   echo "Expected SIGKILL exit 137, got $CRASH_CODE" >&2
+  tail -n 25 "$CRASH_LOG" | sed -E 's@postgresql://[^[:space:]]+@postgresql://[REDACTED]@g' >&2
+  rm -f -- "$CRASH_LOG"
   exit 93
 fi
+rm -f -- "$CRASH_LOG"
 id "$SERVICE_USER" >/dev/null 2>&1
 [[ -f "$UNIT_FILE" && -d "$INSTALL_ROOT" && -d "$CONFIG_ROOT" ]]
 sudo systemctl is-active --quiet "$UNIT.service"
