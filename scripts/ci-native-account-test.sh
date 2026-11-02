@@ -68,7 +68,7 @@ ci_fault() {
     case "$1" in
       after-db-bootstrap) expected=database_owner_bootstrapped ;;
       after-db-role) expected=restricted_runtime_verified ;;
-      after-unit-start|after-restart) expected=postgres_scratch_restore_verified ;;
+      after-unit-start|after-restart) expected=config_scratch_restore_verified ;;
       *) echo "Missing firstboot journal phase policy" >&2; exit 99 ;;
     esac
     actual="$(DOMYRO_CI_TARGET_PORT="$PORT" node "$CI_BRIDGE" inspect |
@@ -91,6 +91,7 @@ CI_JOURNAL_OWNED=0
 CI_JOURNAL_DIR=""
 CI_BRIDGE="scripts/ci-native-firstboot-evidence.mjs"
 CI_BACKUP_BRIDGE="scripts/ci-native-backup-restore-proof.mjs"
+CI_CONFIG_BRIDGE="scripts/ci-native-config-restore-proof.mjs"
 # The firstboot journal is disposable and must be private. An outer SIGKILL
 # test may supply its own mktemp journal to inspect AFTER killing this shell.
 if [[ "$CI_PG_MODE" == 1 ]]; then
@@ -301,6 +302,16 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   DOMYRO_CI_NATIVE_BACKUP=1 node "$CI_BACKUP_BRIDGE" create
 fi
 ci_journal postgres_scratch_restore_verified
+if [[ "$CI_PG_MODE" == 1 ]]; then
+  # These are EXACTLY the newly-created disposable systemd/unit files.
+  # Never copy real host secrets outside a hosted, run-scoped CI VM.
+  sudo install -m 0600 -o runner -g runner \
+    "$CONFIG_ROOT/development.env" "$STAGING_BASE/native-runtime.env"
+  sudo install -m 0600 -o runner -g runner \
+    "$UNIT_FILE" "$STAGING_BASE/native-unit.service"
+  DOMYRO_CI_NATIVE_BACKUP=1 node "$CI_CONFIG_BRIDGE" create
+fi
+ci_journal config_scratch_restore_verified
 # CI-only power-loss approximation: SIGKILL bypasses the EXIT cleanup trap.
 # An explicit external recovery worker must investigate the surviving resources.
 if [[ "$CI_FAILPOINT" == after-unit-start-sigkill ]]; then
