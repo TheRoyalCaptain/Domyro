@@ -36,6 +36,17 @@ INSTALL_ROOT="/opt/$UNIT"
 CONFIG_ROOT="/etc/$UNIT"
 STATE_ROOT="/var/lib/$UNIT"
 UNIT_FILE="/run/systemd/system/$UNIT.service"
+# Collision checks MUST happen before staging, database creation or registration
+# of cleanup traps. A second invocation must never clean up the first install.
+# -L also catches dangling symlinks for which -e would misleadingly be false.
+if id "$SERVICE_USER" >/dev/null 2>&1 ||
+   [[ -e "$INSTALL_ROOT" || -L "$INSTALL_ROOT" ||
+      -e "$CONFIG_ROOT" || -L "$CONFIG_ROOT" ||
+      -e "$STATE_ROOT" || -L "$STATE_ROOT" ||
+      -e "$UNIT_FILE" || -L "$UNIT_FILE" ]]; then
+  echo "Existing disposable CI installation or unexpected path: refusing before changes" >&2
+  exit 93
+fi
 STAGING_BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
 CI_PG_MODE="${DOMYRO_CI_PG_ONBOARDING:-0}"
 CI_FAILPOINT="${DOMYRO_CI_FAILPOINT:-}"
@@ -106,11 +117,6 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
     try{await db.query("CREATE DATABASE "+String.fromCharCode(34)+name+String.fromCharCode(34));}
     finally{await db.end();}
   '
-fi
-if id "$SERVICE_USER" >/dev/null 2>&1 ||
-   [[ -e "$INSTALL_ROOT" || -e "$CONFIG_ROOT" || -e "$STATE_ROOT" || -e "$UNIT_FILE" ]]; then
-  echo "Unexpected pre-existing CI identity or paths; refusing to overwrite" >&2
-  exit 93
 fi
 RELEASE_ROOT="$(node scripts/ci-stage-signed-source.mjs "$STAGING_BASE/release-store")"
 [[ -f "$RELEASE_ROOT/src/server.mjs" && -f "$RELEASE_ROOT/package-lock.json" && \
@@ -225,6 +231,24 @@ assert_live() {
 assert_live
 if [[ "$CI_PG_MODE" == 1 ]]; then
   node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" initial
+  # A second one-command invocation MUST be rejected BEFORE creating or
+  # removing any resources belonging to the live first installation.
+  # Its own cleanup trap must never be installed on this refusal path.
+  BEFORE_ENV_SHA="$(sudo sha256sum "$CONFIG_ROOT/development.env" | cut -d' ' -f1)"
+  BEFORE_UNIT_SHA="$(sudo sha256sum "$UNIT_FILE" | cut -d' ' -f1)"
+  set +e
+  bash scripts/ci-native-account-test.sh > "$STAGING_BASE/existing-install-probe.log" 2>&1
+  SECOND_INSTALL_STATUS=$?
+  set -e
+  if [[ "$SECOND_INSTALL_STATUS" != 93 ]] ||
+     ! grep -q "refusing before changes" "$STAGING_BASE/existing-install-probe.log"; then
+    echo "Second installer invocation did not safely refuse existing installation" >&2
+    exit 99
+  fi
+  [[ "$(sudo sha256sum "$CONFIG_ROOT/development.env" | cut -d' ' -f1)" == "$BEFORE_ENV_SHA" ]]
+  [[ "$(sudo sha256sum "$UNIT_FILE" | cut -d' ' -f1)" == "$BEFORE_UNIT_SHA" ]]
+  assert_live
+  node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-restart
 fi
 ci_fault after-unit-start
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
