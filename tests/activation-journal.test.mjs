@@ -128,3 +128,37 @@ test('read-only crash inspection does not create a missing release root',async t
   await assert.rejects(()=>inspectInterruptedActivation({root,trustedPublicKeyPem}),{code:'ENOENT'});
   await absent(root);
 });
+
+test('tampering with a persisted intent during the health probe is a critical failure',async t=>{
+  const root=await sandbox(t);
+  await stage(root,'0.1.0');
+  await switchTo(root,'0.1.0');
+  await stage(root,'0.1.1');
+  const path=join(root,'.activation-intent.json');
+  await assert.rejects(()=>switchTo(root,'0.1.1',async()=>{
+    const value=JSON.parse(await readFile(path,'utf8'));
+    value.target='0.1.2';
+    await writeFile(path,JSON.stringify(value)+'\\n');
+    return true;
+  }),/rollback_integrity_or_cleanup_failed/);
+  assert.equal(await inspectActiveBundle(root),'0.1.0');
+  assert.equal((await readActivationIntent(root)).target,'0.1.2');
+  await absent(join(root,'.activation.lock'));
+  await assert.rejects(()=>switchTo(root,'0.1.1'),
+    /interrupted_activation_requires_manual_recovery/);
+});
+
+test('crash inspector flags a corrupted previous signed source instead of suggesting recovery',async t=>{
+  const root=await sandbox(t);
+  await stage(root,'0.1.0');
+  await switchTo(root,'0.1.0');
+  await stage(root,'0.1.1');
+  const {persistActivationIntent}=await import('../src/lifecycle/activation-journal.mjs');
+  await persistActivationIntent(root,{previous:'0.1.0',target:'0.1.1'});
+  await writeFile(join(root,'releases/0.1.0/src/server.mjs'),'tampered');
+  const result=await inspectInterruptedActivation({root,trustedPublicKeyPem});
+  assert.equal(result.state,'interrupted');
+  assert.equal(result.previousSignedSourceVerified,false);
+  assert.equal(result.candidateSignedSourceVerified,true);
+  assert.equal(result.automaticRecoveryAllowed,false);
+});
