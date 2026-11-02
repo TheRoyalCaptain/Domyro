@@ -232,8 +232,10 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
     // Persist and fsync the old/new intent BEFORE changing the live symlink.
     await persistActivationIntent(base, {previous,target:version});
     journalCreated = true;
-    await changePointer(base, version);
+    // The rename may succeed even if its following directory fsync fails.
+    // Mark rollback necessary before attempting either operation.
     switched = true;
+    await changePointer(base, version);
     let healthy = false;
     try {
       healthy = await probe({ version, root: base, release }) === true;
