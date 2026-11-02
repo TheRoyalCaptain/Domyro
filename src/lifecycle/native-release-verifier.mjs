@@ -115,6 +115,13 @@ export async function inspectOfflineNativeSourceRelease({
   if (!manifest.artifacts.some(item => item.os === 'ubuntu' && item.arch === architecture)) {
     throw new Error('signed_artifact_for_architecture_missing');
   }
+  // The currently supported Domyro SOURCE release must be a complete
+  // two-platform package, not an unannounced per-architecture partial feed.
+  // Partial update artifact delivery requires a separately audited policy.
+  if (!['amd64', 'arm64'].every(arch =>
+      manifest.artifacts.some(item => item.os === 'ubuntu' && item.arch === arch))) {
+    throw new Error('native_source_release_multiarch_incomplete');
+  }
   // Require the complete multiarchitecture package and nothing unlisted.
   const expected = new Set(['release-manifest.json', 'release-manifest.sig',
     ...manifest.artifacts.map(item => item.file)]);
