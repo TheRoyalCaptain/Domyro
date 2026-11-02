@@ -78,4 +78,38 @@ for point in after-db-bootstrap after-db-role after-unit-start after-restart; do
   assert_cleaned "$point"
 done
 
-echo "Disposable Ubuntu native installer fault matrix: 4 failpoints, cleanup verified. D-53 CLOSED."
+# A dangling symlink looks absent to `-e`, but must NEVER be followed or
+# replaced by a first-install command. Prove this on the disposable CI runner.
+INSTALL_ROOT="/opt/$UNIT"
+STATE_ROOT="/var/lib/$UNIT"
+assert_cleaned "before-existing-target-probes"
+cleanup_refusal_probes() {
+  if sudo test -L "$INSTALL_ROOT"; then sudo rm -- "$INSTALL_ROOT"; fi
+  sudo rmdir -- "$STATE_ROOT" >/dev/null 2>&1 || true
+}
+trap cleanup_refusal_probes EXIT
+assert_refused_untouched() {
+  local stage="$1" output outcome
+  set +e
+  output="$(bash scripts/ci-native-account-test.sh 2>&1)"
+  outcome=$?
+  set -e
+  if [[ "$outcome" != 93 || "$output" != *"refusing before changes"* ]]; then
+    echo "Native installer did not reject occupied target during $stage: $outcome" >&2
+    exit 95
+  fi
+}
+sudo ln -s /etc/hosts "$INSTALL_ROOT"
+assert_refused_untouched "dangling-target-symlink"
+[[ "$(sudo readlink "$INSTALL_ROOT")" == "/etc/hosts" ]]
+sudo rm -- "$INSTALL_ROOT"
+assert_cleaned "after-symlink-refusal"
+
+sudo install -d -m 0700 "$STATE_ROOT"
+assert_refused_untouched "pre-existing-state-directory"
+[[ "$(sudo stat -c %a "$STATE_ROOT")" == 700 ]]
+sudo rmdir -- "$STATE_ROOT"
+assert_cleaned "after-existing-state-refusal"
+trap - EXIT
+
+echo "Disposable native installer: 4 fault points, existing symlink/state refusals and cleanup verified. D-53 CLOSED."
