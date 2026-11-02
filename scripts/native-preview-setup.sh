@@ -43,7 +43,9 @@ node -e 'const [major,minor]=process.versions.node.split(".").map(Number);if(maj
   failure 'existing preview service account; refusing fresh installation'
 say 'Checking native Ubuntu prerequisites. This is NOT a production deployment.'
 sudo -v || failure 'sudo authorization unavailable'
-if ! command -v psql >/dev/null 2>&1;then
+# Ubuntu test hosts may have psql CLIENT preinstalled without the server.
+# Check the actual native server unit instead of mistaking client for server.
+if [[ "$(systemctl show --value -p LoadState postgresql.service 2>/dev/null)" != loaded ]];then
   command -v apt-get >/dev/null 2>&1 ||
     failure 'native Ubuntu apt-get required'
   say 'Installing PostgreSQL from Ubuntu OS packages (NO Docker).'
