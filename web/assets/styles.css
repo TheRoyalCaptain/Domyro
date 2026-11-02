@@ -42,3 +42,14 @@ footer{display:flex;justify-content:space-between;gap:15px;border-top:1px solid 
 @media(max-width:880px){.app-shell{display:block}.sidebar{height:auto;min-height:0;padding:14px 20px;position:static;flex-direction:row;align-items:center;justify-content:space-between;border-right:0;border-bottom:1px solid #263447}.brand{padding:0}.brand small,.nav-heading,.nav,.side-bottom{display:none}.topbar{min-height:56px}.container{padding-top:40px}.hero{margin-bottom:35px}}
 @media(max-width:650px){.hero{display:block}.hero-graphic{display:none}.stats{grid-template-columns:1fr}.stat{min-height:150px;padding:19px}.stat-icon{margin-bottom:10px}.section-header{align-items:flex-start}.section-header p{max-width:260px}.step{gap:12px;padding:17px 14px}.step-pill{display:none}footer{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nav-item{transition:none}}
+
+/* Real, authenticated Zigbee inventory. No interaction is enabled here. */
+.device-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:16px;margin-top:14px}
+.device-card{min-width:0;border:1px solid #284255;border-radius:16px;padding:21px;background:linear-gradient(145deg,#162c3b,#132338)}
+.device-card h3{margin:0 0 6px;overflow-wrap:anywhere;font-size:16px;font-weight:700;color:#eaf5f2}
+.device-model{color:#9bb1c2;font-size:11px;margin:0 0 13px;overflow-wrap:anywhere}
+.device-readonly{display:inline-block;margin:0 0 15px;padding:5px 9px;border:1px solid #3b5b61;border-radius:20px;font-size:10px;color:#91d8c6}
+.device-observations{margin:0;display:grid;gap:9px}
+.device-observations div{display:flex;gap:14px;align-items:baseline;justify-content:space-between;border-top:1px solid #2b3d4c;padding-top:9px}
+.device-observations dt{font-size:11px;color:#9aacbc}
+.device-observations dd{margin:0;text-align:right;font-size:11px;color:#e1eee7;overflow-wrap:anywhere}
