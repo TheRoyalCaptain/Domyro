@@ -22,7 +22,9 @@ const run=(file,args,timeout=TIMEOUT)=>{
   const r=spawnSync(file,args,{cwd:process.cwd(),timeout,encoding:'utf8',
     env:{...process.env,DOCKER_HOST:undefined,DOCKER_CONTEXT:undefined}});
   if(r.status!==0)throw Error('ci_native_preview_command_failed: '+file+
-    ' '+args[0]+' (exit '+r.status+')');
+    ' '+args[0]+' (exit '+r.status+') '+(file==='bash'&&
+    args[0]==='scripts/native-preview-setup.sh'?
+      'preflight='+JSON.stringify((r.stderr??'').slice(-280)):'') );
   return r.stdout.trim();
 };
 const sudo=(...args)=>run('sudo',args);
