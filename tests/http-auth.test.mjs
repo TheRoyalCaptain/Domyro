@@ -101,6 +101,35 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   const created = await post(areasPath, { displayName: 'Woonkamer' }, { 'x-domyro-csrf': token.csrfToken }, sessionCookie);
   assert.equal(created.status, 201);
   assert.equal((await created.json()).area.display_name, 'Woonkamer');
+  // UI CRUD: every change persists through the real authenticated API.
+  const mutate=(method,path,body,csrf=token.csrfToken,actor=sessionCookie,origin=base)=>
+    fetch(base+path,{method,headers:{
+      ...jsonHeaders,origin,cookie:actor,'x-domyro-csrf':csrf,
+    },body:JSON.stringify(body)});
+  const createdSite=await mutate('POST','/api/v1/sites',{displayName:'Werkplaats'});
+  assert.equal(createdSite.status,201);
+  const secondSite=(await createdSite.json()).site;
+  assert.match(secondSite.id,/^[0-9a-f-]{36}$/);
+  assert.equal(secondSite.role,'owner');
+  const renameSitePath='/api/v1/sites/'+secondSite.id;
+  assert.equal((await mutate('PATCH',renameSitePath,{displayName:'Ontwerplab'},'wrong')).status,403);
+  assert.equal((await mutate('PATCH',renameSitePath,{displayName:'Ontwerplab'},
+    token.csrfToken,sessionCookie,'http://evil.example')).status,403);
+  assert.equal((await mutate('PATCH',renameSitePath,{displayName:'Ontwerplab'})).status,200);
+  const areaId=(await created.clone().json()).area.id;
+  const renameRoom=areasPath+'/'+areaId;
+  assert.equal((await mutate('PATCH',renameRoom,{displayName:'  Living  '})).status,200);
+  assert.equal((await mutate('PATCH',renameRoom,{displayName:'\\nBad'})).status,400);
+  assert.equal((await mutate('PATCH',renameRoom,{displayName:''})).status,400);
+  const afterRename=(await (await fetch(base+areasPath,{headers:{cookie:sessionCookie}})).json()).areas;
+  assert.equal(afterRename.length,1);
+  assert.equal(afterRename[0].id,areaId);
+  assert.equal(afterRename[0].display_name,'Living');
+  const homes=(await (await fetch(base+'/api/v1/sites',{headers:{cookie:sessionCookie}})).json()).sites;
+  assert.equal(homes.length,2);
+  assert.equal(homes.find(site=>site.id===secondSite.id).display_name,'Ontwerplab');
+  assert.equal((await mutate('PATCH','/api/v1/sites/'+randomUUID(),{displayName:'Forbidden'})).status,403);
+  assert.equal((await mutate('PATCH',areasPath+'/'+randomUUID(),{displayName:'Forbidden'})).status,403);
   const ownAreas = await fetch(base + areasPath, { headers: { cookie: sessionCookie } });
   assert.equal((await ownAreas.json()).areas.length, 1);
   const otherSite = '/api/v1/sites/' + randomUUID() + '/areas';
@@ -124,6 +153,9 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   const guestMe = await fetch(base + '/api/v1/auth/me', { headers: { cookie: guestCookie } });
   assert.equal(guestMe.status, 200);
   const guestCsrf = (await guestMe.json()).csrfToken;
+  assert.equal((await mutate('PATCH',renameRoom,{displayName:'Nope'},guestCsrf,guestCookie)).status,403);
+  assert.equal((await mutate('PATCH','/api/v1/sites/'+owner.siteId,{displayName:'Nope'},guestCsrf,guestCookie)).status,403);
+  assert.equal((await mutate('POST','/api/v1/sites',{displayName:'Guest own home'},guestCsrf,guestCookie)).status,201);
   const denied = await post(areasPath, { displayName: 'Not allowed' }, { 'x-domyro-csrf': guestCsrf }, guestCookie);
   assert.equal(denied.status, 403);
   assert.equal((await (await fetch(base + areasPath, { headers: { cookie: guestCookie } })).json()).areas.length, 1);
