@@ -44,14 +44,12 @@ production one-line installer and NOT an automatic signed-release updater.**
 It must be deliberately installed on a separate non-production Ubuntu
 24.04 host. Docker is *not* required or used.
 
-Prerequisites installed natively: Node.js >=22.12, npm, PostgreSQL >=16,
-systemd, git and curl. In a normal user's SSH terminal:
+Prerequisites installed natively: Node.js >=22.12, npm, systemd, git, sudo and curl. The **opt-in one-command setup** installs PostgreSQL 16+ from Ubuntu's official apt packages if absent, then runs locked npm ci and the restricted native systemd preview installer. It does not install Docker or an unpinned third-party Node runtime. In a normal user's SSH terminal:
 
 ```bash
 git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
 cd Domyro
-npm ci --omit=dev --ignore-scripts --no-audit --no-fund
-sudo bash scripts/native-preview-install.sh --install-native-preview
+bash scripts/native-preview-setup.sh --install-native-preview
 ```
 
 Access it via a localhost SSH tunnel, with **no public HTTP port**:
