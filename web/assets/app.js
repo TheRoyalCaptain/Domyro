@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 const strings = {
   nl: {
-    navTitle:'ONTWIKKELING',overview:'Overzicht',health:'Systeemstatus',next:'Volgende stappen',local:'Lokaal en onafhankelijk. Geen externe cloud nodig.',source:'Broncode op GitHub ↗',eyebrow:'DOMYRO 0.1 · EERSTE ONTWIKKELVERSIE',hero:'Je woning.<br><em>Jouw regels.</em>',intro:'De basis van een nieuwe, volledig lokale smart-homeomgeving staat. Apparaten en automatiseringen worden pas zichtbaar zodra de echte koppelingen zijn gebouwd.',system:'Systeemoverzicht',live:'Rechtstreeks uit je lokale Domyro-server. Geen verzonnen apparaten of statistieken.',refresh:'Verversen',core:'Core server',coreSub:'Lokale HTTP-dienst',database:'Database',dbSub:'PostgreSQL-koppeling gepland',devices:'Apparaten',devicesSub:'Nog geen integraties geactiveerd',roadmap:'Op weg naar een slim huis',planIntro:'We bouwen eerst een betrouwbaar fundament, daarna pas de functies die apparaten bedienen.',step1:'Ontwikkelbasis en veilige API',step1Sub:'De HTTP-server, echte statusmeldingen en automatische tests.',step2:'Accounts, PostgreSQL en kamers',step2Sub:'Veilige gebruikers, rechten en blijvende gegevens.',step3:'MQTT en Zigbee2MQTT',step3Sub:'Echte apparaten uitlezen en bedienen, zonder afhankelijkheid van Home Assistant.',step4:'Dashboard en automatiseringen',step4Sub:'De eerste bruikbare dagelijkse smart-homefuncties.',inProgress:'In ontwikkeling',footer:'Preview, nog niet voor productiegebruik',online:'Online',offline:'Niet bereikbaar',notReady:'Nog niet ingericht',notConnected:'Niet gekoppeld',myDevices:'Mijn apparaten',deviceHelp:'Echte opgeslagen apparaten uit jouw sites, zonder verzonnen gegevens of bediening.',signInForDevices:'Meld je lokaal aan om je apparaten te zien.',noDevices:'Nog geen opgeslagen apparaten in jouw sites.',deviceUnavailable:'Apparaatstatus onbekend',deviceReadOnly:'Alleen bekijken',deviceNetworkError:'Apparaatlijst tijdelijk niet bereikbaar',deviceCount:'Bekende apparaten',deviceSeen:'Waargenomen',deviceConfirmed:'Bevestigd',deviceStale:'Verouderd',deviceOffline:'Niet beschikbaar',deviceOn:'Aan',deviceOff:'Uit',checked:'Laatst gecontroleerd',error:'Server niet bereikbaar'
+    navTitle:'ONTWIKKELING',overview:'Overzicht',health:'Systeemstatus',next:'Volgende stappen',local:'Lokaal en onafhankelijk. Geen externe cloud nodig.',source:'Broncode op GitHub ↗',eyebrow:'DOMYRO 0.1 · EERSTE ONTWIKKELVERSIE',hero:'Je woning.<br><em>Jouw regels.</em>',intro:'De basis van een nieuwe, volledig lokale smart-homeomgeving staat. Apparaten en automatiseringen worden pas zichtbaar zodra de echte koppelingen zijn gebouwd.',system:'Systeemoverzicht',live:'Rechtstreeks uit je lokale Domyro-server. Geen verzonnen apparaten of statistieken.',refresh:'Verversen',core:'Core server',coreSub:'Lokale HTTP-dienst',database:'Database',dbSub:'PostgreSQL-koppeling gepland',devices:'Apparaten',devicesSub:'Nog geen integraties geactiveerd',roadmap:'Op weg naar een slim huis',planIntro:'We bouwen eerst een betrouwbaar fundament, daarna pas de functies die apparaten bedienen.',step1:'Ontwikkelbasis en veilige API',step1Sub:'De HTTP-server, echte statusmeldingen en automatische tests.',step2:'Accounts, PostgreSQL en kamers',step2Sub:'Veilige gebruikers, rechten en blijvende gegevens.',step3:'MQTT en Zigbee2MQTT',step3Sub:'Echte apparaten uitlezen en bedienen, zonder afhankelijkheid van Home Assistant.',step4:'Dashboard en automatiseringen',step4Sub:'De eerste bruikbare dagelijkse smart-homefuncties.',inProgress:'In ontwikkeling',footer:'Preview, nog niet voor productiegebruik',online:'Online',offline:'Niet bereikbaar',notReady:'Nog niet ingericht',notConnected:'Niet gekoppeld',myHomes:'Mijn woningen',homesHelp:'Echt opgeslagen woningen en kamers uit jouw lokale account.',manageHomes:'Beheer woningen ↗',noHomes:'Er zijn nog geen woningen ingericht.',roomCount:'kamers',homesLogin:'Meld je lokaal aan om woningen en kamers te bekijken.',homesNetworkError:'Woningen tijdelijk niet bereikbaar',myDevices:'Mijn apparaten',deviceHelp:'Echte opgeslagen apparaten uit jouw sites, zonder verzonnen gegevens of bediening.',signInForDevices:'Meld je lokaal aan om je apparaten te zien.',noDevices:'Nog geen opgeslagen apparaten in jouw sites.',deviceUnavailable:'Apparaatstatus onbekend',deviceReadOnly:'Alleen bekijken',deviceNetworkError:'Apparaatlijst tijdelijk niet bereikbaar',deviceCount:'Bekende apparaten',deviceSeen:'Waargenomen',deviceConfirmed:'Bevestigd',deviceStale:'Verouderd',deviceOffline:'Niet beschikbaar',deviceOn:'Aan',deviceOff:'Uit',checked:'Laatst gecontroleerd',error:'Server niet bereikbaar'
   },
   en: {
-    navTitle:'DEVELOPMENT',overview:'Overview',health:'System status',next:'Next steps',local:'Local and independent. No external cloud required.',source:'Source code on GitHub ↗',eyebrow:'DOMYRO 0.1 · FIRST DEVELOPMENT VERSION',hero:'Your home.<br><em>Your rules.</em>',intro:'The foundation of a fully local smart-home platform is here. Devices and automations will only appear once their actual integrations have been implemented.',system:'System overview',live:'Directly from your local Domyro server. No fabricated devices or statistics.',refresh:'Refresh',core:'Core server',coreSub:'Local HTTP service',database:'Database',dbSub:'PostgreSQL integration planned',devices:'Devices',devicesSub:'No integrations activated yet',roadmap:'Building a smarter home',planIntro:'First, a dependable foundation. Device control comes later.',step1:'Development foundation and safe API',step1Sub:'HTTP server, real status information and automated tests.',step2:'Accounts, PostgreSQL and rooms',step2Sub:'Secure users, permissions and persistent data.',step3:'MQTT and Zigbee2MQTT',step3Sub:'Observe and control real devices without depending on Home Assistant.',step4:'Dashboard and automations',step4Sub:'The first useful daily smart-home features.',inProgress:'In progress',footer:'Preview, not ready for production',online:'Online',offline:'Unavailable',notReady:'Not configured',notConnected:'Not connected',myDevices:'My devices',deviceHelp:'Actual saved devices for your sites. No fake data or enabled controls.',signInForDevices:'Sign in locally to view your devices.',noDevices:'No saved devices in your sites yet.',deviceUnavailable:'Device state unknown',deviceReadOnly:'View only',deviceNetworkError:'Device inventory temporarily unavailable',deviceCount:'Known devices',deviceSeen:'Observed',deviceConfirmed:'Confirmed',deviceStale:'Stale',deviceOffline:'Unavailable',deviceOn:'On',deviceOff:'Off',checked:'Last checked',error:'Server unreachable'
+    navTitle:'DEVELOPMENT',overview:'Overview',health:'System status',next:'Next steps',local:'Local and independent. No external cloud required.',source:'Source code on GitHub ↗',eyebrow:'DOMYRO 0.1 · FIRST DEVELOPMENT VERSION',hero:'Your home.<br><em>Your rules.</em>',intro:'The foundation of a fully local smart-home platform is here. Devices and automations will only appear once their actual integrations have been implemented.',system:'System overview',live:'Directly from your local Domyro server. No fabricated devices or statistics.',refresh:'Refresh',core:'Core server',coreSub:'Local HTTP service',database:'Database',dbSub:'PostgreSQL integration planned',devices:'Devices',devicesSub:'No integrations activated yet',roadmap:'Building a smarter home',planIntro:'First, a dependable foundation. Device control comes later.',step1:'Development foundation and safe API',step1Sub:'HTTP server, real status information and automated tests.',step2:'Accounts, PostgreSQL and rooms',step2Sub:'Secure users, permissions and persistent data.',step3:'MQTT and Zigbee2MQTT',step3Sub:'Observe and control real devices without depending on Home Assistant.',step4:'Dashboard and automations',step4Sub:'The first useful daily smart-home features.',inProgress:'In progress',footer:'Preview, not ready for production',online:'Online',offline:'Unavailable',notReady:'Not configured',notConnected:'Not connected',myHomes:'My homes',homesHelp:'Actual saved homes and rooms from your local account.',manageHomes:'Manage homes ↗',noHomes:'No homes are set up yet.',roomCount:'rooms',homesLogin:'Sign in locally to view homes and rooms.',homesNetworkError:'Home list temporarily unavailable',myDevices:'My devices',deviceHelp:'Actual saved devices for your sites. No fake data or enabled controls.',signInForDevices:'Sign in locally to view your devices.',noDevices:'No saved devices in your sites yet.',deviceUnavailable:'Device state unknown',deviceReadOnly:'View only',deviceNetworkError:'Device inventory temporarily unavailable',deviceCount:'Known devices',deviceSeen:'Observed',deviceConfirmed:'Confirmed',deviceStale:'Stale',deviceOffline:'Unavailable',deviceOn:'On',deviceOff:'Off',checked:'Last checked',error:'Server unreachable'
   }
 };
 let language = 'nl';
 let lastState = null;
 let knownDevices=[];
+let knownHomes=[];
+let homesNotice='homesLogin';
 let deviceNotice='signInForDevices';
 const get = (id) => document.getElementById(id);
 function translate(){
@@ -23,6 +25,7 @@ function translate(){
   get('language').textContent=language==='nl'?'EN':'NL';
   if(lastState) render(lastState);
   renderDevices();
+  renderHomes();
 }
 function updateValue(id,text,kind){const el=get(id);el.textContent=text;el.className='stat-value'+(kind?' '+kind:'');}
 function render(state){
@@ -85,20 +88,57 @@ function renderDevices(){
     card.append(details);list.append(card);
   }
 }
+function renderHomes(){
+  const list=get('homes-list'),message=get('homes-message'),t=strings[language];
+  list.replaceChildren();
+  message.textContent=t[homesNotice]??'';
+  for(const site of knownHomes){
+    const card=document.createElement('article');card.className='home-card';
+    const head=document.createElement('div');head.className='home-card-heading';
+    const icon=document.createElement('span');icon.className='home-icon';icon.textContent='⌂';
+    const title=document.createElement('div');
+    const name=document.createElement('h3');name.textContent=site.display_name;
+    const meta=document.createElement('p');meta.textContent=[site.role,site.time_zone].filter(Boolean).join(' · ');
+    title.append(name,meta);head.append(icon,title);card.append(head);
+    const sub=document.createElement('h4');
+    sub.textContent=site.areas.length+' '+t.roomCount;
+    card.append(sub);
+    const rooms=document.createElement('div');rooms.className='home-rooms';
+    for(const room of site.areas){
+      const tag=document.createElement('span');tag.className='home-room-chip';
+      tag.textContent=room.display_name;rooms.append(tag);
+    }
+    if(!site.areas.length){
+      const empty=document.createElement('p');empty.className='home-empty';
+      empty.textContent=language==='nl'?'Nog geen kamers toegevoegd.':'No rooms added yet.';
+      rooms.append(empty);
+    }
+    card.append(rooms);list.append(card);
+  }
+}
 async function checkDevices(){
   const t=strings[language];
   knownDevices=[];
+  knownHomes=[];
+  homesNotice='homesLogin';
   deviceNotice='signInForDevices';
   try {
     const sitesResponse=await fetch('/api/v1/sites',{
       credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(6000),
     });
-    if(sitesResponse.status===401){renderDevices();return;}
+    if(sitesResponse.status===401){renderHomes();renderDevices();return;}
     if(!sitesResponse.ok)throw new Error('sites_unavailable');
     const sites=(await sitesResponse.json()).sites;
     if(!Array.isArray(sites))throw new Error('sites_invalid');
     for(const site of sites.slice(0,8)){
       if(!/^[0-9a-f-]{36}$/i.test(site.id??''))continue;
+      const areasResponse=await fetch('/api/v1/sites/'+encodeURIComponent(site.id)+'/areas',{
+        credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(6000),
+      });
+      if(!areasResponse.ok)throw new Error('areas_unavailable');
+      const areaList=(await areasResponse.json()).areas;
+      if(!Array.isArray(areaList))throw new Error('areas_invalid');
+      knownHomes.push({...site,areas:areaList.slice(0,100)});
       const response=await fetch('/api/v1/sites/'+encodeURIComponent(site.id)+'/devices',{
         credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(6000),
       });
@@ -110,11 +150,15 @@ async function checkDevices(){
           knownDevices.push(device);
       }
     }
+    homesNotice=knownHomes.length?'':'noHomes';
     deviceNotice=knownDevices.length?'deviceCount':'noDevices';
   }catch{
     knownDevices=[];
+    knownHomes=[];
+    homesNotice='homesNetworkError';
     deviceNotice='deviceNetworkError';
   }
+  renderHomes();
   renderDevices();
   if(lastState)render(lastState);
 }
