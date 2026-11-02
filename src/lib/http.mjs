@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { INSTALLED_VERSION } from '../lifecycle/installed-version.mjs';
 
 const assets = new Map([
   ['/', { filename: '../../web/index.html', mime: 'text/html; charset=utf-8' }],
@@ -59,7 +60,7 @@ export async function handleRequest(request, response, { persistence = null, aut
   if (pathname === '/api/v1/public/status') {
     const db = persistence ? await persistence.inspect() : { ready: false, reason: 'persistence_not_configured' };
     sendJson(response, 200, {
-      service: 'Domyro', version: '0.1.0-dev.1', phase: 'foundation',
+      service: 'Domyro', version: INSTALLED_VERSION, phase: 'foundation',
       core: 'running', persistence: db.ready ? 'ready' : db.reason === 'database_unavailable' ? 'unavailable' : 'not_configured',
       integrations: 'not_configured', devices: 'not_connected',
       productionReady: false,
