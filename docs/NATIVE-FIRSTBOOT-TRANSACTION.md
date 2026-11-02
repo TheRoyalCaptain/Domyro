@@ -36,7 +36,7 @@ Het journal bewaart welke releaseversie, manifesthash en uitgeversvingerafdruk b
 
 `intent_created` → `signed_source_verified` → `locked_dependencies_prepared` → `database_owner_bootstrapped` → `restricted_runtime_verified` → `native_service_started` → `http_login_and_persistence_verified` → `test_completed`.
 
-Het journal doet **niet** zelf die handelingen en accepteert geen bewijs dat een stap echt is uitgevoerd. Een writer lock voorkomt gelijktijdige wijzigingen. Na een normale persistente write worden bestand en directory gefsynct en krijgt het nieuwe journal een atomische naam. Bij een onderbroken schrijver kan een achterblijvende lock **niet** stilzwijgend worden weggehaald: verdere inspectie en stappen worden dan geweigerd totdat een beheerder de oorzaak onderzoekt. Een bestaande firstboot-intent mag niet opnieuw worden vervangen.
+Het journal doet **niet** zelf de installerhandelingen. Inmiddels is op de integratiebranch wel een **CI-evidence-adapter** gekoppeld die voor elke fase onafhankelijk controleert of de bijbehorende broncode, Node-afhankelijkheden, PostgreSQL-eigenaar, beperkte databasrol en/of systemd-dienst werkelijk bestaan. Het blijft CI-testbewijs en geen toestemming voor een productie-installatie. Een writer lock voorkomt gelijktijdige wijzigingen. Na een normale persistente write worden bestand en directory gefsynct en krijgt het nieuwe journal een atomische naam. Bij een onderbroken schrijver kan een achterblijvende lock **niet** stilzwijgend worden weggehaald: verdere inspectie en stappen worden dan geweigerd totdat een beheerder de oorzaak onderzoekt. Een bestaande firstboot-intent mag niet opnieuw worden vervangen.
 
 Het is een voorbereiding op een transactionele installer, niet een werkende installatietransactie. De echte installer zal later journalstappen aan **waarneembare en hercontroleerbare systeemresultaten** moeten koppelen, inclusief expliciete ownership- en herstelregels.
 
@@ -69,3 +69,41 @@ testmodel, zonder enige productie-installatiebevoegdheid.
 De oorspronkelijke PR's blijven ter beoordeling open; de samenbouw staat in
 `integration/native-installer-foundation` (concept-PR #4). **Niets is
 gemerged in `main` of geïnstalleerd op de server van de eigenaar.**
+
+## 5. Eerste installatie met werkelijk vastgelegde fasebewijzen
+
+In `scripts/ci-native-account-test.sh` wordt op een GitHub-hosted Ubuntu
+24.04 testmachine een aparte, private firstboot-intent opgeslagen. De nieuwe
+adapter `scripts/ci-native-firstboot-evidence.mjs` leest elke vereiste toestand
+**voordat** de volgende fase persistente voortgang mag registreren:
+
+- De ondertekende broncode: onafhankelijk gecontroleerde
+  `ci-signed-admission.json` uit de reeds geverifieerde bronbundel, SHA-256
+  van het op schijf opgeslagen manifest en bestaand release-entrypoint.
+- Afhankelijkheden: echte `node_modules/pg` van `npm ci`.
+- Database: daadwerkelijk één eigenaar en één site in de run-specifieke
+  PostgreSQL-testdatabase, na expliciete migratie.
+- Runtime-DB-gebruiker: bestaat, kan inloggen, heeft geen superuser-,
+  createdb- of createrolebevoegdheid en mist `CREATE` op schema `public`.
+- Systemd-dienst: daadwerkelijk actief onder de run-specifieke niet-inlogbare
+  systeemgebruiker en met een succesvolle lokale HTTP-healthcheck.
+- Testvoltooiing: dienst, eigenaar, site en beperkte databasrol bestaan nog na
+  herstart en SIGKILL/herstel van het serviceproces.
+
+De tests voor de vier normale installatiefouten vergelijken de **persistente
+journal-fase** met de precies verwachte fase bij afbreken. De afzonderlijke
+SIGKILL-proef controleert van buiten het afgebroken installatiescript dat
+`http_login_and_persistence_verified` op schijf is blijven staan. Een
+tweede installatiepoging wordt eerst geweigerd zonder het bestaande journal,
+de draaiende service of PostgreSQL te overschrijven. Alleen de buitenliggende
+CI-test voert daarna expliciet de opruiming uit.
+
+Het ontbreken van een journal, een ongeldige fase of een onverwacht
+overgebleven schrijflock maakt de proef **rood**, niet stilzwijgend hersteld.
+
+**Beperking:** deze adapter gebruikt bewust hardcoded CI-testpaden,
+run-specifieke wegwerpdatabases en uitsluitend GitHub-hosted testmachines.
+Een toekomstige production installer heeft eigen vergrendelingen,
+transactionele rollback, systeembackup en herstel bij stroomuitval nodig.
+Ook na een succesvol journal mogen D-53 en de beheerdersgoedkeuring niet
+automatisch worden geopend.
