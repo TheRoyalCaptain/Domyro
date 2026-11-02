@@ -3,8 +3,7 @@
 // CI ONLY, disposable GitHub-hosted Ubuntu 24.04 native PostgreSQL + systemd.
 // Docker/containerization is expressly NOT used in the native preview.
 import {spawnSync} from 'node:child_process';
-import {readFile,lstat} from 'node:fs/promises';
-import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
 if(process.env.GITHUB_ACTIONS!=='true'||
@@ -115,8 +114,7 @@ async function testNative(){
   const html=await fetch(BASE+'/');
   if(html.status!==200||!(await html.text()).includes('id="homes-list"'))
     throw Error('ci_native_preview_dashboard_missing');
-  const inspect=run('bash',['scripts/native-preview-install.sh','--install-native-preview']);
-  throw Error('ci_native_preview_unexpected_second_install_success: '+inspect.slice(0,60));
+  await verifySecondInstallDenied();
 }
 async function verifySecondInstallDenied(){
   const r=spawnSync('sudo',['bash','scripts/native-preview-install.sh','--install-native-preview'],{
@@ -141,12 +139,6 @@ async function cleanup(){
 }
 try{
   // Missing or owned dirs should only fail; no Docker images or containers.
-  await testNative().catch(async error=>{
-    if(error.message.startsWith('ci_native_preview_unexpected_second_install_success')){
-      await verifySecondInstallDenied();
-      return;
-    }
-    throw error;
-  });
+  await testNative();
   process.stdout.write('Native Ubuntu systemd + host PostgreSQL + localhost authenticated portal + persistence VERIFIED. No Docker.\n');
 }finally{await cleanup();}
