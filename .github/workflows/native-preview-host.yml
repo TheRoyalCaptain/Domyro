@@ -33,9 +33,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check native Ubuntu host is isolated; no Docker setup
+      - name: Prepare native PostgreSQL on disposable CI host only (NO Docker)
         run: |
+          set -euo pipefail
           test -d /run/systemd/system
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client
+          sudo systemctl enable --now postgresql.service
+          sudo -u postgres psql -X -qAt -d postgres -c "SHOW server_version_num"
           node --version
           bash -n scripts/native-preview-setup.sh
       - name: Reject invalid native setup script before privileged test
