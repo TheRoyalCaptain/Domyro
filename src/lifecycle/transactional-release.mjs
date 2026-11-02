@@ -146,8 +146,16 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
   await checkReleaseDirectory(releaseRoot);
   await checkReleaseDirectory(release);
   let receipt;
-  try{receipt=JSON.parse(await readFile(join(release,'.receipt.json'),'utf8'));}
-  catch{throw new Error('staged_release_receipt_missing');}
+  const receiptPath=join(release,'.receipt.json');
+  try {
+    const receiptStat=await lstat(receiptPath);
+    if(!receiptStat.isFile()||receiptStat.isSymbolicLink()||receiptStat.nlink!==1)
+      throw new Error('staged_release_receipt_unsafe');
+    receipt=JSON.parse(await readFile(receiptPath,'utf8'));
+  } catch(error) {
+    if(error.message==='staged_release_receipt_unsafe')throw error;
+    throw new Error('staged_release_receipt_missing');
+  }
   const manifestBytes=Buffer.from(receipt.manifest??'','base64');
   const manifest=verifySignedManifest({manifestBytes,signatureBase64:receipt.signature,trustedPublicKeyPem});
   if(manifest.version!==version)throw new Error('staged_release_version_changed');
@@ -155,11 +163,20 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
   const bytes=Buffer.from(receipt.artifact??'','base64');
   const artifact=manifest.artifacts.find(x=>x.os==='ubuntu'&&x.arch===receipt.architecture);
   if(!artifact||!verifyArtifactBytes(artifact,bytes))throw new Error('staged_release_artifact_changed');
-  const expected=new Set(bundleFiles(bytes).map(x=>x.path));
-  for(const entry of bundleFiles(bytes)){
+  const entries=bundleFiles(bytes);
+  const expected=new Set(entries.map(x=>x.path));
+  const expectedDirectories=new Set();
+  for(const path of expected){
+    let parent=path;
+    while(parent.includes('/')){
+      parent=parent.slice(0,parent.lastIndexOf('/'));
+      expectedDirectories.add(parent);
+    }
+  }
+  for(const entry of entries){
     const filePath=join(release,...entry.path.split('/'));
     const stat=await lstat(filePath);
-    if(!stat.isFile()||stat.isSymbolicLink()||stat.size!==entry.bytes.length)throw new Error('staged_release_file_changed');
+    if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size!==entry.bytes.length)throw new Error('staged_release_file_changed');
     if(!(await readFile(filePath)).equals(entry.bytes))throw new Error('staged_release_file_changed');
   }
   let found=0;
@@ -168,8 +185,10 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
       if(!prefix&&entry.name==='.receipt.json')continue;
       const relative=prefix+entry.name;
       if(entry.isSymbolicLink())throw new Error('staged_release_symlink_forbidden');
-      if(entry.isDirectory())await walk(join(folder,entry.name),relative+'/');
-      else if(entry.isFile()){
+      if(entry.isDirectory()){
+        if(!expectedDirectories.has(relative))throw new Error('staged_release_unlisted_directory');
+        await walk(join(folder,entry.name),relative+'/');
+      } else if(entry.isFile()){
         if(!expected.has(relative))throw new Error('staged_release_unlisted_file');
         found++;
       }else throw new Error('staged_release_unknown_entry');
@@ -194,13 +213,19 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
   try {
     previous = await currentVersion(base);
     if (previous === version) throw new Error('already_active');
+    // A pointer rollback is not safe if the previous signed release has
+    // disappeared or changed. Reject before touching the active pointer.
+    if(previous!==null)await inspectVerifiedStagedBundle({
+      root:base,version:previous,trustedPublicKeyPem,
+    });
+    if(await currentVersion(base)!==previous)throw new Error('active_release_changed_during_preflight');
     await changePointer(base, version);
     switched = true;
     let healthy = false;
     try { healthy = await probe({ version, root: base, release }) === true; } catch { healthy = false; }
     if (!healthy) throw new Error('post_activation_health_failed_rolled_back_pointer');
     completed = true;
-    return Object.freeze({ active: version, previous, healthy: true, serviceRestarted: false, databaseMigrated: false });
+    return Object.freeze({ active: version, previous, healthy: true, serviceRestarted: false, databaseMigrated: false, installationApproved: false, gate: 'D-53' });
   } finally {
     if (switched && !completed) await changePointer(base, previous);
     await lock.close();
