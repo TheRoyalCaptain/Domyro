@@ -66,7 +66,9 @@ async function testNative(){
   // Refuse existing locations ahead of changes. The first install can
   // exclusively create these exact paths and dedicated DB/roles.
   run('bash',['-n','scripts/native-preview-install.sh']);
-  const output=sudo('bash','scripts/native-preview-install.sh','--install-native-preview');
+  // One command provisions native Ubuntu PostgreSQL (if absent), npm deps,
+  // and actual systemd service, then all previous HTTP/persistence tests run.
+  const output=run('bash',['scripts/native-preview-setup.sh','--install-native-preview'],210000);
   if(!output.includes('READY: native localhost portal'))
     throw Error('ci_native_preview_installer_not_ready');
   await wait();
