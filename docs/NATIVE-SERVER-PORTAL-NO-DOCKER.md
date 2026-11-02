@@ -60,6 +60,20 @@ Open vervolgens in **je lokale browser**:
 
 De portal en browser-API blijven binnen de SSH-tunnel. Je hoeft geen HTTP-poort naar het publieke internet open te zetten.
 
+## Updatecentrum in de webportal
+
+In het lokale beheerportaal op `/login` kan een eigenaar of beheerder nu
+zelf op **Controleer op nieuwe releases** klikken. De echte Domyro-backend
+bekijkt alleen openbare GitHub-releasegegevens, toont eventueel een
+**niet-geverifieerd** versienummer, en laat de installatieknop uitgeschakeld.
+Voor deze controle wordt geen Docker, achtergrondservice, download naar schijf
+of systeemupdate gebruikt. Zonder een eigenaar- of beheerderssessie én een
+geldig CSRF-token wordt zelfs de netwerkcontrole geweigerd.
+
+De versie wordt gelezen uit het pakket dat daadwerkelijk in de native
+`/opt/domyro-preview-native`-installatie staat. Het dient dus ook
+als functioneel testscherm voor een toekomstige volledige release-updater.
+
 ## Dagelijks beheer
 
 ```bash
