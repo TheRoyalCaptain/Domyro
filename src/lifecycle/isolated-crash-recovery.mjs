@@ -60,6 +60,7 @@ async function inspectStaleLock(base) {
 export async function rehearseInterruptedPointerRecovery({
   root, trustedPublicKeyPem, confirmedPreviousVersion,
   testOnly = false, processExited = false, verifiedBackup = false,
+  onTestCheckpoint = null,
 } = {}) {
   if (testOnly !== true || processExited !== true || verifiedBackup !== true) {
     throw new Error('isolated_recovery_explicit_test_approval_required');
@@ -67,11 +68,16 @@ export async function rehearseInterruptedPointerRecovery({
   if (typeof trustedPublicKeyPem !== 'string' || !trustedPublicKeyPem) {
     throw new Error('pinned_trust_root_required');
   }
+  if (onTestCheckpoint !== null && typeof onTestCheckpoint !== 'function') {
+    throw new TypeError('isolated_recovery_invalid_test_checkpoint');
+  }
   const base = await disposableRoot(root);
   const lockPath = join(base, RECOVERY_LOCK);
   const lock = await open(lockPath, constants.O_WRONLY | constants.O_CREAT |
     constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
-  let completed = false;
+  // The inode belongs to this recovery invocation. Never remove a lock that
+  // has been replaced while we were running (even on a disposable fixture).
+  const ownedLock = await lock.stat();
   try {
     const diagnosis = await inspectInterruptedActivation({ root: base, trustedPublicKeyPem });
     if (diagnosis.state !== 'interrupted') throw new Error('isolated_recovery_no_interrupted_intent');
@@ -100,6 +106,9 @@ export async function rehearseInterruptedPointerRecovery({
     } finally {
       await rm(tempLink, { force: true });
     }
+    // A test-only crash here must leave the durable intent, so retrying the
+    // explicit recovery can complete without losing the prior signed source.
+    if (onTestCheckpoint) await onTestCheckpoint('pointer_restored');
     if ((await inspectActiveBundle(base)) !== expected.previous) {
       throw new Error('isolated_recovery_pointer_verification_failed');
     }
@@ -114,9 +123,11 @@ export async function rehearseInterruptedPointerRecovery({
       await unlink(join(base, '.activation.lock'));
       await syncActivationDirectory(base);
     }
+    // A second crash window: stale activation lock is gone, but the journal
+    // must still be present until the signed old pointer has been verified.
+    if (onTestCheckpoint) await onTestCheckpoint('activation_lock_removed');
     // Keep the recovery lock held until the intent is durably cleared.
     await clearActivationIntent(base, expected);
-    completed = true;
     return Object.freeze({
       active: expected.previous, abandonedCandidate: expected.target,
       previousSignedSourceVerified: true, sourcePointerRestored: true,
@@ -124,12 +135,19 @@ export async function rehearseInterruptedPointerRecovery({
       productionRecoveryApproved: false, gate: 'D-53',
     });
   } finally {
-    try { await lock.close(); } finally {
-      // An unexpected unlink failure leaves a lock that blocks future switches.
-      await unlink(lockPath);
-      await syncActivationDirectory(base);
+    try {
+      const currentLock = await lstat(lockPath);
+      if (!currentLock.isFile() || currentLock.isSymbolicLink() ||
+          currentLock.dev !== ownedLock.dev || currentLock.ino !== ownedLock.ino ||
+          currentLock.nlink !== 1 || (currentLock.mode & 0o077) !== 0) {
+        throw new Error('isolated_recovery_lock_changed');
+      }
+    } finally {
+      await lock.close();
     }
-    // Even when completed, this was only an offline test fixture.
-    void completed;
+    // The preceding inode check is a fixture-only guard, not an atomic
+    // process fence. A real updater requires a privileged locking service.
+    await unlink(lockPath);
+    await syncActivationDirectory(base);
   }
 }
