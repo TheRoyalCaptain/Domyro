@@ -40,6 +40,9 @@ STAGING_BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
 CI_PG_MODE="${DOMYRO_CI_PG_ONBOARDING:-0}"
 CI_DB_NAME=""
 CI_DB_URI=""
+CI_APP_DB_URI=""
+CI_RUNTIME_ROLE=""
+CI_RUNTIME_PASSWORD=""
 CI_PASSWORD_FILE="$STAGING_BASE/native-owner-password"
 # Only the exact disposable Docker-backed test database can be used here.
 if [[ "$CI_PG_MODE" == 1 ]]; then
@@ -48,6 +51,9 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
     exit 96
   fi
   CI_DB_NAME="domyro_native_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+  CI_RUNTIME_ROLE="domyro_app_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+  CI_RUNTIME_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url"))')"
+  export CI_DB_NAME CI_RUNTIME_ROLE CI_RUNTIME_PASSWORD
   [[ "$CI_DB_NAME" =~ ^domyro_native_[0-9]+_[0-9]+$ ]]
   CI_DB_URI="$(node -e 'const u=new URL(process.env.DOMYRO_TEST_DATABASE_URL);u.pathname="/"+process.argv[1];console.log(u.href)' "$CI_DB_NAME")"
 fi
@@ -70,6 +76,7 @@ cleanup() {
       try {await db.query("DROP DATABASE IF EXISTS "+String.fromCharCode(34)+name+String.fromCharCode(34)+" WITH (FORCE)");}
       finally {await db.end();}
     ' >/dev/null 2>&1 || true
+    node scripts/ci-native-restricted-db-role.mjs delete >/dev/null 2>&1 || true
   fi
 }
 trap cleanup EXIT
@@ -115,6 +122,14 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
     echo "CI owner bootstrap was erroneously reusable" >&2
     exit 97
   fi
+  node scripts/ci-native-restricted-db-role.mjs create
+  node scripts/ci-native-restricted-db-role.mjs verify
+  CI_APP_DB_URI="$(node -e '
+    const url=new URL(process.env.CI_DB_URI);
+    url.username=process.env.CI_RUNTIME_ROLE;
+    url.password=process.env.CI_RUNTIME_PASSWORD;
+    process.stdout.write(url.href);
+  ' )"
 fi
 # All privileged changes are confined to a disposable hosted CI VM.
 sudo useradd --system --user-group --no-create-home \
@@ -128,7 +143,7 @@ sudo install -d -o root -g root -m 0755 "$CONFIG_ROOT"
 {
   printf 'DOMYRO_HOST=127.0.0.1\nDOMYRO_PORT=%s\n' "$PORT"
   if [[ "$CI_PG_MODE" == 1 ]]; then
-    printf 'DOMYRO_DATABASE_URL=%s\n' "$CI_DB_URI"
+    printf 'DOMYRO_DATABASE_URL=%s\n' "$CI_APP_DB_URI"
   fi
 } | sudo tee "$CONFIG_ROOT/development.env" >/dev/null
 sudo chmod 0600 "$CONFIG_ROOT/development.env"
