@@ -45,3 +45,27 @@ Het is een voorbereiding op een transactionele installer, niet een werkende inst
 D-53 blijft dicht omdat cruciale productieonderdelen ontbreken: een officieel gepinde uitgeverssleutel, release-hosting, een zelfstandig op te starten bootstrap zonder vooraf geïnstalleerde Node.js, betrouwbare managed/existing-servicekeuzes, veilige lokale TLS-onboarding, volledige database/config/Matter-backup en herstel, een beheerdersgestuurde productie-updater en echte VM/reboot/bare-metal-acceptatietests.
 
 **Geen van deze tools installeert Domyro op een privéserver.** Het journal schrijft alleen in afzonderlijke testmappen. De CI-native-service draait uitsluitend op tijdelijke GitHub-hosted runners. Er is geen automatische installatierelease of deploy-consent.
+
+## 4. Integratie van de duurzame releasebevestiging
+
+De geïntegreerde testbranch `integration/native-installer-foundation` combineert
+ook de `trusted-release-receipt` uit de eerder afzonderlijke PR #1.
+
+Na de offline verificatie van het bestandenpakket wordt de *exact ondertekende*
+manifestinhoud in een nieuwe private `domyro-test-*`-directory met een
+fsync + atomische rename als vertrouwde versie geregistreerd. De test vergelijkt
+daarna de bestands-hash, uitgeversvingerafdruk en versienaam nogmaals met
+de originele offline verifier. Een aanvullende sabotageproef verandert de
+persistente `manifestSha256` en controleert dat er **geen** release wordt
+gestaged. Dit is **geen** permanente productie-truststore: de proefdirectory
+wordt na afloop verwijderd.
+
+De volledige GitHub-integratietest bestaat hiermee uit een geslaagde
+pakketcontrole, **vier** negatieve pakket-/receipt-tests, het starten van
+echte PostgreSQL/systemd uit de geauthenticeerde broncode en afzonderlijke
+fout-/SIGKILL-tests. De firstboot-state-machine blijft nog een zelfstandig
+testmodel, zonder enige productie-installatiebevoegdheid.
+
+De oorspronkelijke PR's blijven ter beoordeling open; de samenbouw staat in
+`integration/native-installer-foundation` (concept-PR #4). **Niets is
+gemerged in `main` of geïnstalleerd op de server van de eigenaar.**
