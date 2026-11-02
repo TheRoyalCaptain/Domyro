@@ -28,6 +28,7 @@ export const FIRSTBOOT_PHASES = Object.freeze([
   'native_service_started',
   'http_login_and_persistence_verified',
   'postgres_scratch_restore_verified',
+  'config_scratch_restore_verified',
   'test_completed',
 ]);
 
