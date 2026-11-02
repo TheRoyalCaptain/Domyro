@@ -31,7 +31,7 @@ async function main(){
   const checked=validatePublisherTrustPolicy({policy,privateKeyPem});
   process.stdout.write(JSON.stringify(checked)+'\n');
 }
-if(process.argv[1]&&fileURLToPath(import.meta.url)===new URL('file://'+resolve(process.argv[1])).href){
+if(process.argv[1]&&fileURLToPath(import.meta.url)===resolve(process.argv[1])){
   main().catch(error=>{
     console.error('Official release publisher refused: '+error.message);
     process.exitCode=1;
