@@ -96,6 +96,41 @@ Deze **handmatige ontwikkelverversing**:
 7. Laat de eigen PostgreSQL-database, de inloggegevens en al je woningen en
    kamers ongewijzigd.
 
+### Onderbroken update herstellen (zonder Docker)
+
+De ontwikkel-updater schrijft nu **vóór de codewisseling** een privé
+`/opt/domyro-preview-native-history/.pending-refresh`-registratie naar schijf
+en synchroniseert die. Zolang deze registratie bestaat, mag de updater niet
+nogmaals starten. Hij verandert nooit de inhoud van PostgreSQL.
+
+Als de VM of het updateproces onverwacht stopt tijdens een update, kun je
+de oude code expliciet herstellen:
+
+```bash
+cd Domyro
+sudo bash scripts/native-preview-recover.sh --recover-native-preview
+```
+
+Het herstelcommando controleert de identiteiten en eigendomsrechten van de
+bestaande Domyro-preview, pakt de precies geregistreerde oude versie, start
+de eigen systemd-dienst en controleert **zowel de HTTP-liveness als de
+PostgreSQL-migratiestatus**. Een onbekende map, een gewijzigde herstelregistratie
+of een mislukte dienststart wordt geweigerd zonder herstel te claimen.
+Het is geen algemene serverreparatie en verandert geen configuratie,
+andere services of databasegegevens.
+
+Bij een normale fout tijdens het vernieuwen probeert de updater dezelfde
+vorige code direct te herstellen. Als dat niet aantoonbaar lukt, blijft
+de herstelregistratie staan voor handmatige controle. Bij een volledig
+geslaagde update wordt de registratie pas na de echte HTTP- en
+databasecontrole verwijderd.
+
+**Beperkingen:** het terugzetten van een programmaversie is niet hetzelfde
+als een volledig herstel van een productie-installatie. Een
+onverenigbare/onomkeerbare SQL-migratie wordt daarom nog steeds geweigerd.
+De ontwikkel-preview maakt ook nog geen officiële, cryptografisch
+geverifieerde release-update en D-53 blijft gesloten.
+
 De vorige programmaversies worden voorlopig bewust **niet automatisch
 verwijderd**. Ruimtegebruik neemt dus toe met iedere ontwikkelverversing.
 Een plotselinge stroomuitval midden in de omschakeling of een irreversibele
