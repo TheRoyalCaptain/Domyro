@@ -21,6 +21,7 @@
       <nav class="nav">
         <a class="nav-item current" href="#overview"><span class="nav-dot"></span><span data-i18n="overview">Overzicht</span></a>
         <a class="nav-item" href="#status"><span class="nav-dot"></span><span data-i18n="health">Systeemstatus</span></a>
+        <a class="nav-item" href="#devices"><span class="nav-dot"></span><span data-i18n="myDevices">Mijn apparaten</span></a>
         <a class="nav-item" href="#next"><span class="nav-dot"></span><span data-i18n="next">Volgende stappen</span></a>
         <a class="nav-item" href="/login"><span class="nav-dot"></span><span>Lokale testaanmelding</span></a>
       </nav>
@@ -38,6 +39,14 @@
         <section id="status" class="section" aria-labelledby="status-heading"><div class="section-header"><div><h2 id="status-heading" data-i18n="system">Systeemoverzicht</h2><p data-i18n="live">Rechtstreeks uit je lokale Domyro-server. Geen verzonnen apparaten of statistieken.</p></div><button class="refresh" id="refresh" type="button"><span aria-hidden="true">↻</span> <span data-i18n="refresh">Verversen</span></button></div>
         <div class="stats"><article class="stat"><div class="stat-icon">◈</div><div class="stat-label" data-i18n="core">Core server</div><div class="stat-value" id="core-status" aria-live="polite">…</div><div class="stat-sub" data-i18n="coreSub">Lokale HTTP-dienst</div></article><article class="stat"><div class="stat-icon">▤</div><div class="stat-label" data-i18n="database">Database</div><div class="stat-value" id="db-status">…</div><div class="stat-sub" data-i18n="dbSub">PostgreSQL-koppeling gepland</div></article><article class="stat"><div class="stat-icon">⌁</div><div class="stat-label" data-i18n="devices">Apparaten</div><div class="stat-value" id="device-status">…</div><div class="stat-sub" data-i18n="devicesSub">Nog geen integraties geactiveerd</div></article></div>
         <p class="checked" id="checked" role="status" aria-live="polite"></p></section>
+        <section id="devices" class="section" aria-labelledby="devices-heading">
+          <div class="section-header"><div>
+            <h2 id="devices-heading" data-i18n="myDevices">Mijn apparaten</h2>
+            <p data-i18n="deviceHelp">Alleen echte, opgeslagen apparaatwaarnemingen uit jouw sites. Bediening volgt na beveiligde koppeling.</p>
+          </div></div>
+          <p class="checked" id="device-message" role="status" aria-live="polite"></p>
+          <div class="device-grid" id="device-list" aria-label="Bekende apparaten"></div>
+        </section>
         <section id="next" class="section next-section" aria-labelledby="next-heading"><div class="section-header"><div><h2 id="next-heading" data-i18n="roadmap">Op weg naar een slim huis</h2><p data-i18n="planIntro">We bouwen eerst een betrouwbaar fundament, daarna pas de functies die apparaten bedienen.</p></div></div><div class="steps"><div class="step active"><div class="step-count">01</div><div><strong data-i18n="step1">Ontwikkelbasis en veilige API</strong><p data-i18n="step1Sub">De HTTP-server, echte statusmeldingen en automatische tests.</p></div><span class="step-pill" data-i18n="inProgress">In ontwikkeling</span></div><div class="step"><div class="step-count">02</div><div><strong data-i18n="step2">Accounts, PostgreSQL en kamers</strong><p data-i18n="step2Sub">Veilige gebruikers, rechten en blijvende gegevens.</p></div></div><div class="step"><div class="step-count">03</div><div><strong data-i18n="step3">MQTT en Zigbee2MQTT</strong><p data-i18n="step3Sub">Echte apparaten uitlezen en bedienen, zonder afhankelijkheid van Home Assistant.</p></div></div><div class="step"><div class="step-count">04</div><div><strong data-i18n="step4">Dashboard en automatiseringen</strong><p data-i18n="step4Sub">De eerste bruikbare dagelijkse smart-homefuncties.</p></div></div></div></section>
         <footer><span>Domyro · 0.1.0-dev.1</span><span data-i18n="footer">Preview, nog niet voor productiegebruik</span></footer>
       </div>
