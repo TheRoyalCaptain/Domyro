@@ -4,7 +4,7 @@
 // official-installation requirements.
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createDbSession, resolveDbSession, revokeDbSession, hashPassword, verifyPassword, hashSessionToken } from './credentials.mjs';
-import { listSitesForUser, listAreasForUser, createAreaForUser } from '../persistence/site-repository.mjs';
+import { listSitesForUser, listAreasForUser, createAreaForUser, createSiteForUser, renameSiteForUser, renameAreaForUser } from '../persistence/site-repository.mjs';
 import { getDevelopmentUpdateStatus } from '../lifecycle/update-center.mjs';
 import { listZigbeeDevicesForUser, listZigbeeStateForUser } from '../persistence/zigbee-repository.mjs';
 
@@ -112,13 +112,15 @@ export async function createLocalAuthService(db, sendJson) {
       const known = pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install' ||
         pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/logout' ||
         pathname === '/api/v1/auth/me' || pathname === '/api/v1/sites' ||
-        /^\/api\/v1\/sites\/[^/]+\/(?:areas|devices)$/.test(pathname);
+        /^\/api\/v1\/sites\/[^/]+\/(?:areas|devices)$/.test(pathname) ||
+        /^\/api\/v1\/sites\/[^/]+$/.test(pathname) ||
+        /^\/api\/v1\/sites\/[^/]+\/areas\/[^/]+$/.test(pathname);
       if (!known) return false;
 
       if (!localRequest(req)) { sendJson(res, 403, { error: 'loopback_required' }); return true; }
-      const isWrite = req.method === 'POST';
+      const isWrite = ['POST','PATCH','DELETE'].includes(req.method);
       if (isWrite && !correctOrigin(req)) { sendJson(res, 403, { error: 'same_origin_required' }); return true; }
-      if (!['GET', 'POST'].includes(req.method ?? '')) {
+      if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(req.method ?? '')) {
         sendJson(res, 405, { error: 'method_not_allowed' }); return true;
       }
 
@@ -195,8 +197,71 @@ export async function createLocalAuthService(db, sendJson) {
         return true;
       }
       if (pathname === '/api/v1/sites') {
-        if (req.method !== 'GET') { sendJson(res, 405, { error: 'method_not_allowed' }); return true; }
-        sendJson(res, 200, { sites: await listSitesForUser(db, actor.user_id) }); return true;
+        if (req.method === 'GET') {
+          sendJson(res, 200, { sites: await listSitesForUser(db, actor.user_id) });
+          return true;
+        }
+        if (req.method !== 'POST') {
+          sendJson(res, 405, { error: 'method_not_allowed' }); return true;
+        }
+        let input;
+        try { input = await jsonBody(req); }
+        catch (e) {
+          sendJson(res, e.message === 'body_too_large' ? 413 : e.message === 'unsupported_media_type' ? 415 : 400,
+            { error: 'invalid_request' }); return true;
+        }
+        try {
+          const created = await createSiteForUser(db, actor.user_id, input);
+          sendJson(res, 201, { site: created });
+        } catch (e) {
+          sendJson(res, e instanceof TypeError ? 400 : 503,
+            { error: e instanceof TypeError ? 'invalid_request' : 'database_unavailable' });
+        }
+        return true;
+      }
+
+      const siteMatch = /^\/api\/v1\/sites\/([^/]+)$/.exec(pathname);
+      if (siteMatch) {
+        if (!UUID.test(siteMatch[1])) {
+          sendJson(res, 404, { error: 'not_found' }); return true;
+        }
+        if (req.method !== 'PATCH') {
+          sendJson(res, 405, { error: 'method_not_allowed' }); return true;
+        }
+        let input;
+        try { input=await jsonBody(req); }
+        catch (e) { sendJson(res,e.message==='body_too_large'?413:e.message==='unsupported_media_type'?415:400,
+          {error:'invalid_request'}); return true; }
+        try {
+          const site=await renameSiteForUser(db,actor.user_id,siteMatch[1],input.displayName);
+          sendJson(res,200,{site});
+        } catch (e) {
+          sendJson(res,e.message==='site_permission_denied'?403:e instanceof TypeError?400:503,
+            {error:e.message==='site_permission_denied'?'forbidden':e instanceof TypeError?'invalid_request':'database_unavailable'});
+        }
+        return true;
+      }
+
+      const roomMatch = /^\/api\/v1\/sites\/([^/]+)\/areas\/([^/]+)$/.exec(pathname);
+      if (roomMatch) {
+        if (!UUID.test(roomMatch[1]) || !UUID.test(roomMatch[2])) {
+          sendJson(res,404,{error:'not_found'});return true;
+        }
+        if (req.method !== 'PATCH') {
+          sendJson(res,405,{error:'method_not_allowed'});return true;
+        }
+        let input;
+        try { input=await jsonBody(req); }
+        catch (e) { sendJson(res,e.message==='body_too_large'?413:e.message==='unsupported_media_type'?415:400,
+          {error:'invalid_request'}); return true; }
+        try {
+          const area=await renameAreaForUser(db,actor.user_id,roomMatch[1],roomMatch[2],input.displayName);
+          sendJson(res,200,{area});
+        } catch (e) {
+          sendJson(res,e.message==='site_permission_denied'?403:e instanceof TypeError?400:503,
+            {error:e.message==='site_permission_denied'?'forbidden':e instanceof TypeError?'invalid_request':'database_unavailable'});
+        }
+        return true;
       }
 
       // Read-only device inventory. Reuse the authenticated user's site
