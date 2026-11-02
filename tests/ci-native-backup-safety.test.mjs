@@ -59,6 +59,11 @@ test('native installer and SIGKILL-parent require independent scratch recovery p
   assert.ok(installer.includes('ci_journal postgres_scratch_restore_verified'));
   assert.ok(outer.includes('node scripts/ci-native-backup-restore-proof.mjs verify'));
   assert.ok(outer.includes('report.phase!=="postgres_scratch_restore_verified"'));
+  const recovery=readFileSync(script,'utf8');
+  assert.ok(recovery.includes('ci_native_backup_source_changed_during_restore'));
+  assert.ok(recovery.includes('ci_native_backup_allowed_inplace_restore'));
+  assert.ok(recovery.includes('ci_native_backup_accepted_tampered_blob'));
+  assert.ok(recovery.includes('await empty(targetUrl)'));
 });
 test('backup proof and CI installer scripts parse without privileged execution',()=>{
   const r=spawnSync(process.execPath,['--check',script],{timeout:5000,encoding:'utf8'});
