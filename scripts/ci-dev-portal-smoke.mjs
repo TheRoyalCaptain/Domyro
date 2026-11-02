@@ -119,6 +119,14 @@ async function verify(){
   const stillClosed=await json('/api/v1/system/updates',{cookie});
   if(stillClosed.status!==200||stillClosed.data.installAllowed!==false)
     throw Error('ci_preview_enabled_unsafe_update');
+  if((await json('/api/v1/system/updates/check',{cookie})).status!==405)
+    throw Error('ci_dev_release_check_requires_explicit_post');
+  if((await json('/api/v1/system/updates/check',{method:'POST',body:{},cookie})).status!==403)
+    throw Error('ci_dev_release_check_requires_csrf');
+  const checkMarkup=await fetch(base+'/login');
+  if(!(await checkMarkup.text()).includes('id="update-check"'))
+    throw Error('ci_dev_release_check_button_not_rendered');
+
   const screenshot=await fetch(base+'/assets/login.css');
   if(screenshot.status!==200||!(await screenshot.text()).includes('.portal-device-card'))
     throw Error('ci_preview_portal_styles_missing');
