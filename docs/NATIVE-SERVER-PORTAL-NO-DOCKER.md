@@ -70,7 +70,40 @@ sudo journalctl -u domyro-preview-native -n 100 --no-pager
 
 Een herstart behoudt de PostgreSQL-data. Een tweede keer het installatiescript uitvoeren **wordt geweigerd** en overschrijft dus geen bestaande portal. Stoppen zonder verwijderen: `sudo systemctl stop domyro-preview-native`.
 
-**Er is nog geen automatische updatefunctie.** Deze native ontwikkelpreview biedt een stabiele start voor frontend/backend-werk, niet het uiteindelijke release-/rollbackmechanisme.
+### Handmatig webportal/backend-code vernieuwen zonder herinstallatie
+
+Om wijzigingen aan de website of backend te beoordelen hoef je niet meer
+opnieuw een database, gebruiker of systemd-dienst te installeren. Werk de
+ontwikkelcode bij in de eigen checkout en installeer de gelockte Node-modules
+als normale gebruiker:
+
+```bash
+git pull --ff-only
+npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+sudo bash scripts/native-preview-refresh.sh --refresh-native-preview
+```
+
+Deze **handmatige ontwikkelverversing**:
+
+1. Accepteert uitsluitend een bestaande, herkenbare native preview-installatie.
+2. Weigert concurrerende verversingen en onveilige symlinks of permissies.
+3. Kopieert de nieuwe code naar een apart, root-owned stagingpad.
+4. Controleert JavaScript-syntax en of **precies de huidige databasemigraties** voldoen. Nieuwe/gewijzigde schema's worden dus niet automatisch uitgevoerd.
+5. Stopt de Domyro-systemd-dienst, verplaatst de vorige code naar
+   `/opt/domyro-preview-native-history/` en activeert de nieuwe versie.
+6. Controleert opnieuw de lokale HTTP-status. Bij een mislukte service-start
+   wordt een best-effort rollback van **alleen de programmacode** uitgevoerd.
+7. Laat de eigen PostgreSQL-database, de inloggegevens en al je woningen en
+   kamers ongewijzigd.
+
+De vorige programmaversies worden voorlopig bewust **niet automatisch
+verwijderd**. Ruimtegebruik neemt dus toe met iedere ontwikkelverversing.
+Een plotselinge stroomuitval midden in de omschakeling of een irreversibele
+databasewijziging heeft nog **geen productiegeschikt herstelpad**.
+
+Dit is **niet** de automatische updater voor officieel ondertekende releases,
+niet vanuit de webinterface te bedienen en niet geschikt als veilige
+productie-upgrade. Daarvoor blijft D-53 gesloten.
 
 ## Testen zonder Docker
 
