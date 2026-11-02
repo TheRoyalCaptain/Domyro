@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "configured": false,
+  "publicKeyPem": null,
+  "publisherFingerprintSha256": null,
+  "releaseSource": "github.com/TheRoyalCaptain/Domyro/releases",
+  "note": "Official Ed25519 publisher root not yet approved. Never turn on a production installer with a generated CI test key."
+}
