@@ -18,6 +18,19 @@ The CI test now exercises a stronger path than directly launching the checkout:
 5. The test intentionally kills **only the ephemeral CI unit main process** and confirms that systemd automatically recovers it with another PID and healthy development-only HTTP endpoints.
 6. The script stops the transient unit and removes the disposable signed source directory. The hosted VM is discarded at job completion.
 
+
+## Disposable native service-account and installed-unit rehearsal
+
+A second **CI-only** job now checks a more realistic Ubuntu native layout on both GitHub-hosted Ubuntu 24.04 AMD64 and ARM64. This is separate from the earlier transient unit test. It runs `scripts/ci-native-account-test.sh` only after validating the GitHub-hosted runner identity, Ubuntu version, numeric run IDs and opt-in marker. Unit tests explicitly check the script rejects non-CI, self-hosted and malformed contexts before any privileged commands.
+
+On the **throwaway GitHub VM only**, the test stages and verifies an ephemeral-key signed development source bundle, installs integrity-locked production Node dependencies, and copies the resulting tree to a uniquely named, root-owned directory under `/opt/domyro-ci-native-<run>-<attempt>`. It creates a dedicated `domyroci<run>` system account with `/usr/sbin/nologin`, a root-owned private configuration file under `/etc/domyro-ci-native-...`, and an actual systemd unit under **`/run/systemd/system`**. The unit is deliberately **never enabled**. systemd provisions a service-user-owned, mode-0700 state directory under `/var/lib/domyro-ci-native-...`.
+
+The job checks that the unprivileged service account can read, but **cannot modify**, the installed source, cannot read the root-only environment file, and can write to its dedicated state directory. It verifies the service actually runs as the dedicated user, returns the development-only HTTP endpoints, refuses production readiness (503), survives a manual restart, and automatically recovers from a simulated process crash. It cleans up the unit, account, and test directories when the job ends; the entire hosted VM is then discarded.
+
+Both the text-only production **draft** and this CI unit use additional systemd sandboxing: empty capability bounding/ambient sets, `NoNewPrivileges`, `ProtectKernelTunables`, `ProtectKernelModules`, `ProtectControlGroups`, `ProtectClock`, `RestrictSUIDSGID`, `LockPersonality`, `SystemCallArchitectures=native`, `ProtectHome`, `ProtectSystem=strict`, `PrivateTmp` and restrictive umask. These are development security checks, not a final security review of every integration.
+
+**Limitations:** A test unit in `/run` is intentionally nonpersistent and does not prove reboot survival or installation from a clean Ubuntu ISO. The test account and directories have unique CI-only names, not final production paths. The environment contains no production credentials. No database provisioning, real backup/restore, production TLS, device control, official signing root, package distribution, or safe update/rollback is demonstrated by this job. There is **no distributable one-line installer**, and **D-53 remains CLOSED**. The owner must separately approve any later real deployment.
+
 ## What is not proven
 
 The temporary service runs under the GitHub `runner` user, not the final restricted `domyro` service account. The test does **not** install a permanent unit, configure `/opt/domyro`, `/etc/domyro`, `/var/lib/domyro`, create TLS certificates, provision PostgreSQL/MQTT/Zigbee2MQTT/Matter, perform migrations or restore user secrets. It does not use a pinned official production signing key, reproduce a complete .deb installer, survive an actual VM reboot or demonstrate complete multi-service rollback. It does not connect to or modify any of the owner's servers or devices.
