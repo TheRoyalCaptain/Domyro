@@ -39,6 +39,7 @@ test('clean private firstboot fixture can create an immutable crash-visible inte
   assert.equal(loaded.releaseVersion,'0.1.1');
   assert.deepEqual(loaded,actual);
   await assert.rejects(start(directory),/EEXIST/);
+  assert.equal((await inspectFirstBootIntent({directory})).phase,'intent_created');
 });
 test('every ordered firstboot phase persists without authorizing deployment',async t=>{
   const directory=await fixture(t);
