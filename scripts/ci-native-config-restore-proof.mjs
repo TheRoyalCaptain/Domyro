@@ -7,7 +7,7 @@
  */
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { chmod, lstat, mkdir, open, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, open, realpath, rm, writeFile } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 import {
   createEncryptedConfigFixture,
@@ -89,7 +89,7 @@ async function receipt(stage){
 async function restoreOnce({stage,password,id,attempt,expected}){
   // This source folder and target are BOTH confined to the CI scratch space.
   const parent=join(stage,'ci-config-restore-parent');
-  await mkdir(parent,{mode:0o700});
+  await mkdir(parent,{recursive:true,mode:0o700});
   await privateDirectory(parent);
   const targetName='domyro_restore_test_'+id+attempt;
   let created=false;
@@ -140,7 +140,7 @@ async function run(){
     });
     // Prove failure on invalid password before scratch destination appears.
     const parent=join(stage,'ci-config-restore-parent');
-    await mkdir(parent,{mode:0o700});
+    await mkdir(parent,{recursive:true,mode:0o700});
     await restoreConfigFixtureToScratch({
       backupDirectory:stage,backupName:BACKUP_NAME,
       password:'incorrect-disposable-ci-config-password',scratchParent:parent,
