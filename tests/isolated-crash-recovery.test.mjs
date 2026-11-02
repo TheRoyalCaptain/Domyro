@@ -250,3 +250,35 @@ test('recovery rejects nonfunction test checkpoint before creating a lock', asyn
   await absent(join(root, '.recovery.lock'));
   assert.ok(await readActivationIntent(root));
 });
+
+
+test('tampering the old signed tree after pointer restoration preserves recovery intent', async t => {
+  const root = await interruptedFixture(t);
+  await assert.rejects(() => recover(root, {
+    onTestCheckpoint: async point => {
+      if (point === 'pointer_restored') {
+        await writeFile(join(root, 'releases/0.1.0/src/server.mjs'), 'tampered-after-rename');
+      }
+    },
+  }));
+  assert.equal(await inspectActiveBundle(root), '0.1.0');
+  assert.ok(await readActivationIntent(root));
+  await absent(join(root, '.recovery.lock'));
+  await assert.rejects(() => activate(root, '0.1.1'),
+    /interrupted_activation_requires_manual_recovery/);
+});
+
+test('altering the activation intent after restoring pointer refuses final clearance', async t => {
+  const root = await interruptedFixture(t);
+  await assert.rejects(() => recover(root, {
+    onTestCheckpoint: async point => {
+      if (point === 'activation_lock_removed') {
+        await writeFile(join(root, '.activation-intent.json'), '{"invalid":true}\n');
+      }
+    },
+  }), /activation_intent_invalid/);
+  assert.equal(await inspectActiveBundle(root), '0.1.0');
+  assert.equal((await lstat(join(root, '.activation-intent.json'))).isFile(), true);
+  await absent(join(root, '.recovery.lock'));
+  await assert.rejects(() => activate(root, '0.1.1'), /activation_intent_invalid/);
+});
