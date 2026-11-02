@@ -86,6 +86,7 @@ Then open `http://127.0.0.1:8844` **on the same computer**. The experimental loc
 35. [Native servicemap- en procesproef](docs/NATIVE-SERVICE-REHEARSAL.md): een afgeschermde Ubuntu-mappenstructuur, een niet-geactiveerde systemd-unit, een los Node-proces met herstartproef en nieuwe handtekening-/bestandscontroles; **nog geen systemd-installatie**.
 36. [Vastgepinde afhankelijkheden en echte update-/rollbackproef](docs/NATIVE-DEPENDENCIES-AND-UPDATE-REHEARSAL.md): npm-lockfile en npm ci, native runtime-validatie, twee ondertekende versies met procesherstart, rollback en systemd-analyse; **D-53 gesloten**.
 37. [Ondertekende download-only staging en echte systemd-crashherstelproef](docs/SIGNED-DOWNLOAD-REHEARSAL.md): strikt lokale HTTP-download met SHA-256, downloadvertraging, staging zonder activering en systemd-crashherstel op tijdelijke GitHub Ubuntu-machines; **geen productie-updater of installatie**.
+38. [Native PostgreSQL en owner-onboarding CI](docs/NATIVE-POSTGRES-ONBOARDING-CI.md): ondertekende setup-CLI's, migraties, aparte DML-runtimegebruiker, echte login en duurzame kamers na serviceherstart/crash op AMD64 en ARM64; **alleen geïsoleerde CI**.
 
 **Current project gate:** **approved for M1 foundation source development only** by the owner on 31 October 2026, while final architecture, real hardware, deployment and public release acceptance remain incomplete. **GOV-01:** the owner chose to continue without branch protection for now, so other permitted accounts/apps could technically push directly.
 
