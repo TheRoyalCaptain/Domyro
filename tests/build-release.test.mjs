@@ -26,6 +26,23 @@ test('builds reproducible amd64 and arm64 source bundles with an external test s
   assert.deepEqual(manifest.artifacts.map(x => x.arch), ['amd64', 'arm64']);
   assert.deepEqual(manifest.database, {min:3,max:3,target:3,migration:'none'});
   for (const art of manifest.artifacts) assert.equal(verifyArtifactBytes(art, first.artifactBytes[art.file]), true);
+  // The signed archive's version MUST match its package and npm lockfile.
+  // Without this, a newly installed app advertises the wrong old version.
+  for(const art of manifest.artifacts){
+    const bundle=JSON.parse(first.artifactBytes[art.file].toString('utf8'));
+    const byPath=new Map(bundle.files.map(file=>[file.path,file.base64]));
+    const metadata=path=>JSON.parse(Buffer.from(byPath.get(path),'base64').toString('utf8'));
+    const pkg=metadata('package.json');
+    const lock=metadata('package-lock.json');
+    assert.equal(pkg.version,manifest.version);
+    assert.equal(lock.version,manifest.version);
+    assert.equal(lock.packages[''].version,manifest.version);
+    assert.equal(pkg.name,'domyro');
+    assert.equal(lock.lockfileVersion,3);
+  }
+  assert.equal(JSON.parse(await readFile('package.json','utf8')).version,'0.1.0-dev.1');
+  assert.equal(JSON.parse(await readFile('package-lock.json','utf8')).version,'0.1.0-dev.1');
+
   const output = join(folder, 'package');
   const receipt = await writeSignedRelease(output, first);
   assert.equal(receipt.files, 4);

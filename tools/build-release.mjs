@@ -68,6 +68,42 @@ async function collectFiles(projectRoot) {
   return collected.sort((a,b)=>a.path.localeCompare(b.path,'en'));
 }
 
+/**
+ * Signed release archives need an internally consistent installed version.
+ * The checkout may still be a -dev snapshot while the signed artifact is a
+ * stable release. Rewrite versions in the SNAPSHOT only; never mutate git,
+ * npm lockfile dependencies, or the developer's installed application.
+ */
+function releaseVersionSnapshot(files,version){
+  const find=name=>{
+    const item=files.find(f=>f.path===name);
+    if(!item)throw new Error('source_package_metadata_missing');
+    let data;
+    try{data=JSON.parse(Buffer.from(item.base64,'base64').toString('utf8'));}
+    catch{throw new Error('source_package_metadata_invalid');}
+    return data;
+  };
+  const packageJson=find('package.json');
+  const lock=find('package-lock.json');
+  if(packageJson.name!=='domyro'||typeof packageJson.version!=='string'||
+    lock.name!=='domyro'||lock.lockfileVersion!==3||
+    !lock.packages?.['']||lock.packages[''].name!=='domyro'||
+    lock.version!==packageJson.version||
+    lock.packages[''].version!==packageJson.version){
+    throw new Error('source_package_metadata_inconsistent');
+  }
+  packageJson.version=version;
+  lock.version=version;
+  lock.packages[''].version=version;
+  const serialized=new Map([
+    ['package.json',Buffer.from(JSON.stringify(packageJson,null,2)+'\n').toString('base64')],
+    ['package-lock.json',Buffer.from(JSON.stringify(lock,null,2)+'\n').toString('base64')],
+  ]);
+  return files.map(f=>Object.freeze({
+    path:f.path,base64:serialized.get(f.path)??f.base64,
+  }));
+}
+
 async function currentSourceDatabaseSchema(projectRoot) {
   const root = join(projectRoot,'src/persistence/migrations');
   const files = (await readdir(root,{withFileTypes:true}))
@@ -93,7 +129,7 @@ export async function buildSignedSourceRelease({ projectRoot, version, channel, 
   const key = createPrivateKey(privateKeyPem);
   if (key.asymmetricKeyType !== 'ed25519') throw new Error('ed25519_signing_key_required');
   const resolvedRoot = resolve(projectRoot);
-  const sourceFiles = await collectFiles(resolvedRoot);
+  const sourceFiles = releaseVersionSnapshot(await collectFiles(resolvedRoot),version);
   const databaseSchema = await currentSourceDatabaseSchema(resolvedRoot);
   const artifacts = [], artifactBytes = {};
   for (const arch of ['amd64', 'arm64']) {
