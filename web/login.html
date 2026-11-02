@@ -45,10 +45,31 @@
         </div>
         <button type="button" id="logout" class="secondary">Uitloggen</button>
       </div>
-      <h3>Woningen</h3>
+      <div class="portal-heading">
+        <div><h3>Woningen</h3><p>Beheer je echte woningen. Alles wordt lokaal opgeslagen.</p></div>
+        <a class="portal-shortcut" href="/">Bekijk dashboard ↗</a>
+      </div>
       <div id="sites" class="site-list"></div>
+      <form id="add-site-form" class="inline-form">
+        <label for="site-name">Nieuwe woning toevoegen</label>
+        <div class="input-row">
+          <input type="text" id="site-name" minlength="1" maxlength="100" required placeholder="Bijv. Thuis of Vakantiehuis" autocomplete="off">
+          <button type="submit">Woning toevoegen</button>
+        </div>
+      </form>
       <div id="rooms-panel" hidden>
-        <h3 id="rooms-title">Kamers</h3>
+        <div class="portal-heading">
+          <h3 id="rooms-title">Kamers</h3>
+          <button type="button" id="rename-site" class="secondary tiny-button">Woning hernoemen</button>
+        </div>
+        <form id="rename-site-form" class="inline-form" hidden>
+          <label for="rename-site-name">Nieuwe woningnaam</label>
+          <div class="input-row">
+            <input type="text" id="rename-site-name" minlength="1" maxlength="100" required>
+            <button type="submit">Opslaan</button>
+            <button type="button" id="cancel-rename-site" class="secondary">Annuleren</button>
+          </div>
+        </form>
         <ul id="rooms" class="rooms"></ul>
         <form id="add-room-form" class="inline-form">
           <label for="room-name">Nieuwe kamer</label>
@@ -58,6 +79,15 @@
           </div>
         </form>
       </div>
+      <section class="devices-panel" id="user-devices" aria-labelledby="user-devices-heading" hidden>
+        <div class="portal-heading">
+          <div><h3 id="user-devices-heading">Apparaten</h3>
+          <p>Alleen echte, geregistreerde apparaten van de geselecteerde woning. Bediening is nog niet actief.</p></div>
+          <button id="refresh-devices" class="secondary tiny-button" type="button">Verversen</button>
+        </div>
+        <p id="user-device-message" role="status" aria-live="polite"></p>
+        <div id="user-device-list" class="portal-device-grid"></div>
+      </section>
       <section id="updates-panel" class="update-center" aria-labelledby="updates-heading" hidden>
         <h3 id="updates-heading">Systeemupdates</h3>
         <p id="updates-status" role="status" aria-live="polite">Updategegevens controleren…</p>
