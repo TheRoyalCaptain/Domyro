@@ -62,6 +62,8 @@ fi
 # Durable journal means NO new version committed; restore the previous code.
 # Missing backup means the interruption happened before moving the old code.
 systemctl stop "$UNIT.service"
+# The rejected candidate may have hit systemd's restart rate limit.
+systemctl reset-failed "$UNIT.service"
 if [[ -d "$BACKUP" ]];then
   if [[ -d "$APP" ]];then
     mv -T -- "$APP" "$REJECTED"
