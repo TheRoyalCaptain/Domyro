@@ -62,7 +62,22 @@ if [[ -n "$CI_FAILPOINT" &&
 fi
 ci_fault() {
   if [[ "$CI_FAILPOINT" == "$1" ]]; then
-    echo "Expected disposable CI installer failure: $1" >&2
+    # Before deliberately aborting, prove this is the *actual persisted*
+    # evidence phase, not an optimistic in-memory installation progress label.
+    local expected actual
+    case "$1" in
+      after-db-bootstrap) expected=database_owner_bootstrapped ;;
+      after-db-role) expected=restricted_runtime_verified ;;
+      after-unit-start|after-restart) expected=http_login_and_persistence_verified ;;
+      *) echo "Missing firstboot journal phase policy" >&2; exit 99 ;;
+    esac
+    actual="$(DOMYRO_CI_TARGET_PORT="$PORT" node "$CI_BRIDGE" inspect |
+      node -e 'let text="";process.stdin.on("data",x=>text+=x);process.stdin.on("end",()=>process.stdout.write(JSON.parse(text).phase))')"
+    if [[ "$actual" != "$expected" ]]; then
+      echo "Firstboot journal phase mismatch before injected installer failure" >&2
+      exit 99
+    fi
+    echo "Expected disposable CI installer failure: $1 (journal: $actual)" >&2
     exit 86
   fi
 }
