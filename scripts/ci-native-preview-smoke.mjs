@@ -114,6 +114,19 @@ async function testNative(){
   },cookie,csrf,'PATCH');
   if(renamed.status!==200)throw Error('ci_native_preview_site_rename_failed');
   checkCoreGate(await request('/api/v1/system/updates',{headers:{cookie}}));
+  // Release checking is opt-in. Failed or unauthenticated requests must
+  // never trigger outbound GitHub traffic or an installation.
+  const releasePath='/api/v1/system/updates/check';
+  if((await request(releasePath)).status!==401||
+     (await request(releasePath,{headers:{cookie}})).status!==405)
+    throw Error('ci_native_release_check_unprotected');
+  if((await post(releasePath,{},cookie,null)).status!==403)
+    throw Error('ci_native_release_check_bypassed_csrf');
+  const portalHtml=await fetch(BASE+'/login');
+  if(portalHtml.status!==200||
+    !(await portalHtml.text()).includes('id="update-check"'))
+    throw Error('ci_native_release_check_ui_missing');
+
   const firstRoomId=room.body.area.id;
   // Restart real native systemd; database must still hold created site and room.
   sudo('systemctl','restart',UNIT+'.service');
