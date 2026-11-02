@@ -37,6 +37,9 @@ test('source bundle includes all runtime modules, assets and migrations, not onl
     'scripts/migrate-db.mjs','scripts/bootstrap-owner.mjs',
   ]) assert.equal(paths.has(file),true,file);
   assert.equal(paths.has('tests/native-rehearsal.test.mjs'),false);
+  assert.equal(paths.has('scripts/ci-native-account-test.sh'),false);
+  assert.equal(paths.has('scripts/ci-native-onboarding-probe.mjs'),false);
+  assert.equal(paths.has('tools/build-release.mjs'),false);
   assert.equal(paths.has('docs/INSTALL-UPGRADE-GATE.md'),false);
   assert.ok(paths.size>30);
 });
