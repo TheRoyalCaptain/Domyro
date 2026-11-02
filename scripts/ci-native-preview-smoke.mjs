@@ -3,7 +3,7 @@
 // CI ONLY, disposable GitHub-hosted Ubuntu 24.04 native PostgreSQL + systemd.
 // Docker/containerization is expressly NOT used in the native preview.
 import {spawnSync} from 'node:child_process';
-import {readFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
 if(process.env.GITHUB_ACTIONS!=='true'||
@@ -188,6 +188,29 @@ async function testNative(){
   const afterRecover=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
   if(afterRecover.status!==200||afterRecover.body.areas?.[0]?.id!==firstRoomId)
     throw Error('ci_native_refresh_recovery_followup_lost_data');
+  // A syntactically valid but broken new server must fail its real HTTP+DB
+  // health probe and automatically restore the previous code.
+  // Only edit this disposable test checkout, NEVER an installed server tree.
+  const sourcePath='src/server.mjs';
+  const originalSource=await readFile(sourcePath,'utf8');
+  let declined;
+  try{
+    await writeFile(sourcePath,
+      'throw new Error("ci-native-preview-broken-candidate");\n'+originalSource);
+    declined=spawnSync('sudo',[
+      'bash','scripts/native-preview-refresh.sh','--refresh-native-preview',
+    ],{cwd:process.cwd(),encoding:'utf8',timeout:105000});
+  }finally{await writeFile(sourcePath,originalSource);}
+  if(declined.status===0||
+     !/Previous native preview restored and healthy/.test(declined.stdout))
+    throw Error('ci_native_refresh_broken_code_was_not_rolled_back');
+  await wait();
+  const rollbackData=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
+  if(rollbackData.status!==200||rollbackData.body.areas?.[0]?.id!==firstRoomId)
+    throw Error('ci_native_refresh_failed_candidate_lost_rooms');
+  const finalStatus=await request('/api/v1/public/status');
+  if(finalStatus.body.persistence!=='ready'||finalStatus.body.productionReady!==false)
+    throw Error('ci_native_refresh_failed_candidate_unhealthy_or_gate_changed');
 }
 async function verifySecondInstallDenied(){
   const r=spawnSync('sudo',['bash','scripts/native-preview-install.sh','--install-native-preview'],{
