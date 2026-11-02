@@ -115,6 +115,17 @@ async function testNative(){
   if(html.status!==200||!(await html.text()).includes('id="homes-list"'))
     throw Error('ci_native_preview_dashboard_missing');
   await verifySecondInstallDenied();
+  // Manually update the NATIVE preview from the checked-out source.
+  // No Docker, no PostgreSQL migrations, and no owner data deletion.
+  const updated=sudo('bash','scripts/native-preview-refresh.sh','--refresh-native-preview');
+  if(!updated.includes('UPDATED: native preview running'))
+    throw Error('ci_native_preview_refresh_failed');
+  await wait();
+  const retained=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
+  if(retained.status!==200||retained.body.areas?.[0]?.id!==firstRoomId)
+    throw Error('ci_native_preview_refresh_lost_persisted_rooms');
+  if(!sudo('ls','-A','/opt/domyro-preview-native-history'))
+    throw Error('ci_native_preview_missing_prior_release');
 }
 async function verifySecondInstallDenied(){
   const r=spawnSync('sudo',['bash','scripts/native-preview-install.sh','--install-native-preview'],{
@@ -130,7 +141,8 @@ async function cleanup(){
   best('sudo',['rm','-f','/etc/systemd/system/'+UNIT+'.service']);
   best('sudo',['systemctl','daemon-reload']);
   best('sudo',['userdel',UNIT]);
-  for(const location of [CONFDIR,INSTALL])best('sudo',['rm','-rf','--',location]);
+  for(const location of [CONFDIR,INSTALL,'/opt/domyro-preview-native-history','/run/domyro-preview-native'])
+    best('sudo',['rm','-rf','--',location]);
   best('sudo',['runuser','-u','postgres','--','psql','-X','-q',
     '-v','ON_ERROR_STOP=1','-d','postgres','-c','DROP DATABASE IF EXISTS domyro_preview_native WITH (FORCE)']);
   for(const role of ['domyro_preview_native_app','domyro_preview_native_migrator'])
