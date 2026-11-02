@@ -45,13 +45,13 @@ RELEASE_ROOT="$(node scripts/ci-stage-signed-source.mjs "$STAGING_BASE/release-s
 SOURCE_DIGESTS="$STAGING_BASE/source.sha256"
 (
   cd "$RELEASE_ROOT"
-  find src web -type f -print0 | sort -z | xargs -0 sha256sum
+  find src web scripts -type f -print0 | sort -z | xargs -0 sha256sum
   sha256sum package.json package-lock.json
 ) > "$SOURCE_DIGESTS"
 npm ci --prefix "$RELEASE_ROOT" --omit=dev --ignore-scripts --no-audit --no-fund
 (
   cd "$RELEASE_ROOT"
-  find src web -type f -print0 | sort -z | xargs -0 sha256sum
+  find src web scripts -type f -print0 | sort -z | xargs -0 sha256sum
   sha256sum package.json package-lock.json
 ) | diff -u "$SOURCE_DIGESTS" -
 PORT="$(node -e 'const net=require("node:net");const s=net.createServer();s.listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')"
