@@ -6,16 +6,17 @@
  */
 import { compareVersions } from './release.mjs';
 import { checkLatestOfficialRelease } from './native-release-discovery.mjs';
+import { INSTALLED_VERSION } from './installed-version.mjs';
 
 const STATES=new Set([
   'no_official_release_published','newer_release_advertised',
   'already_latest','github_advertises_older_version',
 ]);
 const MIN_INTERVAL_MS=30_000;
-const DEV_VERSION='0.1.0-dev.1';
+
 
 export function createManualReleaseChecker({
-  currentVersion=DEV_VERSION,discover=checkLatestOfficialRelease,
+  currentVersion=INSTALLED_VERSION,discover=checkLatestOfficialRelease,
   clock=()=>Date.now(),minimumIntervalMs=MIN_INTERVAL_MS,
 }={}){
   compareVersions(currentVersion,currentVersion);
