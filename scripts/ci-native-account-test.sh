@@ -124,7 +124,7 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   fi
   node scripts/ci-native-restricted-db-role.mjs create
   node scripts/ci-native-restricted-db-role.mjs verify
-  CI_APP_DB_URI="$(node -e '
+  CI_APP_DB_URI="$(CI_DB_URI="$CI_DB_URI" node -e '
     const url=new URL(process.env.CI_DB_URI);
     url.username=process.env.CI_RUNTIME_ROLE;
     url.password=process.env.CI_RUNTIME_PASSWORD;
