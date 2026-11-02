@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,generateKeyPairSync,sign} from 'node:crypto';
-import {mkdtemp,mkdir,link,rename,symlink,writeFile,readlink,rm,chmod} from 'node:fs/promises';
+import {mkdtemp,mkdir,link,rename,symlink,writeFile,readlink,rm,chmod,stat} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {stageVerifiedBundle,inspectVerifiedStagedBundle,switchActiveBundle,inspectActiveBundle} from '../src/lifecycle/transactional-release.mjs';
@@ -116,4 +116,17 @@ test('writable signed release directories fail closed',async t=>{
   await chmod(release,0o777);
   await assert.rejects(()=>inspect(root),/staged_release_not_private_directory/);
   assert.equal(await inspectActiveBundle(root),null);
+});
+
+test('failed probe with corrupted rollback target raises critical error and releases lock',async t=>{
+  const {root,release}=await staged(t);
+  await activate(root,'0.1.0');
+  await stageVerifiedBundle({root,...signed('0.1.1')});
+  await assert.rejects(()=>activate(root,'0.1.1',async()=>{
+    await writeFile(join(release,'src/server.mjs'),'tampered during candidate probe');
+    return false;
+  }),/rollback_integrity_or_cleanup_failed/);
+  assert.equal(await inspectActiveBundle(root),'0.1.0');
+  await assert.rejects(()=>stat(join(root,'.activation.lock')),{code:'ENOENT'});
+  await assert.rejects(()=>inspect(root),/staged_release_file_changed/);
 });
