@@ -8,7 +8,7 @@
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { constants } from 'node:fs';
-import { copyFile, lstat, open, readFile, realpath, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, open, readFile, realpath, writeFile, unlink } from 'node:fs/promises';
 import { resolve, join, sep } from 'node:path';
 import { Pool } from 'pg';
 import {
@@ -131,6 +131,15 @@ async function run() {
       sourceUrl,directory,name:NAME,password:secret,tools:TOOL,
       maxPlainBytes:64*1024*1024,
     });
+    // Prove this is an encrypted Domyro blob, never a plaintext PG archive.
+    const original=join(stage,NAME);
+    const header=await open(original,constants.O_RDONLY|constants.O_NOFOLLOW);
+    try{
+      const magic=Buffer.alloc(8);
+      if((await header.read(magic,0,8,0)).bytesRead!==8||
+         magic.toString('ascii')!=='DOMYROS2')
+        throw new Error('ci_native_backup_plaintext_or_unknown_format');
+    }finally{await header.close();}
     const admin=new Pool({connectionString:BASE,max:1});
     try{
       await admin.query('CREATE DATABASE "'+restoreName+'"');
@@ -143,11 +152,42 @@ async function run() {
       }).then(()=>{throw new Error('ci_native_backup_accepted_wrong_password');},
         error=>{if(error.message!=='backup_authentication_failed')throw error;});
       await empty(targetUrl);
+      // Deliberately corrupt a separate encrypted file, not the original.
+      // Authentication MUST fail before pg_restore sees its first byte.
+      const tamperedName='ci-tampered.domyrobackup';
+      const tampered=join(stage,tamperedName);
+      await copyFile(original,tampered,constants.COPYFILE_EXCL);
+      try{
+        const fd=await open(tampered,constants.O_RDWR|constants.O_NOFOLLOW);
+        try{
+          const stat=await fd.stat(),last=Buffer.alloc(1);
+          if(stat.size<64)throw new Error('ci_native_backup_too_small');
+          await fd.read(last,0,1,stat.size-1);
+          last[0]^=1;
+          await fd.write(last,0,1,stat.size-1);
+          await fd.sync();
+        }finally{await fd.close();}
+        await restoreStreamedBackupToTestDatabase({
+          directory,name:tamperedName,password:secret,targetUrl,tools:TOOL,
+          maxPlainBytes:64*1024*1024,
+        }).then(()=>{throw new Error('ci_native_backup_accepted_tampered_blob');},
+          error=>{if(error.message!=='backup_authentication_failed')throw error;});
+        await empty(targetUrl);
+      }finally{await unlink(tampered);}
       const restored=await restoreStreamedBackupToTestDatabase({
         directory,name:NAME,password:secret,targetUrl,tools:TOOL,
         maxPlainBytes:64*1024*1024,
       });
       const after=await rows(targetUrl);
+      const sourceAfter=await rows(sourceUrl);
+      if(sourceAfter.sha256!==before.sha256)
+        throw new Error('ci_native_backup_source_changed_during_restore');
+      // Replaying into the already populated target must be denied.
+      await restoreStreamedBackupToTestDatabase({
+        directory,name:NAME,password:secret,targetUrl,tools:TOOL,
+        maxPlainBytes:64*1024*1024,
+      }).then(()=>{throw new Error('ci_native_backup_allowed_inplace_restore');},
+        error=>{if(error.message!=='restore_target_not_empty')throw error;});
       if(after.sha256!==before.sha256||restored.archiveSha256!==snapshot.sha256||
          restored.schemaVersion!==3||restored.verifiedRestore!==true)
         throw new Error('ci_native_backup_restored_rows_mismatch');
