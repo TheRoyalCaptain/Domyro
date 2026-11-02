@@ -2,6 +2,17 @@
 
 **Prioriteit gewijzigd: de minimale bruikbare oplevering is een eenregelige Ubuntu-installatie, gevolgd door updates vanuit een bestaande Domyro-installatie.** Smart-homefuncties komen daarna. De beveiligingsstop **D-53 is nog gesloten**.
 
+## Ondertekend pakket offline klaarzetten en productiegate afdwingen
+
+De actuele ontwikkelbranch kan een volledige, ondertekende bronrelease offline verifiëren en in een geïsoleerde stagingmap klaarmaken. Hiervoor zijn de apart vertrouwde Ed25519-publieke sleutel en de onafhankelijke SPKI SHA-256-fingerprint vereist. De verificatie controleert beide architectuurartefacten, SHA-256, database-schema, geen downgrade en de overeenstemming van manifest, package.json en package-lock.json. Na staging worden de uitgepakte bestanden opnieuw vergeleken met de ondertekende bron.
+
+De CLI `scripts/prepare-native-signed-source.mjs` is alleen een voorbereider. Hij start geen service, installeert niets, verandert PostgreSQL niet en zet geen actieve versie om. De officiële privésleutel en publieke release zijn nog niet beschikbaar; tests gebruiken een tijdelijke testondertekening.
+
+Een veiligheidsfout in `scripts/check-installation-gate.mjs` is hersteld: bij directe CLI-aanroep voerde het script eerder geen controle uit vanwege een foutieve vergelijking tussen bestandspad en URL. Nu geven `--require-ready` en `--require-release` daadwerkelijk exitcode 2 zolang de 14 D-53-productiechecks openstaan. Dat is apart regressiegetest.
+
+De releasebouwer zorgt er bovendien voor dat de ondertekende versie in de package.json én npm-lockfile gelijk is aan de gesigneerde manifestversie. De ontwikkelcheckout wordt daarbij niet gewijzigd.
+
+De volgende stap naar echte productieactivatie is onafhankelijke goedkeuring en een bewezen native update-worker met back-up, veilige databasemigratie, systemd-herstart en rollback.
 ## Wat er technisch beschikbaar is
 
 De nieuwe release-infrastructuur is daadwerkelijk geprogrammeerd:
