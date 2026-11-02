@@ -126,6 +126,58 @@ async function testNative(){
     throw Error('ci_native_preview_refresh_lost_persisted_rooms');
   if(!sudo('ls','-A','/opt/domyro-preview-native-history'))
     throw Error('ci_native_preview_missing_prior_release');
+  // Kill the real native update shell AFTER it archived old code but BEFORE
+  // it activated the new code. The durable journal must survive SIGKILL.
+  const interrupted=spawnSync('sudo',[
+    'env','GITHUB_ACTIONS=true','RUNNER_ENVIRONMENT=github-hosted',
+    'RUNNER_OS=Linux','DOMYRO_CI_NATIVE_PREVIEW=1',
+    'GITHUB_WORKSPACE='+process.env.GITHUB_WORKSPACE,
+    'DOMYRO_CI_NATIVE_REFRESH_FAULT=after-old-moved',
+    'bash','scripts/native-preview-refresh.sh','--refresh-native-preview',
+  ],{cwd:process.cwd(),encoding:'utf8',timeout:30000});
+  if(interrupted.status===0 ||
+     !/Simulating CI SIGKILL after previous release archived/.test(interrupted.stdout))
+    throw Error('ci_native_refresh_sigkill_not_triggered:'+interrupted.status);
+  const journal='/opt/domyro-preview-native-history/.pending-refresh';
+  const token=sudo('cat',journal).trim();
+  if(!/^[0-9]{8}T[0-9]{6}Z-[0-9]{1,12}$/.test(token))
+    throw Error('ci_native_refresh_durable_journal_invalid');
+  if(sudo('stat','-c','%a',journal)!=='600'||
+     sudo('stat','-c','%U',journal)!=='root')
+    throw Error('ci_native_refresh_journal_not_private');
+  const oldDir='/opt/domyro-preview-native-history/'+token;
+  if(sudo('test','-f',oldDir+'/src/server.mjs')!=='' ||
+     sudo('test','-f',oldDir+'/scripts/migrate-db.mjs')!=='')
+    throw Error('ci_native_refresh_old_code_not_preserved');
+  // Retrying the update MUST refuse the existing interrupted journal/service.
+  const refused=spawnSync('sudo',[
+    'bash','scripts/native-preview-refresh.sh','--refresh-native-preview',
+  ],{cwd:process.cwd(),encoding:'utf8',timeout:15000});
+  if(refused.status===0)
+    throw Error('ci_native_refresh_repeated_over_interrupted_transaction');
+  const recovered=sudo('bash','scripts/native-preview-recover.sh',
+    '--recover-native-preview');
+  if(!recovered.includes('previous release active'))
+    throw Error('ci_native_refresh_explicit_recovery_failed');
+  await wait();
+  const preserved=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
+  if(preserved.status!==200||preserved.body.areas?.[0]?.id!==firstRoomId)
+    throw Error('ci_native_refresh_sigkill_lost_site_room_data');
+  if((await request('/api/v1/system/updates',{headers:{cookie}})).body.installAllowed!==false)
+    throw Error('ci_native_refresh_recovery_opened_production_gate');
+  // Recovery cannot replay a completed journal or replace healthy files.
+  const replay=spawnSync('sudo',[
+    'bash','scripts/native-preview-recover.sh','--recover-native-preview',
+  ],{cwd:process.cwd(),encoding:'utf8',timeout:15000});
+  if(replay.status!==86||!/no safely recorded interrupted refresh/.test(replay.stderr))
+    throw Error('ci_native_refresh_recovery_replay_not_refused');
+  const again=sudo('bash','scripts/native-preview-refresh.sh',
+    '--refresh-native-preview');
+  if(!again.includes('UPDATED: native preview running'))
+    throw Error('ci_native_refresh_second_update_failed');
+  const afterRecover=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
+  if(afterRecover.status!==200||afterRecover.body.areas?.[0]?.id!==firstRoomId)
+    throw Error('ci_native_refresh_recovery_followup_lost_data');
 }
 async function verifySecondInstallDenied(){
   const r=spawnSync('sudo',['bash','scripts/native-preview-install.sh','--install-native-preview'],{
