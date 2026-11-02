@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 
 const matrix = resolve('scripts/ci-native-installer-fault-matrix.sh');
 const installer = resolve('scripts/ci-native-account-test.sh');
+const crash = resolve('scripts/ci-native-sigkill-recovery.sh');
 const base = {
   ...process.env,
   GITHUB_ACTIONS: 'true',
@@ -51,8 +52,23 @@ test('native installer refuses unknown injected failure points before privileged
   assert.ok([90, 98].includes(result.status), result.stderr);
 });
 test('native installer failure scripts remain syntactically valid Bash', () => {
-  const result = spawnSync('bash', ['-n', installer, matrix], {
+  const result = spawnSync('bash', ['-n', installer, matrix, crash], {
     timeout: 5000, encoding: 'utf8',
   });
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('SIGKILL rehearsal rejects non-hosted runners and non-disposable databases', () => {
+  for (const overrides of [
+    { GITHUB_ACTIONS: 'false' }, { RUNNER_ENVIRONMENT: 'self-hosted' },
+    { DOMYRO_TEST_DATABASE_URL: 'postgresql://other@127.0.0.1:5432/postgres' },
+    { DOMYRO_CI_FAULT_MATRIX: '0' }, { USER: 'not-runner' },
+  ]) {
+    const result = spawnSync('bash', [crash], {
+      env: { ...base, ...overrides }, cwd: process.cwd(),
+      timeout: 5000, encoding: 'utf8',
+    });
+    assert.equal(result.status, 90, JSON.stringify(overrides) + ' ' + result.stderr);
+    assert.match(result.stderr, /Refusing native SIGKILL drill/);
+  }
 });
