@@ -46,3 +46,21 @@ jobs:
       - run: npm run check
       - name: Read-only host diagnostic (informational, no install)
         run: npm run preflight:read-only
+      - name: Verify native install evidence CLI is read-only and installation-gated
+        run: |
+          node scripts/inspect-native-install.mjs --json --port=8844 | node -e '
+            let data = "";
+            process.stdin.setEncoding("utf8");
+            process.stdin.on("data", part => data += part);
+            process.stdin.on("end", () => {
+              const report = JSON.parse(data);
+              const result = report.assessment;
+              if (result.gate !== "D-53" ||
+                  result.installationAllowed !== false ||
+                  result.hostModified !== false ||
+                  result.portAvailabilityGuaranteed !== false ||
+                  result.serviceCredentialsVerified !== false ||
+                  !Array.isArray(result.blockers)) process.exitCode = 13;
+            });
+          '
+
