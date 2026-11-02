@@ -232,9 +232,22 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
     completed = true;
     return Object.freeze({ active: version, previous, healthy: true, serviceRestarted: false, databaseMigrated: false, installationApproved: false, gate: 'D-53' });
   } finally {
-    if (switched && !completed) await changePointer(base, previous);
-    await lock.close();
-    await rm(join(base, '.activation.lock'), { force: true });
+    // Never leave the activation lock behind just because pointer rollback or
+    // previous-release re-verification failed. The caller must see a distinct
+    // critical recovery error instead of a false successful rollback.
+    let recoveryError = null;
+    try {
+      if (switched && !completed) {
+        await changePointer(base, previous);
+        if (previous !== null) await inspectVerifiedStagedBundle({
+          root:base,version:previous,trustedPublicKeyPem,
+        });
+      }
+    } catch(error) { recoveryError = error; }
+    try { await lock.close(); } catch(error) { recoveryError ??= error; }
+    try { await rm(join(base, '.activation.lock'), { force: true }); }
+    catch(error) { recoveryError ??= error; }
+    if(recoveryError)throw new Error('rollback_integrity_or_cleanup_failed', {cause:recoveryError});
   }
 }
 export async function inspectActiveBundle(root) {
