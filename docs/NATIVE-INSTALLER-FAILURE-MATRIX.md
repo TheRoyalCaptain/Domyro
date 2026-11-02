@@ -26,3 +26,30 @@ Deze tests bewijzen **niet** dat een eenregelige installer bestaat. Ook controle
 **CI op beide architecturen:** `.github/workflows/native-installer-fault-matrix.yml`.
 
 De installatiestatus `config/installation-readiness.json` en de bestaande blokkerende update-endpoints worden niet aangepast.
+
+## Abrupte procesuitval: SIGKILL en bescherming van bestaande gegevens
+
+De aparte CI-proef `scripts/ci-native-sigkill-recovery.sh` beëindigt het
+installatiescript met **SIGKILL** nadat de eigenaar is aangemaakt, een kamer is
+opgeslagen en Domyro via systemd draait. Anders dan een normale exit wordt de
+`EXIT`-opruimtrap daardoor niet uitgevoerd.
+
+Vervolgens controleert een **afzonderlijk proces**:
+
+1. De service draait nog, de systeemgebruiker en config zijn aanwezig en de
+   PostgreSQL-database heeft nog precies één eigenaar en één kamer.
+2. Een tweede installatiepoging wordt **direct** geweigerd (exit 93), vóór
+   staging, databasebewerkingen of het registreren van een nieuwe cleanup-trap.
+3. De systemd-configuratie en geheime runtimeconfiguratie zijn byte-identiek
+   gebleven. De database-inhoud blijft eveneens behouden.
+4. Alleen een apart, expliciet aangeroepen herstelpad ruimt achteraf de
+   **uitsluitend tijdelijke** CI-database, rol, service, account en bestanden op.
+
+Extra testen: achtergebleven datamappen en zelfs **dangling symlinks** in het
+doelpad worden door de installer meteen geweigerd, zonder het doel te vervangen.
+
+Dit simuleert een abrupt beëindigd proces, **niet** een echte stroomuitval,
+filesystemcrash of volwaardige transactionele productie-installer. Het
+bevestigt vooralsnog uitsluitend de bescherming van de geteste disposable
+omgeving. Een herstelwizard voor bestaande gebruikersgegevens en veilig
+power-cut recovery blijven releaseblokkades.
