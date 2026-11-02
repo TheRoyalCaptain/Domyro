@@ -13,7 +13,7 @@ import { verifySignedManifest, verifyArtifactBytes } from '../src/lifecycle/rele
 const ROOT_FILES = Object.freeze(['package.json', 'package-lock.json']);
 // Only these two CLI tools are shipped for explicitly approved first-time setup.
 // CI scripts, signing tools and test fixtures are NEVER part of a release bundle.
-const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs', 'scripts/prepare-native-signed-source.mjs']);
+const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs']);
 const ROOT_DIRS = Object.freeze(['src', 'web']);
 const EXTENSIONS = new Set(['.mjs', '.js', '.json', '.sql', '.html', '.css', '.svg']);
 const FILE_LIMIT = 8 * 1024 * 1024;
@@ -61,9 +61,10 @@ async function collectFiles(projectRoot) {
     'src/persistence/migrator.mjs', 'src/lifecycle/release.mjs',
     'web/index.html', 'web/login.html', 'web/assets/app.js',
     'web/assets/login.js', 'web/assets/styles.css',
-    'package-lock.json', 'scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs',
+    'package-lock.json', 'scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs',
   ];
   const names = new Set(collected.map(x => x.path));
+  if (names.size !== collected.length) throw new Error('release_duplicate_source_path');
   for (const file of required) if (!names.has(file)) throw new Error('release_missing_required_file:' + file);
   return collected.sort((a,b)=>a.path.localeCompare(b.path,'en'));
 }
