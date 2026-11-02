@@ -6,6 +6,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createDbSession, resolveDbSession, revokeDbSession, hashPassword, verifyPassword, hashSessionToken } from './credentials.mjs';
 import { listSitesForUser, listAreasForUser, createAreaForUser, createSiteForUser, renameSiteForUser, renameAreaForUser } from '../persistence/site-repository.mjs';
 import { getDevelopmentUpdateStatus } from '../lifecycle/update-center.mjs';
+import { createManualReleaseChecker } from '../lifecycle/manual-release-check.mjs';
 import { listZigbeeDevicesForUser, listZigbeeStateForUser } from '../persistence/zigbee-repository.mjs';
 
 const LOGIN = /^[a-z0-9][a-z0-9._-]{2,63}$/;
@@ -73,8 +74,9 @@ function setCookie(response, token) {
   response.setHeader('set-cookie', SESSION_NAME + '=' + token + '; HttpOnly; Path=/api/v1; SameSite=Strict; Max-Age=3600');
 }
 
-export async function createLocalAuthService(db, sendJson) {
-  if (!db || typeof db.query !== 'function' || typeof sendJson !== 'function') throw new TypeError('auth_dependencies_invalid');
+export async function createLocalAuthService(db, sendJson, { releaseChecker = createManualReleaseChecker() } = {}) {
+  if (!db || typeof db.query !== 'function' || typeof sendJson !== 'function' ||
+      !releaseChecker || typeof releaseChecker.check !== 'function') throw new TypeError('auth_dependencies_invalid');
   const dummyHash = await hashPassword(randomBytes(32).toString('hex'));
   const failures = new Map();
 
@@ -110,6 +112,7 @@ export async function createLocalAuthService(db, sendJson) {
      */
     async route(req, res, pathname) {
       const known = pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install' ||
+        pathname === '/api/v1/system/updates/check' ||
         pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/logout' ||
         pathname === '/api/v1/auth/me' || pathname === '/api/v1/sites' ||
         /^\/api\/v1\/sites\/[^/]+\/(?:areas|devices)$/.test(pathname) ||
@@ -156,7 +159,8 @@ export async function createLocalAuthService(db, sendJson) {
       const actor = await authenticated(req, res, { checkCsrf: isWrite });
       if (!actor) return true;
 
-      if (pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install') {
+      if (pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install' ||
+          pathname === '/api/v1/system/updates/check') {
         // System-wide information requires an enabled account with owner/admin
         // membership. Mere login, resident and guest roles are insufficient.
         const authorization = await db.query(`
@@ -167,6 +171,15 @@ export async function createLocalAuthService(db, sendJson) {
         `, [actor.user_id]);
         if (authorization.rowCount !== 1) {
           sendJson(res, 403, { error: 'system_administrator_required' });
+          return true;
+        }
+        if (pathname.endsWith('/check')) {
+          if (req.method !== 'POST') {
+            sendJson(res, 405, { error: 'method_not_allowed' }); return true;
+          }
+          // A network check is an explicit privileged action: same-origin
+          // and session-bound CSRF have already been verified above.
+          sendJson(res, 200, await releaseChecker.check());
           return true;
         }
         if (pathname.endsWith('/install')) {
