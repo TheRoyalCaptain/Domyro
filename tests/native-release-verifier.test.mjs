@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash, generateKeyPairSync } from 'node:crypto';
+import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { chmod, link, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -162,4 +162,16 @@ test('rejects untrusted public key types and missing published artifacts',async 
   await assert.rejects(inspect(directory),/release_package_entries_unexpected/);
   const names=await readdir(directory);
   assert.ok(names.includes('release-manifest.json'));
+});
+
+test('valid Ed25519 signature is still insufficient for an incomplete multiarch source release',async t=>{
+  const {directory}=await packaged(t);
+  const manifest=JSON.parse(signed.manifestBytes.toString('utf8'));
+  manifest.artifacts=manifest.artifacts.filter(item=>item.arch==='amd64');
+  const bytes=Buffer.from(JSON.stringify(manifest));
+  const signature=sign(null,bytes,keys.privateKey).toString('base64');
+  await writeFile(join(directory,'release-manifest.json'),bytes);
+  await writeFile(join(directory,'release-manifest.sig'),signature+'\n');
+  await rm(join(directory,'domyro-0.1.1-ubuntu-arm64.bundle.json'));
+  await assert.rejects(inspect(directory),/native_source_release_multiarch_incomplete/);
 });
