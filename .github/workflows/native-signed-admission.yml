@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'scripts/ci-stage-signed-source.mjs'
+      - 'scripts/ci-native-account-test.sh'
+      - 'scripts/ci-native-firstboot-evidence.mjs'
+      - 'src/lifecycle/native-firstboot-journal.mjs'
       - 'scripts/ci-signed-package-admission-matrix.sh'
       - 'src/lifecycle/native-release-verifier.mjs'
       - 'src/lifecycle/transactional-release.mjs'
