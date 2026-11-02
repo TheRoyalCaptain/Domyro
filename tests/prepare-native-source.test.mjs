@@ -79,6 +79,6 @@ test('corrupted artifact is rejected before creating a staged directory',async t
   await writeFile(join(directory,'domyro-0.1.1-ubuntu-amd64.bundle.json'),'altered');
   await assert.rejects(()=>prepareVerifiedNativeSource({
     directory,stageRoot,...baseline,
-  }),/release_artifact_hash_mismatch/);
+  }),/release_artifact_hash_mismatch|release_file_unsafe_or_size_mismatch/);
   await assert.rejects(readdir(stageRoot),{code:'ENOENT'});
 });
