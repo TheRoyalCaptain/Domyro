@@ -127,7 +127,7 @@ async function main() {
     verified:true,gate:'D-53',version:approved.version,
     architecture:platform,manifestSha256:approved.manifestSha256,
     publisherKeySha256:approved.publisherFingerprint,
-  })+'\\n',{flag:'wx',mode:0o600});
+  })+'\n',{flag:'wx',mode:0o600});
   // Only emit the verified path. The private test signing key is discarded.
   process.stdout.write(join(root, 'releases', staged.version) + '\n');
 }
