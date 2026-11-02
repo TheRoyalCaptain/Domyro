@@ -86,7 +86,7 @@ async function main(){
   });
   process.stdout.write(JSON.stringify(result,null,2)+'\n');
 }
-if(process.argv[1]&&fileURLToPath(import.meta.url)===new URL('file://'+resolve(process.argv[1])).href){
+if(process.argv[1]&&fileURLToPath(import.meta.url)===resolve(process.argv[1])){
   main().catch(error=>{
     console.error('Domyro release manager refused: '+error.message);
     process.exitCode=1;
