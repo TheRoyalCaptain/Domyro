@@ -11,6 +11,7 @@ Domyro's `src/lifecycle/transactional-release.mjs` already verifies an Ed25519-s
 - **Signed file integrity:** every signed source file must be a regular, single-linked, non-symlink file, must not be group/world writable and must match the signed bytes. Hardlinks to external paths are rejected.
 - **Directory inventory and permissions:** unexpected directories, including empty ones, are rejected. Release and nested source directories must not be group/world writable.
 - **Rollback preflight:** if a previous release is active, its entire signed inventory is re-verified **before** the candidate pointer can be changed. A corrupted previous version prevents the update and the candidate probe is never invoked.
+- **Failed rollback detection:** after an unsuccessful candidate probe, the previous signed source tree is verified again. If it was corrupted during the probe, the caller receives a distinct critical recovery error rather than a misleading successful-rollback report. The isolated activation lock is still cleaned up even if recovery fails.
 - **Explicit non-production result:** a successful isolated switch reports `installationApproved:false` and `gate:'D-53'`, so a test result cannot be mistaken for production authorization.
 
 Regression tests live in `tests/transactional-release-hardening.test.mjs`, and run as part of the existing Node 22/24, Ubuntu 24.04 amd64/arm64 CI matrix.
