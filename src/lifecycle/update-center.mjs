@@ -101,7 +101,8 @@ export function getDevelopmentUpdateStatus({ currentVersion = '0.1.0-dev.1' } = 
   return Object.freeze({
     service: 'domyro', currentVersion, state: 'release_feed_not_configured',
     targetVersion: null, verifiedPublisherSignature: false,
-    checksImplemented: true, signedFeedConfigured: false,
+    checksImplemented: true, manualReleaseCheckAvailable: true,
+    automaticReleaseCheckRunning: false, signedFeedConfigured: false,
     downloadImplemented: false, manualInstallerImplemented: false,
     installAllowed: false, automaticInstall: false, installationGate: 'D-53',
     blockers: Object.freeze([
