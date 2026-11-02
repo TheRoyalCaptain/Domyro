@@ -44,8 +44,8 @@ jobs:
         run: bash scripts/ci-native-account-test.sh
 
   native-postgres-onboarding:
-    name: CI-only native PostgreSQL + owner / \${{ matrix.os }}
-    runs-on: \${{ matrix.os }}
+    name: CI-only native PostgreSQL + owner / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
