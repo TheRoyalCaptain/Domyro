@@ -6,6 +6,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createDbSession, resolveDbSession, revokeDbSession, hashPassword, verifyPassword, hashSessionToken } from './credentials.mjs';
 import { listSitesForUser, listAreasForUser, createAreaForUser } from '../persistence/site-repository.mjs';
 import { getDevelopmentUpdateStatus } from '../lifecycle/update-center.mjs';
+import { listZigbeeDevicesForUser, listZigbeeStateForUser } from '../persistence/zigbee-repository.mjs';
 
 const LOGIN = /^[a-z0-9][a-z0-9._-]{2,63}$/;
 const LOCAL_HOST = /^(?:localhost|127\.0\.0\.1|\[::1\])(?::[0-9]{1,5})?$/;
@@ -111,7 +112,7 @@ export async function createLocalAuthService(db, sendJson) {
       const known = pathname === '/api/v1/system/updates' || pathname === '/api/v1/system/updates/install' ||
         pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/logout' ||
         pathname === '/api/v1/auth/me' || pathname === '/api/v1/sites' ||
-        /^\/api\/v1\/sites\/[^/]+\/areas$/.test(pathname);
+        /^\/api\/v1\/sites\/[^/]+\/(?:areas|devices)$/.test(pathname);
       if (!known) return false;
 
       if (!localRequest(req)) { sendJson(res, 403, { error: 'loopback_required' }); return true; }
@@ -196,6 +197,44 @@ export async function createLocalAuthService(db, sendJson) {
       if (pathname === '/api/v1/sites') {
         if (req.method !== 'GET') { sendJson(res, 405, { error: 'method_not_allowed' }); return true; }
         sendJson(res, 200, { sites: await listSitesForUser(db, actor.user_id) }); return true;
+      }
+
+      // Read-only device inventory. Reuse the authenticated user's site
+      // membership scoping from the persistence repository. Never expose a
+      // broker URL, credentials or any publish/control endpoint.
+      const deviceMatch = /^\/api\/v1\/sites\/([^/]+)\/devices$/.exec(pathname);
+      if (deviceMatch) {
+        if (!UUID.test(deviceMatch[1])) {
+          sendJson(res, 404, { error: 'not_found' }); return true;
+        }
+        if (req.method !== 'GET') {
+          sendJson(res, 405, { error: 'method_not_allowed' }); return true;
+        }
+        try {
+          const siteId=deviceMatch[1];
+          const devices=await listZigbeeDevicesForUser(db,actor.user_id,siteId);
+          const states=await listZigbeeStateForUser(db,actor.user_id,siteId);
+          const byId=new Map(devices.map(d=>[d.external_id,{
+            id:d.id,ieeeAddress:d.external_id,friendlyName:d.friendly_name,
+            model:d.model,vendor:d.vendor,supported:d.supported,
+            observations:Object.create(null),
+          }]));
+          for(const item of states) {
+            const device=byId.get(item.external_id);
+            if(!device ||
+              !['state','temperature','humidity','battery','occupancy','contact',
+                'water_leak','brightness','linkquality'].includes(item.field))continue;
+            const observedAt=new Date(item.observed_at).toISOString();
+            device.observations[item.field]={
+              value:item.value_json,quality:item.quality,observedAt,
+            };
+          }
+          sendJson(res,200,{siteId,readOnly:true,
+            devices:[...byId.values()]});
+        } catch {
+          sendJson(res,503,{error:'device_inventory_unavailable'});
+        }
+        return true;
       }
 
       const match = /^\/api\/v1\/sites\/([^/]+)\/areas$/.exec(pathname);
