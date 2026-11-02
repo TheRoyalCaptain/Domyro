@@ -27,9 +27,18 @@ const run=(file,args,timeout=TIMEOUT)=>{
 const sudo=(...args)=>run('sudo',args);
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function request(path,options={}){
-  const response=await fetch(BASE+path,{...options,signal:AbortSignal.timeout(5000)});
-  let body={};try{body=await response.json();}catch{}
-  return {status:response.status,body,cookie:response.headers.get('set-cookie')};
+  // Restarting a real native systemd process invalidates old HTTP keep-alives.
+  // Retry only transport disconnects; never hide an actual HTTP error.
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const response=await fetch(BASE+path,{...options,signal:AbortSignal.timeout(5000)});
+      let body={};try{body=await response.json();}catch{}
+      return {status:response.status,body,cookie:response.headers.get('set-cookie')};
+    }catch(error){
+      if(attempt===2)throw error;
+      await sleep(150);
+    }
+  }
 }
 async function wait(){
   for(let i=0;i<40;i++){
@@ -175,6 +184,7 @@ async function testNative(){
     '--refresh-native-preview');
   if(!again.includes('UPDATED: native preview running'))
     throw Error('ci_native_refresh_second_update_failed');
+  await wait();
   const afterRecover=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
   if(afterRecover.status!==200||afterRecover.body.areas?.[0]?.id!==firstRoomId)
     throw Error('ci_native_refresh_recovery_followup_lost_data');
