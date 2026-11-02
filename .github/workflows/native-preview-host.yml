@@ -2,6 +2,7 @@ name: Docker-free native Ubuntu server portal
 on:
   pull_request:
     paths:
+      - 'scripts/native-preview-setup.sh'
       - 'scripts/native-preview-install.sh'
       - 'scripts/native-preview-refresh.sh'
       - 'scripts/native-preview-recover.sh'
@@ -32,18 +33,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install ONLY native Ubuntu PostgreSQL (no Docker, no containers)
+      - name: Check native Ubuntu host is isolated; no Docker setup
         run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client
-          sudo systemctl enable --now postgresql.service
-          sudo -u postgres psql -X -qAt -d postgres -c "SELECT current_setting('server_version_num')"
-      - name: Prepare locked Node dependencies outside root context
-        run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+          test -d /run/systemd/system
+          node --version
+          bash -n scripts/native-preview-setup.sh
       - name: Reject invalid native setup script before privileged test
         run: |
-          bash -n scripts/native-preview-install.sh scripts/native-preview-refresh.sh scripts/native-preview-recover.sh
+          bash -n scripts/native-preview-setup.sh scripts/native-preview-install.sh scripts/native-preview-refresh.sh scripts/native-preview-recover.sh
           node --check scripts/ci-native-preview-smoke.mjs
       - name: Run Docker-free native installation and authenticated portal smoke
         run: node scripts/ci-native-preview-smoke.mjs
