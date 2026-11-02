@@ -76,7 +76,9 @@ HEALTHY=0
 for _ in $(seq 1 30);do
   if systemctl is-active --quiet "$UNIT.service" &&
      curl -fsS --max-time 2 http://127.0.0.1:8844/api/v1/health/live 2>/dev/null |
-       grep -q '"status":"alive"';then
+       grep -q '"status":"alive"' &&
+       curl -fsS --max-time 3 http://127.0.0.1:8844/api/v1/public/status 2>/dev/null |
+       grep -q '"persistence":"ready"';then
     HEALTHY=1;break
   fi
   sleep 1
