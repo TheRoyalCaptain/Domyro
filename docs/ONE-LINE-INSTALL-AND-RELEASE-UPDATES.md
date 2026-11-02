@@ -17,6 +17,30 @@ De nieuwe release-infrastructuur is daadwerkelijk geprogrammeerd:
 
 **De publieke uitgeverssleutel is opzettelijk nog niet ingesteld.** `config/release-publisher.json` heeft `configured:false`. Er is geen officiële productiesleutel of ondertekend publiek releasepakket dat Domyro voor installatie kan gebruiken.
 
+## Nu vanuit de ingelogde webportal: handmatig controleren
+
+Onder **Systeemupdates** in `/login` staat nu een knop
+**Controleer op nieuwe releases**. Alleen een aangemelde eigenaar/beheerder kan
+de bijbehorende `POST /api/v1/system/updates/check`-API gebruiken.
+Die vereist dezelfde lokale browserorigin en sessiegebonden CSRF als alle andere
+schrijfacties.
+
+Bij het indrukken raadpleegt de backend de publieke GitHub Releases API.
+De gegevens worden **uitsluitend als onbevestigde release-informatie** getoond.
+Een gevonden versie is dus géén vertrouwde handtekening of installatiebewijs.
+Een nieuwere versie mag daardoor niet worden gedownload of geactiveerd door
+deze portalroute. Er is geen automatische achtergrondcontrole; maximaal één
+netwerkcontrole per 30 seconden en slechts één gelijktijdige controle.
+
+De getoonde huidige versie wordt nu in alle API's en het dashboard
+afgeleid van de **werkelijk geïnstalleerde `package.json`** in plaats van
+hardcoded in meerdere bronbestanden. Dat voorkomt verkeerde vergelijkingen
+na toekomstige releases.
+
+De knop **Update installeren** blijft uitgeschakeld zolang de officiële
+uitgeverssleutel, uitvoerings- en back-upcontroles ontbreken; een directe
+`POST /api/v1/system/updates/install` blijft onder D-53 geblokkeerd.
+
 ## Nog niet af: noodzakelijke route naar één commando
 
 Voor het daadwerkelijk beschikbaar stellen van het installatiecommando zijn nog verplicht:
