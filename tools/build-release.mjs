@@ -11,6 +11,9 @@ import { fileURLToPath } from 'node:url';
 import { verifySignedManifest, verifyArtifactBytes } from '../src/lifecycle/release.mjs';
 
 const ROOT_FILES = Object.freeze(['package.json', 'package-lock.json']);
+// Only these two CLI tools are shipped for explicitly approved first-time setup.
+// CI scripts, signing tools and test fixtures are NEVER part of a release bundle.
+const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs']);
 const ROOT_DIRS = Object.freeze(['src', 'web']);
 const EXTENSIONS = new Set(['.mjs', '.js', '.json', '.sql', '.html', '.css', '.svg']);
 const FILE_LIMIT = 8 * 1024 * 1024;
@@ -51,13 +54,14 @@ async function collectFiles(projectRoot) {
     }
   }
   for (const path of ROOT_FILES) await addFile(path);
+  for (const path of RUNTIME_SCRIPTS) await addFile(path);
   for (const path of ROOT_DIRS) await walk(path);
   const required = [
     'src/server.mjs', 'src/lib/http.mjs', 'src/security/http-auth.mjs',
     'src/persistence/migrator.mjs', 'src/lifecycle/release.mjs',
     'web/index.html', 'web/login.html', 'web/assets/app.js',
     'web/assets/login.js', 'web/assets/styles.css',
-    'package-lock.json',
+    'package-lock.json', 'scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs',
   ];
   const names = new Set(collected.map(x => x.path));
   for (const file of required) if (!names.has(file)) throw new Error('release_missing_required_file:' + file);
