@@ -52,6 +52,13 @@ test('draft systemd unit only produces text, binds to loopback, and never execut
   assert.match(unit,/Environment=DOMYRO_HOST=127\.0\.0\.1/);
   assert.match(unit,/NoNewPrivileges=yes/);
   assert.match(unit,/ProtectSystem=strict/);
+  assert.match(unit,/CapabilityBoundingSet=/);
+  assert.match(unit,/AmbientCapabilities=/);
+  assert.match(unit,/ProtectKernelTunables=yes/);
+  assert.match(unit,/ProtectKernelModules=yes/);
+  assert.match(unit,/ProtectControlGroups=yes/);
+  assert.match(unit,/RestrictSUIDSGID=yes/);
+  assert.match(unit,/LockPersonality=yes/);
   assert.match(unit,/DRAFT \(NOT production\)/);
   assert.throws(()=>renderNativeSystemdDraft({port:22}),/invalid_native_systemd_port/);
   assert.throws(()=>renderNativeSystemdDraft({port:65536}),/invalid_native_systemd_port/);
