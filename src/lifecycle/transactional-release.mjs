@@ -286,7 +286,7 @@ export async function inspectInterruptedActivation({root,trustedPublicKeyPem}) {
   // Unlike staging, inspection must not create an absent directory.
   await lstat(resolve(root));
   const base=await safeRoot(root);
-  if(await readFile(join(base,MARKER),'utf8')!=='Domyro isolated release prototype v1\\n')
+  if(await readFile(join(base,MARKER),'utf8')!=='Domyro isolated release prototype v1\n')
     throw new Error('invalid_release_root_marker');
   const intent=await readActivationIntent(base);
   const lockPresent=await lstat(join(base,'.activation.lock')).then(()=>true,e=>{
