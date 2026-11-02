@@ -91,6 +91,9 @@ rollback(){
   trap - ERR
   log "Native preview refresh failed; attempting old-code recovery."
   systemctl stop "$UNIT.service" >/dev/null 2>&1 || true
+  # A crashing candidate can exhaust StartLimitBurst. Reset the failed
+  # state BEFORE starting restored old code, otherwise rollback stays down.
+  systemctl reset-failed "$UNIT.service" >/dev/null 2>&1 || true
   if [[ -d "$BACKUP" ]];then
     if [[ -d "$APP" && ! -e "$REJECTED" && ! -L "$REJECTED" ]];then
       mv -T -- "$APP" "$REJECTED" || true
