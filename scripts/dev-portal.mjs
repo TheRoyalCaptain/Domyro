@@ -216,10 +216,11 @@ async function start(){
   const stop=()=>{if(child.exitCode===null)child.kill('SIGTERM');};
   process.once('SIGINT',stop);
   process.once('SIGTERM',stop);
-  await new Promise((resolve,reject)=>{
+  const code=await new Promise((resolve,reject)=>{
     child.once('exit',code=>resolve(code));
     child.once('error',reject);
   });
+  if(code!==0)process.exitCode=code??1;
 }
 async function stop(){
   if(resolve(process.cwd())!==REPO||process.getuid?.()===0){
