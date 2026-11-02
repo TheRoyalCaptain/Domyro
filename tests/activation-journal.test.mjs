@@ -138,7 +138,7 @@ test('tampering with a persisted intent during the health probe is a critical fa
   await assert.rejects(()=>switchTo(root,'0.1.1',async()=>{
     const value=JSON.parse(await readFile(path,'utf8'));
     value.target='0.1.2';
-    await writeFile(path,JSON.stringify(value)+'\\n');
+    await writeFile(path,JSON.stringify(value)+'\n');
     return true;
   }),/rollback_integrity_or_cleanup_failed/);
   assert.equal(await inspectActiveBundle(root),'0.1.0');
