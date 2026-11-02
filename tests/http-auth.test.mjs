@@ -100,7 +100,7 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   assert.equal((await post(areasPath, { displayName: 'Woonkamer' }, { origin: 'http://evil.example', 'x-domyro-csrf': token.csrfToken }, sessionCookie)).status, 403);
   const created = await post(areasPath, { displayName: 'Woonkamer' }, { 'x-domyro-csrf': token.csrfToken }, sessionCookie);
   assert.equal(created.status, 201);
-  assert.equal((await created.json()).area.display_name, 'Woonkamer');
+  assert.equal((await created.clone().json()).area.display_name, 'Woonkamer');
   // UI CRUD: every change persists through the real authenticated API.
   const mutate=(method,path,body,csrf=token.csrfToken,actor=sessionCookie,origin=base)=>
     fetch(base+path,{method,headers:{
