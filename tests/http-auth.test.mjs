@@ -41,7 +41,16 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   }), /owner_already_initialized/);
   assert.equal((await db.query('SELECT count(*)::int AS n FROM domyro_users')).rows[0].n, 1);
 
-  const auth = await createLocalAuthService(db, sendJson);
+  let releaseDiscoveryCalls=0;
+  const releaseChecker={check:async()=>{
+    releaseDiscoveryCalls++;
+    return {
+      state:'newer_release_advertised',currentVersion:'0.1.0-dev.1',
+      latestVersion:'0.1.1',source:'github_release_metadata_unverified',
+      installAllowed:false,verifiedPublisherSignature:false,installationGate:'D-53',
+    };
+  }};
+  const auth = await createLocalAuthService(db, sendJson, {releaseChecker});
   const server = createDomyroServer({
     persistence: { inspect: async () => ({ ready: true, schemaVersion: 2 }) }, auth,
   });
@@ -84,6 +93,25 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   assert.equal(updateState.installAllowed, false);
   assert.equal(updateState.signedFeedConfigured, false);
   assert.equal(updateState.installationGate, 'D-53');
+  const checkPath=updatesPath+'/check';
+  assert.equal((await fetch(base+checkPath)).status,401);
+  assert.equal((await fetch(base+checkPath,{method:'GET',
+    headers:{cookie:sessionCookie}})).status,405);
+  assert.equal((await post(checkPath,{}, {}, sessionCookie)).status,403);
+  assert.equal((await post(checkPath,{}, {
+    origin:'http://evil.example','x-domyro-csrf':token.csrfToken,
+  },sessionCookie)).status,403);
+  assert.equal(releaseDiscoveryCalls,0);
+  const checkedRelease=await post(checkPath,{},{
+    'x-domyro-csrf':token.csrfToken,
+  },sessionCookie);
+  assert.equal(checkedRelease.status,200);
+  const checkedResult=await checkedRelease.json();
+  assert.equal(checkedResult.state,'newer_release_advertised');
+  assert.equal(checkedResult.latestVersion,'0.1.1');
+  assert.equal(checkedResult.verifiedPublisherSignature,false);
+  assert.equal(checkedResult.installAllowed,false);
+  assert.equal(releaseDiscoveryCalls,1);
   assert.equal((await post(updatesPath + '/install', { confirmedVersion: '0.1.1' },
     {}, sessionCookie)).status, 403); // CSRF required even though installation is blocked.
   const blockedUpdate = await post(updatesPath + '/install',
@@ -153,6 +181,9 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   const guestMe = await fetch(base + '/api/v1/auth/me', { headers: { cookie: guestCookie } });
   assert.equal(guestMe.status, 200);
   const guestCsrf = (await guestMe.json()).csrfToken;
+  assert.equal((await post('/api/v1/system/updates/check',{},
+    {'x-domyro-csrf':guestCsrf},guestCookie)).status,403);
+  assert.equal(releaseDiscoveryCalls,1);
   assert.equal((await mutate('PATCH',renameRoom,{displayName:'Nope'},guestCsrf,guestCookie)).status,403);
   assert.equal((await mutate('PATCH','/api/v1/sites/'+owner.siteId,{displayName:'Nope'},guestCsrf,guestCookie)).status,403);
   assert.equal((await mutate('POST','/api/v1/sites',{displayName:'Guest own home'},guestCsrf,guestCookie)).status,201);
