@@ -93,7 +93,7 @@ adapter `scripts/ci-native-firstboot-evidence.mjs` leest elke vereiste toestand
 De tests voor de vier normale installatiefouten vergelijken de **persistente
 journal-fase** met de precies verwachte fase bij afbreken. De afzonderlijke
 SIGKILL-proef controleert van buiten het afgebroken installatiescript dat
-`http_login_and_persistence_verified` op schijf is blijven staan. Een
+`config_scratch_restore_verified` op schijf is blijven staan, dus na een werkelijk uitgevoerde versleutelde PostgreSQL-restore én een geselecteerde systemd/runtime-configuratie-restore. Een
 tweede installatiepoging wordt eerst geweigerd zonder het bestaande journal,
 de draaiende service of PostgreSQL te overschrijven. Alleen de buitenliggende
 CI-test voert daarna expliciet de opruiming uit.
@@ -107,3 +107,25 @@ Een toekomstige production installer heeft eigen vergrendelingen,
 transactionele rollback, systeembackup en herstel bij stroomuitval nodig.
 Ook na een succesvol journal mogen D-53 en de beheerdersgoedkeuring niet
 automatisch worden geopend.
+
+### Versleuteld PostgreSQL- en configuratieherstel als verplichte firstbootproef
+
+De twee nieuwe journaling-fases volgen op de daadwerkelijke HTTP-aanmelding:
+
+`http_login_and_persistence_verified` →
+`postgres_scratch_restore_verified` →
+`config_scratch_restore_verified` →
+`test_completed`.
+
+Een PostgreSQL-back-up in `DOMYROS2` moet correct naar een lege,
+run-specifieke testdatabase zijn hersteld, inclusief behouden user/site/room.
+Daarna moeten **de echte CI runtimeconfiguratie en systemd-unit** eveneens
+versleuteld naar een nieuwe private directory worden teruggezet en
+byte-/hash-identiek zijn. Pas dan mogen de latere faalpunten en
+`test_completed` worden bereikt. De SIGKILL-parent herhaalt beide
+restauraties onafhankelijk. Niets wordt over bestaande installatiepaden
+heen teruggezet.
+
+Dit is een gecontroleerde integratietest van bestaande back-upprimitieven,
+**geen productiegeschikte transactie voor live herstel of een werkende
+distributie-installer**.
