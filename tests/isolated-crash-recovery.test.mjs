@@ -166,3 +166,87 @@ test('unsafe hardlinked stale activation lock blocks recovery without erasing in
   assert.equal(await inspectActiveBundle(root), '0.1.1');
   assert.ok(await readActivationIntent(root));
 });
+
+
+async function killRecoveryAt(root, checkpoint) {
+  const moduleUrl = pathToFileURL(join(process.cwd(), 'src/lifecycle/isolated-crash-recovery.mjs')).href;
+  const script = [
+    'import {rehearseInterruptedPointerRecovery} from ' + JSON.stringify(moduleUrl) + ';',
+    'await rehearseInterruptedPointerRecovery({',
+    "root:process.env.TEST_ROOT, trustedPublicKeyPem:process.env.TEST_PEM,",
+    "confirmedPreviousVersion:'0.1.0', testOnly:true, processExited:true, verifiedBackup:true,",
+    "onTestCheckpoint:async point=>{if(point===process.env.TEST_CHECKPOINT){",
+    "process.stdout.write('RECOVERY_CHECKPOINT\\n',()=>process.kill(process.pid,'SIGKILL'));",
+    "await new Promise(()=>{});",
+    "}}",
+    '});',
+  ].join('\n');
+  const child = spawn(process.execPath, ['--input-type=module', '--eval', script], {
+    cwd: process.cwd(),
+    env: { ...process.env, TEST_ROOT: root, TEST_PEM: trustedPublicKeyPem, TEST_CHECKPOINT: checkpoint },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let stdout = '', stderr = '';
+  child.stdout.on('data', x => { stdout += x; });
+  child.stderr.on('data', x => { stderr += x; });
+  const result = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      child.kill('SIGKILL');
+      reject(new Error('recovery_child_timeout'));
+    }, 12000);
+    child.once('error', error => { clearTimeout(timer); reject(error); });
+    child.once('exit', (code, signal) => { clearTimeout(timer); resolve({ code, signal }); });
+  });
+  assert.equal(result.signal, 'SIGKILL', stderr);
+  assert.match(stdout, /RECOVERY_CHECKPOINT/, stderr);
+}
+
+for (const checkpoint of ['pointer_restored', 'activation_lock_removed']) {
+  test('SIGKILL during offline recovery at ' + checkpoint + ' leaves durable intent and permits explicit retry', async t => {
+    const root = await interruptedFixture(t);
+    await killRecoveryAt(root, checkpoint);
+    assert.equal(await inspectActiveBundle(root), '0.1.0');
+    assert.ok(await readActivationIntent(root));
+    // A killed process leaves its exclusive recovery lock. An operator must
+    // inspect and remove it; the application must never auto-clear it.
+    assert.equal((await lstat(join(root, '.recovery.lock'))).isFile(), true);
+    await assert.rejects(() => recover(root), { code: 'EEXIST' });
+    await unlink(join(root, '.recovery.lock'));
+    const result = await recover(root);
+    assert.equal(result.active, '0.1.0');
+    assert.equal(result.productionRecoveryApproved, false);
+    assert.equal((await inspectInterruptedActivation({ root, trustedPublicKeyPem })).state, 'clean');
+    for (const name of ['.activation-intent.json', '.activation.lock', '.recovery.lock']) {
+      await absent(join(root, name));
+    }
+  });
+}
+
+test('recovery never unlinks a substituted recovery lock inode', async t => {
+  const root = await interruptedFixture(t);
+  const lockPath = join(root, '.recovery.lock');
+  await assert.rejects(() => recover(root, {
+    onTestCheckpoint: async point => {
+      if (point === 'pointer_restored') {
+        await unlink(lockPath);
+        await writeFile(lockPath, 'replacement', { flag: 'wx', mode: 0o600 });
+      }
+    },
+  }), /isolated_recovery_lock_changed/);
+  assert.equal((await lstat(lockPath)).isFile(), true);
+  assert.ok(await readActivationIntent(root));
+  assert.equal(await inspectActiveBundle(root), '0.1.0');
+  await assert.rejects(() => recover(root), { code: 'EEXIST' });
+  await unlink(lockPath);
+  const result = await recover(root);
+  assert.equal(result.active, '0.1.0');
+  assert.equal((await inspectInterruptedActivation({ root, trustedPublicKeyPem })).state, 'clean');
+});
+
+test('recovery rejects nonfunction test checkpoint before creating a lock', async t => {
+  const root = await interruptedFixture(t);
+  await assert.rejects(() => recover(root, { onTestCheckpoint: 'not-a-function' }),
+    /isolated_recovery_invalid_test_checkpoint/);
+  await absent(join(root, '.recovery.lock'));
+  assert.ok(await readActivationIntent(root));
+});
