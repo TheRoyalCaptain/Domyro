@@ -3,6 +3,7 @@
 // CI ONLY, disposable GitHub-hosted Ubuntu 24.04 native PostgreSQL + systemd.
 // Docker/containerization is expressly NOT used in the native preview.
 import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 
@@ -209,6 +210,14 @@ async function testNative(){
       ' stderr_tail='+JSON.stringify((declined.stderr??'').slice(-250)));
   }
   await wait();
+  const originalSha=createHash('sha256').update(originalSource).digest('hex');
+  const restoredSha=sudo('sha256sum',INSTALL+'/src/server.mjs').split(/\s+/)[0];
+  if(restoredSha!==originalSha)
+    throw Error('ci_native_refresh_restored_version_bytes_do_not_match_original');
+  const pendingAfter=spawnSync('sudo',['test','-e',
+    '/opt/domyro-preview-native-history/.pending-refresh'],{timeout:5000});
+  if(pendingAfter.status===0)
+    throw Error('ci_native_refresh_auto_rollback_left_pending_journal');
   const rollbackData=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
   if(rollbackData.status!==200||rollbackData.body.areas?.[0]?.id!==firstRoomId)
     throw Error('ci_native_refresh_failed_candidate_lost_rooms');
