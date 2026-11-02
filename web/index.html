@@ -21,6 +21,7 @@
       <nav class="nav">
         <a class="nav-item current" href="#overview"><span class="nav-dot"></span><span data-i18n="overview">Overzicht</span></a>
         <a class="nav-item" href="#status"><span class="nav-dot"></span><span data-i18n="health">Systeemstatus</span></a>
+        <a class="nav-item" href="#homes"><span class="nav-dot"></span><span data-i18n="myHomes">Mijn woningen</span></a>
         <a class="nav-item" href="#devices"><span class="nav-dot"></span><span data-i18n="myDevices">Mijn apparaten</span></a>
         <a class="nav-item" href="#next"><span class="nav-dot"></span><span data-i18n="next">Volgende stappen</span></a>
         <a class="nav-item" href="/login"><span class="nav-dot"></span><span>Lokale testaanmelding</span></a>
@@ -39,6 +40,15 @@
         <section id="status" class="section" aria-labelledby="status-heading"><div class="section-header"><div><h2 id="status-heading" data-i18n="system">Systeemoverzicht</h2><p data-i18n="live">Rechtstreeks uit je lokale Domyro-server. Geen verzonnen apparaten of statistieken.</p></div><button class="refresh" id="refresh" type="button"><span aria-hidden="true">↻</span> <span data-i18n="refresh">Verversen</span></button></div>
         <div class="stats"><article class="stat"><div class="stat-icon">◈</div><div class="stat-label" data-i18n="core">Core server</div><div class="stat-value" id="core-status" aria-live="polite">…</div><div class="stat-sub" data-i18n="coreSub">Lokale HTTP-dienst</div></article><article class="stat"><div class="stat-icon">▤</div><div class="stat-label" data-i18n="database">Database</div><div class="stat-value" id="db-status">…</div><div class="stat-sub" data-i18n="dbSub">PostgreSQL-koppeling gepland</div></article><article class="stat"><div class="stat-icon">⌁</div><div class="stat-label" data-i18n="devices">Apparaten</div><div class="stat-value" id="device-status">…</div><div class="stat-sub" data-i18n="devicesSub">Nog geen integraties geactiveerd</div></article></div>
         <p class="checked" id="checked" role="status" aria-live="polite"></p></section>
+        <section id="homes" class="section" aria-labelledby="homes-heading">
+          <div class="section-header">
+            <div><h2 id="homes-heading" data-i18n="myHomes">Mijn woningen</h2>
+              <p data-i18n="homesHelp">Echt opgeslagen woningen en kamers van jouw lokale account.</p></div>
+            <a class="home-manage" href="/login" data-i18n="manageHomes">Beheer woningen ↗</a>
+          </div>
+          <p id="homes-message" class="checked" role="status" aria-live="polite"></p>
+          <div id="homes-list" class="home-grid" aria-label="Eigen woningen"></div>
+        </section>
         <section id="devices" class="section" aria-labelledby="devices-heading">
           <div class="section-header"><div>
             <h2 id="devices-heading" data-i18n="myDevices">Mijn apparaten</h2>
