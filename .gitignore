@@ -7,3 +7,6 @@ coverage/
 *.log
 .DS_Store
 *.local
+
+# Local preview PostgreSQL secrets, unique Docker instance state and owner password
+.domyro-preview/
