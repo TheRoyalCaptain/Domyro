@@ -4,6 +4,8 @@
  * No command, pairing, permit_join, /set or /request topics can be published.
  * Does not change coordinator ownership, HA, or existing Zigbee2MQTT settings.
  */
+import { parseSafeZigbeeControls } from './zigbee2mqtt-capabilities.mjs';
+
 const IEEE = /^0x[0-9a-f]{16}$/i;
 const FRIENDLY = /^[^\u0000-\u001f\u007f+#]{1,128}$/;
 const MAX_DEVICES = 256, MAX_BYTES = 64 * 1024;
@@ -49,6 +51,8 @@ function cleanDevice(item) {
     vendor: typeof item.definition?.vendor === 'string' ? item.definition.vendor.slice(0, 100) : null,
     supported: item.supported === true && item.disabled !== true,
     kind: ['Router', 'EndDevice', 'Coordinator'].includes(item.type) ? item.type : 'unknown',
+    controls: item.supported === true && item.disabled !== true
+      ? parseSafeZigbeeControls(item.definition?.exposes ?? item.exposes) : Object.freeze({}),
   };
 }
 function snapshotRow(device) {
