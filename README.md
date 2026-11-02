@@ -31,6 +31,49 @@ Domyro is an open-source, local-first smart-home platform under active developme
 - Home Assistant bridge only for transition and subsequent migration assistance.
 - AI and speech deliberately follow a reliable base.
 
+## Ubuntu SERVER preview: native PostgreSQL + systemd, **no Docker**
+
+Domyro now has a **separate opt-in native Ubuntu 24.04 server preview**.
+It runs the actual web UI, authenticated HTTP backend and persisted
+PostgreSQL 16/17 data without Docker, containers or a Node development
+terminal kept open. PostgreSQL is a regular Ubuntu service, Domyro is a
+hardened `domyro-preview-native.service` that starts on boot.
+
+**This is an explicitly marked server-development preview, NOT the
+production one-line installer and NOT an automatic signed-release updater.**
+It must be deliberately installed on a separate non-production Ubuntu
+24.04 host. Docker is *not* required or used.
+
+Prerequisites installed natively: Node.js >=22.12, npm, PostgreSQL >=16,
+systemd, git and curl. In a normal user's SSH terminal:
+
+```bash
+git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
+cd Domyro
+npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+sudo bash scripts/native-preview-install.sh --install-native-preview
+```
+
+Access it via a localhost SSH tunnel, with **no public HTTP port**:
+`ssh -L 8844:127.0.0.1:8844 USER@SERVER`, then visit
+`http://127.0.0.1:8844/login` on your PC. Account:
+`native_preview_owner`, password:
+`sudo cat /etc/domyro-preview-native/owner-password.txt` on the server.
+
+For manual cosmetic/backend revisions (no database schema changes):
+`git pull --ff-only`, `npm ci --omit=dev --ignore-scripts --no-audit --no-fund`,
+then `sudo bash scripts/native-preview-refresh.sh --refresh-native-preview`.
+The previous application directory is saved under
+`/opt/domyro-preview-native-history`, with best-effort code rollback
+if the newly restarted service fails health checks.
+
+**Native-only automated acceptance:** a dedicated GitHub Actions workflow
+tests actual Ubuntu AMD64/ARM64 host PostgreSQL and systemd with **no
+Docker**. It verifies login, homes/rooms persisted after restart,
+loopback-only listening, a restricted DB role, manual refresh, and
+pre-existing install refusal. Details:
+[Docker-free native server portal](docs/NATIVE-SERVER-PORTAL-NO-DOCKER.md).
+
 ## Visual design portal with a real backend (separate development PC)
 
 **New:** the integration branch has a complete opt-in localhost visual portal, backed by its **own** isolated PostgreSQL 17 Docker container. It is designed for UI review, not for deployment to the owner's production Domyro/Home Assistant host. Docker Engine and Node.js 22.12+ must already be installed on a separate development computer.
