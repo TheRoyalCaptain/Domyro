@@ -134,6 +134,11 @@ export async function createFirstBootIntent({
     await writeExclusiveIntent(root,value);
     safeToUnlock = true;
     return status(Object.freeze(value));
+  } catch (error) {
+    // Exclusive open refused an existing intent BEFORE writing anything.
+    // The existing verified journal must remain readable, not become locked.
+    if (error.code === 'EEXIST') safeToUnlock = true;
+    throw error;
   } finally {
     // On uncertain durability the crash-visible lock must remain.
     if (safeToUnlock) {
