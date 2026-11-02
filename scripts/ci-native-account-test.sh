@@ -254,7 +254,7 @@ fi
 # An explicit external recovery worker must investigate the surviving resources.
 if [[ "$CI_FAILPOINT" == after-unit-start-sigkill ]]; then
   echo "Simulating abrupt installer death after verified service startup" >&2
-  kill -s KILL "$"
+  kill -s KILL "$BASHPID"
 fi
 ci_fault after-unit-start
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
