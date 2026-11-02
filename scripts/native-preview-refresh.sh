@@ -9,6 +9,7 @@ APP=/opt/domyro-preview-native
 CONF=/etc/domyro-preview-native
 HISTORY=/opt/domyro-preview-native-history
 LOCKROOT=/run/domyro-preview-native
+JOURNAL="$HISTORY/.pending-refresh"
 STAGE=""
 BACKUP=""
 SWAPPED=0
@@ -21,7 +22,7 @@ need(){ command -v "$1" >/dev/null 2>&1 || die "missing executable: $1"; }
 . /etc/os-release
 [[ "$ID" == ubuntu && "$VERSION_ID" == 24.04 && -d /run/systemd/system ]] ||
   die "Ubuntu 24.04 systemd host required"
-for cmd in node npm systemctl flock install realpath cp chown chmod curl find stat;do need "$cmd";done
+for cmd in node npm systemctl flock install realpath cp chown chmod curl find stat mv sync rm;do need "$cmd";done
 [[ -d "$APP" && ! -L "$APP" && -f "$APP/src/server.mjs" &&
    -d "$CONF" && ! -L "$CONF" &&
    -f "$CONF/migration.env" && ! -L "$CONF/migration.env" &&
@@ -46,15 +47,19 @@ for cmd in node npm systemctl flock install realpath cp chown chmod curl find st
 [[ ! -L "$LOCKROOT" && ! -L "$HISTORY" ]] ||
   die "unexpected symlink in private lifecycle state"
 install -d -o root -g root -m 0700 "$LOCKROOT" "$HISTORY"
-[[ "$(stat -c %a "$HISTORY")" == 700 &&
-   "$(stat -c %U "$HISTORY")" == root ]] ||
-  die "private release history unsafe"
+[[ "$(stat -c %U:%a "$HISTORY")" == root:700 &&
+   "$(stat -c %U:%a "$LOCKROOT")" == root:700 ]] ||
+  die "private release history or lock directory unsafe"
+[[ ! -e "$JOURNAL" && ! -L "$JOURNAL" ]] ||
+  die "interrupted native refresh exists; run native-preview-recover.sh first"
 exec 9>"$LOCKROOT/refresh.lock"
 flock -n 9 || die "native preview refresh already running"
 NOW="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 STAGE="/opt/.domyro-preview-native-stage-$NOW"
 BACKUP="$HISTORY/$NOW"
-[[ ! -e "$STAGE" && ! -L "$STAGE" && ! -e "$BACKUP" && ! -L "$BACKUP" ]] ||
+REJECTED="$HISTORY/.rejected-$NOW"
+[[ ! -e "$STAGE" && ! -L "$STAGE" && ! -e "$BACKUP" && ! -L "$BACKUP" &&
+   ! -e "$REJECTED" && ! -L "$REJECTED" ]] ||
   die "candidate or history collision"
 install -d -o root -g root -m 0755 "$STAGE"
 cp -a -- src web scripts node_modules package.json package-lock.json "$STAGE/"
@@ -74,34 +79,75 @@ set +a
   node scripts/migrate-db.mjs --check >/dev/null
 ) || die "schema changed, absent or incompatible; refusing to touch service"
 unset DOMYRO_DATABASE_URL
+# Persist a private activation intent before any service disruption. A power
+# loss or SIGKILL leaves evidence for explicit recovery, not silent overwrite.
+printf '%s\n' "$NOW" > "$HISTORY/.pending-refresh.tmp-$NOW"
+chmod 0600 "$HISTORY/.pending-refresh.tmp-$NOW"
+sync -f "$HISTORY/.pending-refresh.tmp-$NOW"
+mv -T -- "$HISTORY/.pending-refresh.tmp-$NOW" "$JOURNAL"
+sync -f "$HISTORY"
 rollback(){
-  local code="$1"
+  local code="$1" previous_healthy=0
   trap - ERR
-  if [[ "$SWAPPED" == 1 || -d "$BACKUP" ]];then
-    log "Health/restart failed; restoring the old release directory."
-    systemctl stop "$UNIT.service" >/dev/null 2>&1 || true
-    if [[ -d "$APP" ]];then mv -- "$APP" "$STAGE.rejected" || true;fi
-    if [[ -d "$BACKUP" ]];then mv -- "$BACKUP" "$APP" || true;fi
+  log "Native preview refresh failed; attempting old-code recovery."
+  systemctl stop "$UNIT.service" >/dev/null 2>&1 || true
+  if [[ -d "$BACKUP" ]];then
+    if [[ -d "$APP" && ! -e "$REJECTED" && ! -L "$REJECTED" ]];then
+      mv -T -- "$APP" "$REJECTED" || true
+    fi
+    if [[ ! -e "$APP" ]];then mv -T -- "$BACKUP" "$APP" || true;fi
+  fi
+  if [[ -d "$APP" ]];then
     systemctl start "$UNIT.service" >/dev/null 2>&1 || true
-    log "Rollback attempted; inspect systemctl status $UNIT"
+    for _ in $(seq 1 12);do
+      if systemctl is-active --quiet "$UNIT.service" &&
+         curl -fsS --max-time 2 http://127.0.0.1:8844/api/v1/health/live 2>/dev/null |
+           grep -q '"status":"alive"';then previous_healthy=1;break;fi
+      sleep 1
+    done
+  fi
+  if [[ "$previous_healthy" == 1 && -f "$JOURNAL" ]];then
+    rm -- "$JOURNAL"
+    sync -f "$HISTORY"
+    log "Previous native preview restored and healthy."
+  else
+    log "Recovery incomplete; journal retained. Use native-preview-recover.sh."
   fi
   exit "$code"
 }
 trap 'rollback $?' ERR
 log "Verified candidate and matching database schema. Restarting native preview."
 systemctl stop "$UNIT.service"
-mv -- "$APP" "$BACKUP"
-mv -- "$STAGE" "$APP"
+mv -T -- "$APP" "$BACKUP"
+sync -f /opt
+sync -f "$HISTORY"
+# The crash test must be impossible to enable on an ordinary user host.
+if [[ -n "${DOMYRO_CI_NATIVE_REFRESH_FAULT:-}" ]];then
+  [[ "$DOMYRO_CI_NATIVE_REFRESH_FAULT" == after-old-moved &&
+     "${GITHUB_ACTIONS:-}" == true &&
+     "${RUNNER_ENVIRONMENT:-}" == github-hosted &&
+     "${RUNNER_OS:-}" == Linux &&
+     "${DOMYRO_CI_NATIVE_PREVIEW:-}" == 1 &&
+     "${GITHUB_WORKSPACE:-}" == /home/runner/work/* &&
+     "$(id -u)" == 0 ]] ||
+    die "CI failure injection denied outside disposable native Ubuntu runner"
+  log "Simulating CI SIGKILL after previous release archived."
+  kill -s KILL "$BASHPID"
+fi
+mv -T -- "$STAGE" "$APP"
+sync -f /opt
 SWAPPED=1
 systemctl start "$UNIT.service"
 LIVE=0
 for _ in $(seq 1 30);do
-  if curl -fsS --max-time 2 http://127.0.0.1:8844/api/v1/health/live 2>/dev/null |
-    grep -q '"status":"alive"';then LIVE=1;break;fi
+  if systemctl is-active --quiet "$UNIT.service" &&
+     curl -fsS --max-time 2 http://127.0.0.1:8844/api/v1/health/live 2>/dev/null |
+       grep -q '"status":"alive"';then LIVE=1;break;fi
   sleep 1
 done
 [[ "$LIVE" == 1 ]] || { log "New preview failed health check";false; }
-[[ "$(systemctl is-active "$UNIT.service")" == active ]]
+rm -- "$JOURNAL"
+sync -f "$HISTORY"
 SWAPPED=0
 trap - ERR
 log "UPDATED: native preview running with preserved PostgreSQL; prior release saved at $BACKUP"
