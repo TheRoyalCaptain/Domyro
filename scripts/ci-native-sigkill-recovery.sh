@@ -3,13 +3,13 @@
 # Disposable GitHub-hosted Ubuntu ONLY: kill the first-install process, prove
 # its running service and user data survive, refuse retry, explicitly clean up.
 set -Eeuo pipefail
-if [[ "$GITHUB_ACTIONS" != true || "$RUNNER_ENVIRONMENT" != github-hosted ||
-      "$RUNNER_OS" != Linux || "$DOMYRO_CI_SYSTEMD_ALLOWED" != 1 ||
-      "$DOMYRO_CI_PG_ONBOARDING" != 1 || "$DOMYRO_CI_FAULT_MATRIX" != 1 ||
-      "$DOMYRO_TEST_DATABASE_URL" != 'postgresql://domyro_test:ci-throwaway-test-only@127.0.0.1:5432/domyro_test' ||
-      "$USER" != runner || "$(id -un)" != runner ||
-      ! "$GITHUB_RUN_ID" =~ ^[0-9]+$ || ! "$GITHUB_RUN_ATTEMPT" =~ ^[0-9]+$ ||
-      "$GITHUB_WORKSPACE" != /home/runner/work/* ]]; then
+if [[ "${GITHUB_ACTIONS:-}" != true || "${RUNNER_ENVIRONMENT:-}" != github-hosted ||
+      "${RUNNER_OS:-}" != Linux || "${DOMYRO_CI_SYSTEMD_ALLOWED:-}" != 1 ||
+      "${DOMYRO_CI_PG_ONBOARDING:-}" != 1 || "${DOMYRO_CI_FAULT_MATRIX:-}" != 1 ||
+      "${DOMYRO_TEST_DATABASE_URL:-}" != 'postgresql://domyro_test:ci-throwaway-test-only@127.0.0.1:5432/domyro_test' ||
+      "${USER:-}" != runner || "$(id -un)" != runner ||
+      ! "${GITHUB_RUN_ID:-}" =~ ^[0-9]+$ || ! "${GITHUB_RUN_ATTEMPT:-}" =~ ^[0-9]+$ ||
+      "${GITHUB_WORKSPACE:-}" != /home/runner/work/* ]]; then
   echo "Refusing native SIGKILL drill outside disposable hosted PostgreSQL CI" >&2
   exit 90
 fi
@@ -48,8 +48,7 @@ database() {
       if(process.env.DOMYRO_CI_CRASH_DB_PHASE==="delete"){
         await db.query("DROP DATABASE IF EXISTS \""+name+"\" WITH (FORCE)");
         await db.query("DROP ROLE IF EXISTS \""+role+"\"");
-        return;
-      }
+      }else{
       const response=await db.query(
         "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname=$1) AS d, "+
         "EXISTS(SELECT 1 FROM pg_roles WHERE rolname=$2) AS r",[name,role]);
@@ -67,6 +66,7 @@ database() {
           if(counts.rows[0].users!==1||counts.rows[0].rooms!==1)throw Error("ci_owner_data_lost");
         }finally{await app.end();}
       }else throw Error("ci_unknown_database_probe");
+      }
     }finally{await db.end();}
   '
 }
