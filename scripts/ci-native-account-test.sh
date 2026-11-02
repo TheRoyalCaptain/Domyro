@@ -52,7 +52,7 @@ CI_PG_MODE="${DOMYRO_CI_PG_ONBOARDING:-0}"
 CI_FAILPOINT="${DOMYRO_CI_FAILPOINT:-}"
 # Controlled failure injection is limited to disposable PostgreSQL integration CI.
 case "$CI_FAILPOINT" in
-  ''|after-db-bootstrap|after-db-role|after-unit-start|after-restart) ;;
+  ''|after-db-bootstrap|after-db-role|after-unit-start|after-unit-start-sigkill|after-restart) ;;
   *) echo "Unknown CI installer fault point" >&2; exit 98 ;;
 esac
 if [[ -n "$CI_FAILPOINT" &&
@@ -249,6 +249,12 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   [[ "$(sudo sha256sum "$UNIT_FILE" | cut -d' ' -f1)" == "$BEFORE_UNIT_SHA" ]]
   assert_live
   node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-restart
+fi
+# CI-only power-loss approximation: SIGKILL bypasses the EXIT cleanup trap.
+# An explicit external recovery worker must investigate the surviving resources.
+if [[ "$CI_FAILPOINT" == after-unit-start-sigkill ]]; then
+  echo "Simulating abrupt installer death after verified service startup" >&2
+  kill -s KILL "$"
 fi
 ci_fault after-unit-start
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
