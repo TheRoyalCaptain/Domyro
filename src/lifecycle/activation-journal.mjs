@@ -44,8 +44,13 @@ export async function readActivationIntent(root) {
     const stat = await handle.stat();
     if (!stat.isFile() || stat.nlink !== 1 || (stat.mode & 0o077) !== 0 ||
         stat.size < 1 || stat.size > MAX_BYTES) throw new Error('activation_intent_unsafe');
+    // Read at most MAX_BYTES+1 from the already opened inode, even if it grows
+    // between fstat and read. Never follow a substituted pathname.
+    const buffer = Buffer.alloc(MAX_BYTES + 1);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    if (bytesRead !== stat.size || bytesRead > MAX_BYTES) throw new Error('activation_intent_unsafe');
     let value;
-    try { value = JSON.parse(await handle.readFile({ encoding: 'utf8' })); }
+    try { value = JSON.parse(buffer.subarray(0, bytesRead).toString('utf8')); }
     catch { throw new Error('activation_intent_invalid'); }
     if (!validIntent(value)) throw new Error('activation_intent_invalid');
     return Object.freeze(value);
