@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,generateKeyPairSync,sign} from 'node:crypto';
-import {mkdtemp,mkdir,link,rename,symlink,writeFile,readlink,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,link,rename,symlink,writeFile,readlink,rm,chmod} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {stageVerifiedBundle,inspectVerifiedStagedBundle,switchActiveBundle,inspectActiveBundle} from '../src/lifecycle/transactional-release.mjs';
@@ -95,4 +95,25 @@ test('valid old and candidate releases still switch with explicit approval, neve
   assert.equal(result.previous,'0.1.0');
   assert.equal(result.installationApproved,false);
   assert.equal(result.gate,'D-53');
+});
+
+test('writable signed receipt and files are rejected before activation',async t=>{
+  const {root,release}=await staged(t);
+  const receipt=join(release,'.receipt.json');
+  await chmod(receipt,0o666);
+  await assert.rejects(()=>inspect(root),/staged_release_receipt_unsafe/);
+  await chmod(receipt,0o600);
+  await chmod(join(release,'src/server.mjs'),0o666);
+  await assert.rejects(()=>inspect(root),/staged_release_file_changed/);
+  assert.equal(await inspectActiveBundle(root),null);
+});
+
+test('writable signed release directories fail closed',async t=>{
+  const {root,release}=await staged(t);
+  await chmod(join(release,'src'),0o777);
+  await assert.rejects(()=>inspect(root),/staged_release_directory_writable/);
+  await chmod(join(release,'src'),0o700);
+  await chmod(release,0o777);
+  await assert.rejects(()=>inspect(root),/staged_release_not_private_directory/);
+  assert.equal(await inspectActiveBundle(root),null);
 });
