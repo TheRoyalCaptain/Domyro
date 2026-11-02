@@ -96,8 +96,12 @@
           <div><dt>Ondertekende releases</dt><dd id="updates-feed">Niet ingesteld</dd></div>
           <div><dt>Installatievoorwaarden</dt><dd id="updates-gate">D-53 gesloten</dd></div>
         </dl>
-        <button id="update-install" type="button" disabled aria-disabled="true">Update installeren (nog niet beschikbaar)</button>
-        <p class="update-warning">Dit is een ontwikkeloverzicht. Automatische installatie is uitgeschakeld. Er wordt niets gedownload, geïnstalleerd of herstart.</p>
+        <div class="update-actions">
+          <button id="update-check" type="button" class="secondary">Controleer op nieuwe releases</button>
+          <button id="update-install" type="button" disabled aria-disabled="true">Update installeren (nog niet beschikbaar)</button>
+        </div>
+        <p id="updates-check-result" role="status" aria-live="polite">Nog niet gecontroleerd. Er is geen automatische achtergrondcontrole actief.</p>
+        <p class="update-warning">Een GitHub-versienummer is geen gecontroleerd installatiepakket. Deze knop haalt alleen openbare release-informatie op. Downloaden, installeren en herstarten blijven uitgeschakeld totdat de ondertekende release en herstelketen officieel zijn goedgekeurd.</p>
       </section>
     </section>
 
