@@ -202,8 +202,12 @@ async function testNative(){
     ],{cwd:process.cwd(),encoding:'utf8',timeout:105000});
   }finally{await writeFile(sourcePath,originalSource);}
   if(declined.status===0||
-     !/Previous native preview restored and healthy/.test(declined.stdout))
-    throw Error('ci_native_refresh_broken_code_was_not_rolled_back');
+     !/Previous native preview restored and healthy/.test(declined.stdout)){
+    throw Error('ci_native_refresh_broken_code_was_not_rolled_back: status='+
+      declined.status+' signal='+(declined.signal??'none')+
+      ' stdout_tail='+JSON.stringify((declined.stdout??'').slice(-700))+
+      ' stderr_tail='+JSON.stringify((declined.stderr??'').slice(-250)));
+  }
   await wait();
   const rollbackData=await request('/api/v1/sites/'+id+'/areas',{headers:{cookie}});
   if(rollbackData.status!==200||rollbackData.body.areas?.[0]?.id!==firstRoomId)
