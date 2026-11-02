@@ -34,6 +34,7 @@ test('source bundle includes all runtime modules, assets and migrations, not onl
     'src/persistence/migrations/003_zigbee_registry.sql',
     'web/login.html','web/assets/login.js','web/assets/login.css',
     'web/index.html','web/assets/app.js','package.json','package-lock.json',
+    'scripts/migrate-db.mjs','scripts/bootstrap-owner.mjs',
   ]) assert.equal(paths.has(file),true,file);
   assert.equal(paths.has('tests/native-rehearsal.test.mjs'),false);
   assert.equal(paths.has('docs/INSTALL-UPGRADE-GATE.md'),false);
