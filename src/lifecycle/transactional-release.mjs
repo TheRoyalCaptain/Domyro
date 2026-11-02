@@ -206,6 +206,15 @@ export async function inspectVerifiedStagedBundle({root,version,trustedPublicKey
   return Object.freeze({version,architecture:receipt.architecture,files:found,verified:true,installationApproved:false});
 }
 
+async function assertNoRecoveryLock(root) {
+  try {
+    await lstat(join(root, '.recovery.lock'));
+    throw new Error('isolated_recovery_lock_requires_manual_review');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
+
 export async function switchActiveBundle({ root, version, confirmedVersion, verifiedBackup, trustedPublicKeyPem, probe }) {
   checkedVersion(version);
   if (confirmedVersion !== version) throw new Error('explicit_version_confirmation_required');
@@ -213,6 +222,7 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
   if (typeof trustedPublicKeyPem !== 'string' || !trustedPublicKeyPem) throw new Error('pinned_trust_root_required');
   if (typeof probe !== 'function') throw new Error('post_activation_probe_required');
   const base=await safeRoot(root);
+  await assertNoRecoveryLock(base);
   await inspectVerifiedStagedBundle({root:base,version,trustedPublicKeyPem});
   // An interrupted transaction is never implicitly overwritten or recovered.
   if (await readActivationIntent(base)) throw new Error('interrupted_activation_requires_manual_recovery');
@@ -220,6 +230,7 @@ export async function switchActiveBundle({ root, version, confirmedVersion, veri
   const lock = await open(join(base, '.activation.lock'), 'wx', 0o600);
   let previous = null, switched = false, completed = false, journalCreated = false;
   try {
+    await assertNoRecoveryLock(base);
     if (await readActivationIntent(base)) throw new Error('interrupted_activation_requires_manual_recovery');
     previous = await currentVersion(base);
     if (previous === version) throw new Error('already_active');
@@ -296,8 +307,14 @@ export async function inspectInterruptedActivation({root,trustedPublicKeyPem}) {
     throw e;
   });
   const active=await currentVersion(base);
-  if(!intent)return Object.freeze({state:lockPresent?'unresolved_lock':'clean',active,
-    lockPresent,automaticRecoveryAllowed:false,gate:'D-53'});
+  const recoveryLockPresent=await lstat(join(base,'.recovery.lock')).then(()=>true,error=>{
+    if(error.code==='ENOENT')return false;
+    throw error;
+  });
+  if(!intent)return Object.freeze({
+    state:recoveryLockPresent?'unresolved_recovery_lock':lockPresent?'unresolved_lock':'clean',
+    active,lockPresent,recoveryLockPresent,automaticRecoveryAllowed:false,gate:'D-53',
+  });
   async function verified(version) {
     if(version===null)return true;
     try { await inspectVerifiedStagedBundle({root:base,version,trustedPublicKeyPem});return true; }
@@ -307,6 +324,6 @@ export async function inspectInterruptedActivation({root,trustedPublicKeyPem}) {
     active,activeMatchesIntent:active===intent.previous||active===intent.target,
     previousSignedSourceVerified:await verified(intent.previous),
     candidateSignedSourceVerified:await verified(intent.target),
-    lockPresent,automaticRecoveryAllowed:false,manualRecoveryRequired:true,
+    lockPresent,recoveryLockPresent,automaticRecoveryAllowed:false,manualRecoveryRequired:true,
     serviceQuiescenceProven:false,databaseRestoreProven:false,gate:'D-53'});
 }
