@@ -97,6 +97,15 @@ StateDirectoryMode=0700
 Restart=on-failure
 RestartSec=1
 NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
 PrivateTmp=yes
 ProtectHome=yes
 ProtectSystem=strict
@@ -128,6 +137,8 @@ assert_live() {
 }
 assert_live
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
+[[ "$(sudo systemctl show --value -p NoNewPrivileges "$UNIT.service")" == "yes" ]]
+[[ "$(sudo systemctl show --value -p ProtectSystem "$UNIT.service")" == "strict" ]]
 [[ "$(sudo systemctl show --value -p Group "$UNIT.service")" == "$SERVICE_USER" ]]
 [[ "$(sudo systemctl is-enabled "$UNIT.service")" == "disabled" ]]
 [[ "$(getent passwd "$SERVICE_USER" | cut -d: -f7)" == "/usr/sbin/nologin" ]]
