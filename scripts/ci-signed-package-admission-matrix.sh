@@ -24,7 +24,7 @@ fi
 BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
 cleanup() { rm -rf -- "$BASE"; }
 trap cleanup EXIT
-for mode in clean artifact signature extra; do
+for mode in clean artifact signature extra receipt; do
   target="$BASE/$mode"
   mkdir -m 0700 "$target"
   # The nested release store MUST live under the test-exclusive run directory
@@ -57,4 +57,4 @@ for mode in clean artifact signature extra; do
   fi
   rm -rf -- "$scratch"
 done
-echo "Detached signed package admission: accepted original, refused 3 tamper variants; D-53 CLOSED."
+echo "Detached signed package admission: accepted original, refused 4 tamper variants; D-53 CLOSED."
