@@ -111,7 +111,7 @@ test('two concurrent writers never cause an overwrite or a downgrade',async()=>s
   const release=signed('1.0.0');
   const settled=await Promise.allSettled([
     recordTrustedReleaseReceipt(args(directory,release)),
-    recordTrustedReleaseReceipt(args(directory,release)),
+    recordTrustedReleaseReceipt(args(directory,signed('1.0.0','conflicting.bundle'))),
   ]);
   assert.equal(settled.filter(x=>x.status==='fulfilled').length,1);
   assert.equal(settled.filter(x=>x.status==='rejected').length,1);
