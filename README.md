@@ -31,6 +31,23 @@ Domyro is an open-source, local-first smart-home platform under active developme
 - Home Assistant bridge only for transition and subsequent migration assistance.
 - AI and speech deliberately follow a reliable base.
 
+## Visual design portal with a real backend (separate development PC)
+
+**New:** the integration branch has a complete opt-in localhost visual portal, backed by its **own** isolated PostgreSQL 17 Docker container. It is designed for UI review, not for deployment to the owner's production Domyro/Home Assistant host. Docker Engine and Node.js 22.12+ must already be installed on a separate development computer.
+
+```bash
+git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
+cd Domyro
+npm ci --ignore-scripts --no-audit --no-fund
+npm run preview:portal
+```
+
+Open **http://127.0.0.1:8844/** (main dashboard) and **http://127.0.0.1:8844/login** (account portal). The local account is `preview_owner`; see its private, randomly generated password using `cat .domyro-preview/owner-password.txt`. The full local PostgreSQL-backed experience supports login, creating and renaming homes, creating and renaming rooms, site-scoped read-only device observations, and viewing your saved homes/rooms on the dashboard. The application never creates fake devices or claims to control live hardware.
+
+Stop the webserver with Ctrl+C. Stop the separate persistent Docker **development** database using `npm run preview:stop`; its dedicated volume/data remain intact.
+
+The script refuses remote Docker daemons and root execution, binds both PostgreSQL and the webserver to 127.0.0.1, never installs OS packages or modifies systemd, and ignores its `.domyro-preview/` secrets directory in Git. **Do not confuse this development runner with a production one-line Ubuntu installer.** Full instructions: [Local visual design portal](docs/LOCAL-VISUAL-PORTAL.md).
+
 ## Run the development preview (isolated development computer ONLY)
 
 **Do not run these commands on the owner's actual server or Home Assistant environment.** The user explicitly wants to defer any such installation until the complete one-command installer and safe update/recovery system have been independently validated.
