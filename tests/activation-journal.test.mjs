@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, lstat, rm, symlink, writeFile, unlink } from 'node:fs/promises';
+import { mkdtemp, readFile, lstat, rm, symlink, writeFile, unlink, link } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -160,5 +160,33 @@ test('crash inspector flags a corrupted previous signed source instead of sugges
   assert.equal(result.state,'interrupted');
   assert.equal(result.previousSignedSourceVerified,false);
   assert.equal(result.candidateSignedSourceVerified,true);
+  assert.equal(result.automaticRecoveryAllowed,false);
+});
+
+test('oversized and hardlinked intent files are rejected without reading unbounded data',async t=>{
+  const root=await sandbox(t);
+  await stage(root,'0.1.0');
+  await switchTo(root,'0.1.0');
+  await stage(root,'0.1.1');
+  const path=join(root,'.activation-intent.json');
+  await writeFile(path,'x'.repeat(4096),{mode:0o600});
+  await assert.rejects(()=>switchTo(root,'0.1.1'),/activation_intent_unsafe/);
+  await unlink(path);
+  const {persistActivationIntent}=await import('../src/lifecycle/activation-journal.mjs');
+  await persistActivationIntent(root,{previous:'0.1.0',target:'0.1.1'});
+  await link(path,join(root,'external-journal-hardlink'));
+  await assert.rejects(()=>inspectInterruptedActivation({root,trustedPublicKeyPem}),
+    /activation_intent_unsafe/);
+  assert.equal(await inspectActiveBundle(root),'0.1.0');
+});
+
+test('orphaned activation lock without journal is reported, never treated as clean',async t=>{
+  const root=await sandbox(t);
+  await stage(root,'0.1.0');
+  await switchTo(root,'0.1.0');
+  await writeFile(join(root,'.activation.lock'),'',{mode:0o600});
+  const result=await inspectInterruptedActivation({root,trustedPublicKeyPem});
+  assert.equal(result.state,'unresolved_lock');
+  assert.equal(result.lockPresent,true);
   assert.equal(result.automaticRecoveryAllowed,false);
 });
