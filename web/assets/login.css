@@ -70,3 +70,9 @@ button:hover:not(:disabled){transform:translateY(-1px)}
 @media(max-width:620px){.site-list{grid-template-columns:1fr 1fr}.container{padding:18px 13px}.panel{padding:19px}.portal-heading{align-items:flex-start}}
 @media(max-width:390px){.site-list{grid-template-columns:1fr}.room-edit-form input{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){button:not(:disabled){transition:none}button:hover:not(:disabled){transform:none}}
+
+/* One explicit, user-triggered update check. No implied install permission. */
+.update-actions{display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin:13px 0}
+.update-actions button{flex:1 1 215px}
+#updates-check-result{font-size:12px;color:#b7d6e2;line-height:1.6;overflow-wrap:anywhere}
+#update-check:disabled{opacity:.58;cursor:wait}
