@@ -36,8 +36,36 @@ INSTALL_ROOT="/opt/$UNIT"
 CONFIG_ROOT="/etc/$UNIT"
 STATE_ROOT="/var/lib/$UNIT"
 UNIT_FILE="/run/systemd/system/$UNIT.service"
+# Collision checks MUST happen before staging, database creation or registration
+# of cleanup traps. A second invocation must never clean up the first install.
+# -L also catches dangling symlinks for which -e would misleadingly be false.
+if id "$SERVICE_USER" >/dev/null 2>&1 ||
+   [[ -e "$INSTALL_ROOT" || -L "$INSTALL_ROOT" ||
+      -e "$CONFIG_ROOT" || -L "$CONFIG_ROOT" ||
+      -e "$STATE_ROOT" || -L "$STATE_ROOT" ||
+      -e "$UNIT_FILE" || -L "$UNIT_FILE" ]]; then
+  echo "Existing disposable CI installation or unexpected path: refusing before changes" >&2
+  exit 93
+fi
 STAGING_BASE="$(mktemp -d "$GITHUB_WORKSPACE/.domyro-ci-signed-XXXXXX")"
 CI_PG_MODE="${DOMYRO_CI_PG_ONBOARDING:-0}"
+CI_FAILPOINT="${DOMYRO_CI_FAILPOINT:-}"
+# Controlled failure injection is limited to disposable PostgreSQL integration CI.
+case "$CI_FAILPOINT" in
+  ''|after-db-bootstrap|after-db-role|after-unit-start|after-unit-start-sigkill|after-restart) ;;
+  *) echo "Unknown CI installer fault point" >&2; exit 98 ;;
+esac
+if [[ -n "$CI_FAILPOINT" &&
+      ( "${DOMYRO_CI_FAULT_MATRIX:-0}" != 1 || "$CI_PG_MODE" != 1 ) ]]; then
+  echo "Installer fault injection requires disposable PostgreSQL CI" >&2
+  exit 98
+fi
+ci_fault() {
+  if [[ "$CI_FAILPOINT" == "$1" ]]; then
+    echo "Expected disposable CI installer failure: $1" >&2
+    exit 86
+  fi
+}
 CI_DB_NAME=""
 CI_DB_URI=""
 CI_APP_DB_URI=""
@@ -90,11 +118,6 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
     finally{await db.end();}
   '
 fi
-if id "$SERVICE_USER" >/dev/null 2>&1 ||
-   [[ -e "$INSTALL_ROOT" || -e "$CONFIG_ROOT" || -e "$STATE_ROOT" || -e "$UNIT_FILE" ]]; then
-  echo "Unexpected pre-existing CI identity or paths; refusing to overwrite" >&2
-  exit 93
-fi
 RELEASE_ROOT="$(node scripts/ci-stage-signed-source.mjs "$STAGING_BASE/release-store")"
 [[ -f "$RELEASE_ROOT/src/server.mjs" && -f "$RELEASE_ROOT/package-lock.json" && \
    -f "$RELEASE_ROOT/scripts/migrate-db.mjs" && -f "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" ]]
@@ -116,6 +139,7 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   ( umask 077; node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64url"))' > "$CI_PASSWORD_FILE" )
   DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" \
     --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null
+  ci_fault after-db-bootstrap
   # A second attempt must NOT silently replace the initialized owner.
   if DOMYRO_DATABASE_URL="$CI_DB_URI" node "$RELEASE_ROOT/scripts/bootstrap-owner.mjs" \
     --login native-test-owner --site "CI Home" --password-file "$CI_PASSWORD_FILE" > /dev/null 2>&1; then
@@ -124,6 +148,7 @@ if [[ "$CI_PG_MODE" == 1 ]]; then
   fi
   node scripts/ci-native-restricted-db-role.mjs create
   node scripts/ci-native-restricted-db-role.mjs verify
+  ci_fault after-db-role
   CI_APP_DB_URI="$(CI_DB_URI="$CI_DB_URI" node -e '
     const url=new URL(process.env.CI_DB_URI);
     url.username=process.env.CI_RUNTIME_ROLE;
@@ -206,7 +231,32 @@ assert_live() {
 assert_live
 if [[ "$CI_PG_MODE" == 1 ]]; then
   node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" initial
+  # A second one-command invocation MUST be rejected BEFORE creating or
+  # removing any resources belonging to the live first installation.
+  # Its own cleanup trap must never be installed on this refusal path.
+  BEFORE_ENV_SHA="$(sudo sha256sum "$CONFIG_ROOT/development.env" | cut -d' ' -f1)"
+  BEFORE_UNIT_SHA="$(sudo sha256sum "$UNIT_FILE" | cut -d' ' -f1)"
+  set +e
+  bash scripts/ci-native-account-test.sh > "$STAGING_BASE/existing-install-probe.log" 2>&1
+  SECOND_INSTALL_STATUS=$?
+  set -e
+  if [[ "$SECOND_INSTALL_STATUS" != 93 ]] ||
+     ! grep -q "refusing before changes" "$STAGING_BASE/existing-install-probe.log"; then
+    echo "Second installer invocation did not safely refuse existing installation" >&2
+    exit 99
+  fi
+  [[ "$(sudo sha256sum "$CONFIG_ROOT/development.env" | cut -d' ' -f1)" == "$BEFORE_ENV_SHA" ]]
+  [[ "$(sudo sha256sum "$UNIT_FILE" | cut -d' ' -f1)" == "$BEFORE_UNIT_SHA" ]]
+  assert_live
+  node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-restart
 fi
+# CI-only power-loss approximation: SIGKILL bypasses the EXIT cleanup trap.
+# An explicit external recovery worker must investigate the surviving resources.
+if [[ "$CI_FAILPOINT" == after-unit-start-sigkill ]]; then
+  echo "Simulating abrupt installer death after verified service startup" >&2
+  kill -s KILL "$BASHPID"
+fi
+ci_fault after-unit-start
 [[ "$(sudo systemctl show --value -p User "$UNIT.service")" == "$SERVICE_USER" ]]
 [[ "$(sudo systemctl show --value -p NoNewPrivileges "$UNIT.service")" == "yes" ]]
 [[ "$(sudo systemctl show --value -p ProtectSystem "$UNIT.service")" == "strict" ]]
@@ -234,6 +284,7 @@ assert_live
 if [[ "$CI_PG_MODE" == 1 ]]; then
   node scripts/ci-native-onboarding-probe.mjs "$BASE" "$CI_PASSWORD_FILE" after-restart
 fi
+ci_fault after-restart
 PID2="$(sudo systemctl show --value -p MainPID "$UNIT.service")"
 [[ "$PID2" =~ ^[0-9]+$ && "$PID2" != 0 && "$PID2" != "$PID1" ]]
 sudo systemctl kill --kill-whom=main --signal=SIGKILL "$UNIT.service"
