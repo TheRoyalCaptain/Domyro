@@ -119,7 +119,7 @@ test('console-only owner setup + full local cookie login, CSRF, site authorizati
   const areaId=(await created.clone().json()).area.id;
   const renameRoom=areasPath+'/'+areaId;
   assert.equal((await mutate('PATCH',renameRoom,{displayName:'  Living  '})).status,200);
-  assert.equal((await mutate('PATCH',renameRoom,{displayName:'\\nBad'})).status,400);
+  assert.equal((await mutate('PATCH',renameRoom,{displayName:'\nBad'})).status,400);
   assert.equal((await mutate('PATCH',renameRoom,{displayName:''})).status,400);
   const afterRename=(await (await fetch(base+areasPath,{headers:{cookie:sessionCookie}})).json()).areas;
   assert.equal(afterRename.length,1);
