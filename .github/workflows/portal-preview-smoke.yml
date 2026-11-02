@@ -1,0 +1,46 @@
+name: Disposable authenticated design-portal end-to-end
+on:
+  pull_request:
+    paths:
+      - 'scripts/dev-portal.mjs'
+      - 'scripts/ci-dev-portal-smoke.mjs'
+      - 'src/security/**'
+      - 'src/persistence/**'
+      - 'src/lib/http.mjs'
+      - 'src/server.mjs'
+      - 'web/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/portal-preview-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portal:
+    name: Actual private Docker DB and authenticated visual portal / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies for isolated portal
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify local-only preview code without production installation
+        run: |
+          node --check scripts/dev-portal.mjs
+          node --check scripts/ci-dev-portal-smoke.mjs
+          node scripts/check-installation-gate.mjs
+      - name: Boot a separate loopback PostgreSQL 17 and test full portal
+        run: node scripts/ci-dev-portal-smoke.mjs
+      - name: Never expose local credentials as artifacts
+        if: always()
+        run: |
+          test ! -e .domyro-preview || test "$(stat -c %a .domyro-preview)" = 700
