@@ -102,7 +102,9 @@ rollback(){
     for _ in $(seq 1 12);do
       if systemctl is-active --quiet "$UNIT.service" &&
          curl -fsS --max-time 2 http://127.0.0.1:8844/api/v1/health/live 2>/dev/null |
-           grep -q '"status":"alive"';then previous_healthy=1;break;fi
+           grep -q '"status":"alive"' &&
+           curl -fsS --max-time 3 http://127.0.0.1:8844/api/v1/public/status 2>/dev/null |
+           grep -q '"persistence":"ready"';then previous_healthy=1;break;fi
       sleep 1
     done
   fi
@@ -142,7 +144,9 @@ LIVE=0
 for _ in $(seq 1 30);do
   if systemctl is-active --quiet "$UNIT.service" &&
      curl -fsS --max-time 2 http://127.0.0.1:8844/api/v1/health/live 2>/dev/null |
-       grep -q '"status":"alive"';then LIVE=1;break;fi
+       grep -q '"status":"alive"' &&
+       curl -fsS --max-time 3 http://127.0.0.1:8844/api/v1/public/status 2>/dev/null |
+       grep -q '"persistence":"ready"';then LIVE=1;break;fi
   sleep 1
 done
 [[ "$LIVE" == 1 ]] || { log "New preview failed health check";false; }
