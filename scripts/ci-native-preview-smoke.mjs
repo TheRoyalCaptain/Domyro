@@ -66,6 +66,18 @@ async function testNative(){
   // Refuse existing locations ahead of changes. The first install can
   // exclusively create these exact paths and dedicated DB/roles.
   run('bash',['-n','scripts/native-preview-install.sh']);
+  run('bash',['-n','scripts/native-preview-setup.sh']);
+  // The convenience command may not run as root; if it did it could
+  // accidentally install dependencies with root-owned npm modules.
+  const rootAttempt=spawnSync('sudo',['bash','scripts/native-preview-setup.sh',
+    '--install-native-preview'],{cwd:process.cwd(),encoding:'utf8',timeout:10000});
+  if(rootAttempt.status!==86||
+     !/ordinary SSH account/.test(rootAttempt.stderr))
+    throw Error('ci_native_setup_accepts_privileged_parent_shell');
+  const missingConsent=spawnSync('bash',['scripts/native-preview-setup.sh',
+    '--invalid-operation'],{cwd:process.cwd(),encoding:'utf8',timeout:10000});
+  if(missingConsent.status!==86)
+    throw Error('ci_native_setup_accepts_unapproved_action');
   // One command provisions native Ubuntu PostgreSQL (if absent), npm deps,
   // and actual systemd service, then all previous HTTP/persistence tests run.
   const output=run('bash',['scripts/native-preview-setup.sh','--install-native-preview'],210000);
