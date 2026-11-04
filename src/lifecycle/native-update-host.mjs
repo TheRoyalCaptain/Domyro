@@ -69,6 +69,7 @@ export function createNativeUpdateHost({app,config,work,unit,database,serviceUse
      !Number.isInteger(port)||port<1024||port>65535||typeof authorize!=='function') {
     throw Error('native_update_configuration_invalid');
   }
+  const maintenance=join(work,'maintenance');
   const currentVersion=async()=>JSON.parse(await readFile(join(app,'package.json'),'utf8')).version;
   const folder=r=>join(work,r.id);
   const pg=(args,options)=>command('runuser',['-u','postgres','--',...args],options);
@@ -84,6 +85,9 @@ export function createNativeUpdateHost({app,config,work,unit,database,serviceUse
          !await exists('/run/systemd/system')||await exists('/.dockerenv'))throw Error('native_ubuntu_host_required');
       await owned(app,{directory:true});await owned(config,{directory:true});
       await owned(work,{directory:true});await noLinks(config);
+      const runtime=await readFile(join(config,'runtime.env'),'utf8');
+      if(!runtime.split('\n').includes('DOMYRO_MAINTENANCE_FILE='+maintenance))
+        throw Error('native_update_maintenance_not_configured');
       if((await lstat(app)).dev!==(await lstat(work)).dev)throw Error('native_update_same_filesystem_required');
       if(await command('systemctl',['show','--value','-p','User',unit+'.service'])!==serviceUser)
         throw Error('native_update_service_identity_mismatch');
@@ -136,7 +140,12 @@ export function createNativeUpdateHost({app,config,work,unit,database,serviceUse
       await compare();
       await syncTree(candidate);
     },
-    stop:()=>control('stop'),
+    async stop() {
+      await writeFile(maintenance,'update in progress\n',{mode:0o644});
+      await chmod(maintenance,0o644);await syncFile(maintenance);await syncFile(work);
+      await control('stop');
+    },
+    async resume() {await rm(maintenance,{force:true});await syncFile(work);},
     async backup(record) {
       const root=folder(record),snapshot=join(root,'snapshot');
       await mkdir(snapshot,{mode:0o700});

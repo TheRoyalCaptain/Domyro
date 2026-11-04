@@ -31,13 +31,20 @@ export function sendJson(response, code, data) {
 }
 
 /** @param {import('node:http').IncomingMessage} request @param {import('node:http').ServerResponse} response */
-export async function handleRequest(request, response, { persistence = null, auth = null } = {}) {
+export async function handleRequest(request, response, { persistence = null, auth = null, maintenanceCheck = async()=>false } = {}) {
   let pathname;
   try {
     pathname = new URL(request.url ?? '/', 'http://domyro.invalid').pathname;
   } catch {
     sendJson(response, 400, { error: 'bad_request' });
     return;
+  }
+  // The updater's root-owned marker persists through core restarts and data
+  // recovery. Reads/status remain available; no user writes can be lost when
+  // a failing candidate is restored to the pre-update snapshot.
+  if(!['GET','HEAD'].includes(request.method??'')&&await maintenanceCheck()) {
+    response.setHeader('retry-after','5');
+    sendJson(response,503,{error:'maintenance_in_progress'});return;
   }
   // Authenticate state-bearing API routes before the GET-only preview fallback.
   if (auth && await auth.route(request, response, pathname)) return;

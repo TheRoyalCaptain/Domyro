@@ -17,7 +17,7 @@ async function fixture(t,fail=null) {
     authorize:()=>{},currentVersion:()=>version,prepare:()=>{},stop:()=>{},
     backup:()=>{snapshot=structuredClone(data);},
     activate:r=>{version=r.version;data.rooms.push('candidate startup');},
-    start:()=>{},healthy:v=>version===v,
+    start:()=>{},resume:()=>{},healthy:v=>version===v,
     restore:r=>{version=r.previousVersion;data=structuredClone(snapshot);},
   };
   for(const [name,fn] of Object.entries(operations))host[name]=async(...args)=>{
@@ -31,7 +31,7 @@ async function fixture(t,fail=null) {
 test('signed-update orchestration commits only after stopped backup and target-version health',async t=>{
   const f=await fixture(t);
   assert.equal((await f.job.install('0.1.1')).state,'installed');
-  assert.deepEqual(f.calls,['authorize','currentVersion','prepare','stop','backup','activate','start','healthy']);
+  assert.deepEqual(f.calls,['authorize','currentVersion','prepare','stop','backup','activate','start','healthy','resume']);
   assert.equal((await f.job.status()).job.phase,'committed');
   assert.equal((await f.job.status()).recoveryRequired,false);
   assert.ok(!(await readdir(f.root)).includes('pending.json'));
@@ -92,7 +92,7 @@ for(const phase of ['preparing','stopping','backing_up','committed']) {
     assert.equal((await f.job.status()).recoveryRequired,false);
     assert.equal((await f.job.status()).job.phase,phase==='committed'?'committed':'recovered');
     assert.ok(!f.calls.includes('restore'));
-    if(phase==='committed')assert.deepEqual(f.calls,[]);
+    if(phase==='committed')assert.deepEqual(f.calls,['resume']);
   });
 }
 test('untrusted journal permissions and closed authorization prevent host changes',async t=>{

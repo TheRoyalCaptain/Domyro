@@ -79,4 +79,4 @@ chmod 0644 /etc/systemd/system/domyro-updater.service
 systemd-analyze verify /etc/systemd/system/domyro-updater.service
 systemctl daemon-reload
 systemctl enable --now domyro-updater.service
-printf 'Supervisor installed. Add DOMYRO_UPDATE_SOCKET=/run/domyro-updater/control.sock to the core runtime configuration, then restart the core.\n'
+printf 'Supervisor installed. Add DOMYRO_UPDATE_SOCKET=/run/domyro-updater/control.sock and DOMYRO_MAINTENANCE_FILE=/var/lib/domyro-updater/work/maintenance to the core runtime configuration, then restart the core.\n'

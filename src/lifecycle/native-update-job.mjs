@@ -36,7 +36,7 @@ async function readRecord(path) {
  * a new update to overwrite unresolved recovery evidence. */
 export async function createNativeUpdateJob({root,host}) {
   await safeRoot(root);
-  for(const method of ['authorize','currentVersion','prepare','stop','backup','activate','healthy','restore','start']) {
+  for(const method of ['authorize','currentVersion','prepare','stop','backup','activate','healthy','restore','start','resume']) {
     if(typeof host?.[method]!=='function')throw TypeError('update_host_adapter_invalid');
   }
   const pending=join(root,'pending.json'),last=join(root,'last.json');
@@ -57,7 +57,7 @@ export async function createNativeUpdateJob({root,host}) {
     // A durable commit is authoritative even if the last journal rename was
     // interrupted. Replaying recovery must not undo an acknowledged update.
     if(record.phase==='committed'||record.phase==='recovered') {
-      await finish(record);return record;
+      await finish(record);await host.resume();return record;
     }
     const mayHaveActivated=record.restoreRequired;
     record={...record,phase:'recovering',updatedAt:new Date().toISOString()};
@@ -71,6 +71,7 @@ export async function createNativeUpdateJob({root,host}) {
     if(!await host.healthy(record.previousVersion))throw Error('update_recovery_health_failed');
     record={...record,phase:'recovered',updatedAt:new Date().toISOString()};
     await finish(record);
+    await host.resume();
     return record;
   }
   return Object.freeze({
@@ -83,7 +84,13 @@ export async function createNativeUpdateJob({root,host}) {
     async recover() {
       if(busy)throw Error('update_busy');
       busy=true;
-      try { const record=await readRecord(pending);return record?await recoverRecord(record):null; }
+      try {
+        const record=await readRecord(pending);
+        if(record)return await recoverRecord(record);
+        const previous=await readRecord(last);
+        if(previous&&['committed','recovered'].includes(previous.phase))await host.resume();
+        return null;
+      }
       finally { busy=false; }
     },
     async install(version) {
@@ -113,6 +120,7 @@ export async function createNativeUpdateJob({root,host}) {
         if(!await host.healthy(version))throw Error('update_health_failed');
         record={...record,phase:'committed',updatedAt:new Date().toISOString()};
         await finish(record);
+        await host.resume();
         return {version,state:'installed',backupVerified:true};
       } catch(error) {
         // Preparation failures never stop the currently running application.

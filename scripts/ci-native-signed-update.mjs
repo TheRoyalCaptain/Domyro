@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Disposable native Ubuntu CI only. Uses ephemeral publisher keys and never
 // changes the project's installation-readiness record or official publisher.
-import {readFile,writeFile,mkdir,chmod,cp,rm} from 'node:fs/promises';
+import {readFile,writeFile,appendFile,mkdir,chmod,cp,rm} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {generateKeyPairSync,createHash} from 'node:crypto';
 import {join,resolve} from 'node:path';
@@ -35,6 +35,9 @@ await mkdir(work,{mode:0o711});await chmod(work,0o711);
 await mkdir(join(work,'state'),{mode:0o700});
 try {
   run('bash',['scripts/native-preview-install.sh','--install-native-preview']);
+  await appendFile(join(config,'runtime.env'),'DOMYRO_MAINTENANCE_FILE='+join(work,'maintenance')+'\n');
+  run('systemctl',['restart','domyro-preview-native.service']);
+  for(let n=0;n<40;n++){try{await api('public/status');break;}catch{await new Promise(r=>setTimeout(r,250));}}
   const login=await api('auth/login',{body:{login:'native_preview_owner',
     password:(await readFile(join(config,'owner-password.txt'),'utf8')).trim()}});
   assert(login.status===200,'native_update_ci_login_failed');
@@ -62,9 +65,18 @@ try {
   for(const [name,method] of Object.entries(host))host[name]=async(...args)=>{
     try{return await method(...args);}catch(e){throw Error('native_ci_phase_'+name,{cause:e});}
   };
+  const health=host.healthy;
+  host.healthy=async version=>{
+    const ready=await health(version);
+    if(ready)assert((await api('sites/'+site+'/areas',{...auth,body:{displayName:'Must be blocked'}})).status===503,
+      'native_update_ci_writes_not_blocked');
+    return ready;
+  };
   const job=await createNativeUpdateJob({root:join(work,'state'),host});
   await job.install('0.1.1');
   assert((await api('public/status')).body.version==='0.1.1','native_update_ci_wrong_version');
+  assert((await api('auth/login',{body:{login:'native_preview_owner',password:'invalid-password-for-check'}})).status===401,
+    'native_update_ci_maintenance_not_released');
   assert((await api('sites/'+site+'/areas',auth)).body.areas.some(x=>x.id===room.body.area.id),'native_update_ci_lost_data');
   let rejected=false;
   try{await job.install('0.1.2');}catch(e){rejected=e.message==='update_health_failed';}

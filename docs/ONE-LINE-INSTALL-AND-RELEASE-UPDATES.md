@@ -2,6 +2,20 @@
 
 **Prioriteit gewijzigd: de minimale bruikbare oplevering is een eenregelige Ubuntu-installatie, gevolgd door updates vanuit een bestaande Domyro-installatie.** Smart-homefuncties komen daarna. De beveiligingsstop **D-53 is nog gesloten**.
 
+## Voortgang 4 november 2026: native updateworker
+
+De portalinstallatieroute, afzonderlijke supervisor, ondertekende bronactivatie,
+native PostgreSQL-proefherstel en terugzetten van code/database/configuratie zijn
+nu geïmplementeerd. De native AMD64/ARM64-proef controleert een echte geslaagde
+update en een mislukte kandidaat met databasewijzigingen. Zie
+[NATIVE-SIGNED-UPDATE-WORKER.md](NATIVE-SIGNED-UPDATE-WORKER.md) voor de actuele
+werking en beperkingen. De eerdere beschrijving hieronder van uitsluitend
+releasecontrole/staging beschrijft het eerdere fundament.
+
+Een officiële one-line eerste installatie is nog niet vrijgegeven. De
+uitgeverssleutel en releasepublicatie zijn niet ingericht en de volledige
+reboot-/stroomuitval-/hardwareproeven zijn niet afgerond.
+
 ## Ondertekend pakket offline klaarzetten en productiegate afdwingen
 
 De actuele ontwikkelbranch kan een volledige, ondertekende bronrelease offline verifiëren en in een geïsoleerde stagingmap klaarmaken. Hiervoor zijn de apart vertrouwde Ed25519-publieke sleutel en de onafhankelijke SPKI SHA-256-fingerprint vereist. De verificatie controleert beide architectuurartefacten, SHA-256, database-schema, geen downgrade en de overeenstemming van manifest, package.json en package-lock.json. Na staging worden de uitgepakte bestanden opnieuw vergeleken met de ondertekende bron.

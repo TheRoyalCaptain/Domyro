@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+import {lstat} from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { handleRequest, readListenOptions } from './lib/http.mjs';
 
@@ -6,9 +7,9 @@ import { handleRequest, readListenOptions } from './lib/http.mjs';
  * HTTP foundation: optional real PostgreSQL readiness, but NO auth or device
  * control until the secure owner onboarding and session layers are implemented.
  */
-export function createDomyroServer({ persistence = null, auth = null } = {}) {
+export function createDomyroServer({ persistence = null, auth = null, maintenanceCheck = async()=>false } = {}) {
   const server = createServer((req, res) => {
-    handleRequest(req, res, { persistence, auth }).catch(() => {
+    handleRequest(req, res, { persistence, auth, maintenanceCheck }).catch(() => {
       if (!res.headersSent) res.writeHead(500, { 'content-type': 'application/json; charset=utf-8' });
       if (!res.writableEnded) res.end('{"error":"internal_error"}');
     });
@@ -33,7 +34,14 @@ async function start() {
     ? createUpdateWorkerClient(process.env.DOMYRO_UPDATE_SOCKET):null;
   const localAuth = persistence && ['127.0.0.1', '::1'].includes(host)
     ? await createLocalAuthService(persistence.db, sendJson,{updateExecutor}) : null;
-  const server = createDomyroServer({ persistence, auth: localAuth });
+  const maintenanceFile=process.env.DOMYRO_MAINTENANCE_FILE;
+  if(maintenanceFile&&!/^\/(?:var\/lib|run)\/[a-zA-Z0-9/_-]+$/.test(maintenanceFile))throw Error('maintenance_path_invalid');
+  const maintenanceCheck=async()=>{
+    if(!maintenanceFile)return false;
+    try {await lstat(maintenanceFile);return true;}
+    catch(e){return e.code!=='ENOENT';}
+  };
+  const server = createDomyroServer({ persistence, auth: localAuth, maintenanceCheck });
   server.on('error', () => {
     console.error('Domyro HTTP listener could not start. Check the requested local host and port.');
     process.exitCode = 1;
