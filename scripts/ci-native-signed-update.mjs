@@ -15,7 +15,7 @@ if(process.getuid?.()!==0||process.env.GITHUB_ACTIONS!=='true'||
    process.env.DOMYRO_CI_NATIVE_PREVIEW!=='1'||
    !process.env.GITHUB_WORKSPACE?.startsWith('/home/runner/work/')||
    resolve(process.cwd())!==resolve(process.env.GITHUB_WORKSPACE))throw Error('disposable_native_CI_only');
-const work='/opt/domyro-native-update-proof';
+const work='/var/lib/domyro-native-update-proof';
 const app='/opt/domyro-preview-native',config='/etc/domyro-preview-native';
 const run=(cmd,args)=>{
   const r=spawnSync(cmd,args,{encoding:'utf8',timeout:300000});
