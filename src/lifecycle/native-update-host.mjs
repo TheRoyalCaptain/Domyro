@@ -63,6 +63,7 @@ export function createNativeUpdateHost({app,config,work,unit,database,serviceUse
   policy,authorize,download=fetchVerifiedOfficialSourceRelease}) {
   if(![app,config,work].every(p=>typeof p==='string'&&/^\/[A-Za-z0-9/_-]+$/.test(p))||
      new Set([app,config,work]).size!==3||
+     [app,config,work].some(p=>[app,config,work].some(q=>p!==q&&p.startsWith(q+'/')))||
      ![unit,serviceUser].every(v=>/^[a-z][a-z0-9-]{1,60}$/.test(v))||
      !/^[a-z][a-z0-9_]{1,60}$/.test(database)||
      !Number.isInteger(port)||port<1024||port>65535||typeof authorize!=='function') {
@@ -83,6 +84,7 @@ export function createNativeUpdateHost({app,config,work,unit,database,serviceUse
          !await exists('/run/systemd/system')||await exists('/.dockerenv'))throw Error('native_ubuntu_host_required');
       await owned(app,{directory:true});await owned(config,{directory:true});
       await owned(work,{directory:true});await noLinks(config);
+      if((await lstat(app)).dev!==(await lstat(work)).dev)throw Error('native_update_same_filesystem_required');
       if(await command('systemctl',['show','--value','-p','User',unit+'.service'])!==serviceUser)
         throw Error('native_update_service_identity_mismatch');
     },

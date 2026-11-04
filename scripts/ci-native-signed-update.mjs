@@ -49,9 +49,9 @@ try {
   const source=join(work,'source');await mkdir(source,{mode:0o700});
   for(const item of ['src','scripts','web','package.json','package-lock.json'])await cp(item,join(source,item),{recursive:true});
   async function build(version,broken=false) {
-    if(broken)await writeFile(join(source,'src/server.mjs'),'throw Error("intentional CI candidate failure");\n'+await readFile(join(source,'src/server.mjs'),'utf8'));
+    if(broken)await writeFile(join(source,'src/server.mjs'),'import {Pool as FailurePool} from \'pg\';\nconst failureDb=new FailurePool({connectionString:process.env.DOMYRO_DATABASE_URL});\nawait failureDb.query(\"UPDATE domyro_areas SET display_name=\'candidate-mutation\'\");\nawait failureDb.end();\nthrow Error("intentional CI candidate failure");\n'+await readFile(join(source,'src/server.mjs'),'utf8'));
     const signed=await buildSignedSourceRelease({projectRoot:source,version,channel:'stable',
-      publishedAt:new Date().toISOString(),privateKeyPem:keys.privateKey.export({type:'pkcs8',format:'pem'})});
+      publishedAt:new Date().toISOString().replace(/\.\d{3}Z$/,'Z'),privateKeyPem:keys.privateKey.export({type:'pkcs8',format:'pem'})});
     const directory=join(work,'release-'+version);await writeSignedRelease(directory,signed);return directory;
   }
   const releases={'0.1.1':await build('0.1.1'),'0.1.2':await build('0.1.2',true)};
@@ -59,6 +59,9 @@ try {
     database:'domyro_preview_native',serviceUser:'domyro-preview-native',port:8844,policy,
     authorize:async()=>{}, // Ephemeral CI only; the real worker enforces D-53.
     download:async({version})=>({directory:releases[version]})});
+  for(const [name,method] of Object.entries(host))host[name]=async(...args)=>{
+    try{return await method(...args);}catch(e){throw Error('native_ci_phase_'+name,{cause:e});}
+  };
   const job=await createNativeUpdateJob({root:join(work,'state'),host});
   await job.install('0.1.1');
   assert((await api('public/status')).body.version==='0.1.1','native_update_ci_wrong_version');
@@ -68,7 +71,7 @@ try {
   assert(rejected,'native_update_ci_broken_candidate_not_recovered');
   assert((await job.status()).job.phase==='recovered','native_update_ci_recovery_incomplete');
   assert((await api('public/status')).body.version==='0.1.1','native_update_ci_previous_version_not_restored');
-  assert((await api('sites/'+site+'/areas',auth)).body.areas.some(x=>x.id===room.body.area.id),'native_update_ci_restore_lost_room');
+  assert((await api('sites/'+site+'/areas',auth)).body.areas.some(x=>x.id===room.body.area.id&&x.display_name==='Blijft bewaard'),'native_update_ci_restore_lost_room');
   console.log('Native signed update and failed-candidate PostgreSQL/config/code restore verified. Official production gate unchanged.');
 }finally {
   const best=(cmd,args)=>spawnSync(cmd,args,{stdio:'ignore',timeout:30000});

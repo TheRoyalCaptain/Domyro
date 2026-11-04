@@ -42,7 +42,7 @@ export async function createNativeUpdateJob({root,host}) {
   const pending=join(root,'pending.json'),last=join(root,'last.json');
   let busy=false;
   async function persist(record,initial=false) {
-    const target=initial?pending:join(root,record.id+'.tmp');
+    const target=initial?pending:join(root,record.id+'-'+randomUUID()+'.tmp');
     const fd=await open(target,'wx',0o600);
     try { await fd.writeFile(JSON.stringify(record)+'\n');await fd.sync(); } finally { await fd.close(); }
     if(!initial)await rename(target,pending);
