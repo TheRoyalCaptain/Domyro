@@ -74,7 +74,7 @@ function setCookie(response, token) {
   response.setHeader('set-cookie', SESSION_NAME + '=' + token + '; HttpOnly; Path=/api/v1; SameSite=Strict; Max-Age=3600');
 }
 
-export async function createLocalAuthService(db, sendJson, { releaseChecker = createManualReleaseChecker() } = {}) {
+export async function createLocalAuthService(db, sendJson, { releaseChecker = createManualReleaseChecker(), updateExecutor = null } = {}) {
   if (!db || typeof db.query !== 'function' || typeof sendJson !== 'function' ||
       !releaseChecker || typeof releaseChecker.check !== 'function') throw new TypeError('auth_dependencies_invalid');
   const dummyHash = await hashPassword(randomBytes(32).toString('hex'));
@@ -183,6 +183,20 @@ export async function createLocalAuthService(db, sendJson, { releaseChecker = cr
           return true;
         }
         if (pathname.endsWith('/install')) {
+          if (req.method !== 'POST') { sendJson(res,405,{error:'method_not_allowed'});return true; }
+          if (updateExecutor) {
+            let body;
+            try { body=await jsonBody(req); }
+            catch { sendJson(res,400,{error:'invalid_request'});return true; }
+            if (typeof body.version!=='string'||body.version.length>80||
+                !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(body.version)) {
+              sendJson(res,400,{error:'invalid_version'});return true;
+            }
+            try { sendJson(res,202,await updateExecutor.install(body.version)); }
+            catch(e) { sendJson(res,[409,423].includes(e.status)?e.status:503,
+              {error:e.status===423?'installation_gate_closed':e.status===409?'update_busy_or_recovery_required':'update_worker_unavailable'}); }
+            return true;
+          }
           // Neither authenticated session nor CSRF token bypasses D-53.
           // Explicitly blocked: NO file I/O, package installs or restarts.
           sendJson(res, 423, { error: 'installation_gate_closed', decision: 'D-53' });
@@ -192,7 +206,10 @@ export async function createLocalAuthService(db, sendJson, { releaseChecker = cr
           sendJson(res, 405, { error: 'method_not_allowed' });
           return true;
         }
-        sendJson(res, 200, getDevelopmentUpdateStatus());
+        if(updateExecutor) {
+          try { sendJson(res,200,{...getDevelopmentUpdateStatus(),...await updateExecutor.status()}); }
+          catch { sendJson(res,503,{error:'update_worker_unavailable'}); }
+        } else sendJson(res, 200, getDevelopmentUpdateStatus());
         return true;
       }
 

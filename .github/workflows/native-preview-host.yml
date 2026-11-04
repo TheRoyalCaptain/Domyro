@@ -7,6 +7,8 @@ on:
       - 'scripts/native-preview-refresh.sh'
       - 'scripts/native-preview-recover.sh'
       - 'scripts/ci-native-preview-smoke.mjs'
+      - 'scripts/ci-native-signed-update.mjs'
+      - 'scripts/native-update-worker.mjs'
       - 'src/**'
       - 'web/**'
       - 'scripts/migrate-db.mjs'
@@ -49,5 +51,10 @@ jobs:
           node --check scripts/ci-native-preview-smoke.mjs
       - name: Run Docker-free native installation and authenticated portal smoke
         run: node scripts/ci-native-preview-smoke.mjs
+      - name: Prove signed native update and PostgreSQL/config/code recovery
+        run: |
+          sudo env "PATH=$PATH" GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+            DOMYRO_CI_NATIVE_PREVIEW=1 "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" \
+            node scripts/ci-native-signed-update.mjs
       - name: Verify dev-only gate stays closed
         run: node scripts/check-installation-gate.mjs

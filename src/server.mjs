@@ -28,8 +28,11 @@ async function start() {
   const { sendJson } = await import('./lib/http.mjs');
   // Never enable development login on a LAN/WAN bind. HTTPS, trusted proxies,
   // account recovery and MFA are still required before real deployments.
+  const {createUpdateWorkerClient}=await import('./lifecycle/update-worker-ipc.mjs');
+  const updateExecutor=process.env.DOMYRO_UPDATE_SOCKET
+    ? createUpdateWorkerClient(process.env.DOMYRO_UPDATE_SOCKET):null;
   const localAuth = persistence && ['127.0.0.1', '::1'].includes(host)
-    ? await createLocalAuthService(persistence.db, sendJson) : null;
+    ? await createLocalAuthService(persistence.db, sendJson,{updateExecutor}) : null;
   const server = createDomyroServer({ persistence, auth: localAuth });
   server.on('error', () => {
     console.error('Domyro HTTP listener could not start. Check the requested local host and port.');

@@ -2,7 +2,7 @@
 // Local-only development UI. No token or password is stored in localStorage,
 // sessionStorage or browser-accessible cookies.
 const get = id => document.getElementById(id);
-const state = { csrf: null, sites: [], selected: null };
+const state = { csrf: null, sites: [], selected: null, updateStatus: null, targetVersion: null };
 const signIn = get('signin'), signedIn = get('signedin');
 const message = get('message');
 
@@ -185,15 +185,17 @@ async function loadUpdateCenter() {
   panel.hidden = true;
   try {
     const status = await api('system/updates');
+    state.updateStatus=status;
     panel.hidden = false;
     get('updates-version').textContent = status.currentVersion ?? 'Onbekend';
     get('updates-feed').textContent = status.signedFeedConfigured ? 'Vertrouwde bron ingesteld' : 'Nog niet ingesteld';
     get('updates-gate').textContent = status.installationGate + (status.installAllowed ? ' open' : ' gesloten');
     get('updates-status').textContent = status.installAllowed
-      ? 'Handmatig installeren vereist afzonderlijke toestemming.'
+      ? 'Kies een nieuwere release. Voor installatie worden het pakket en een herstelbare back-up gecontroleerd.'
       : 'Updaten is geblokkeerd totdat de volledige installatie- en hersteltests zijn goedgekeurd.';
-    get('update-install').disabled = !status.installAllowed;
-    get('update-install').setAttribute('aria-disabled', String(!status.installAllowed));
+    get('update-install').disabled = !status.installAllowed || !state.targetVersion;
+    get('update-install').textContent='Update installeren';
+    get('update-install').setAttribute('aria-disabled', String(get('update-install').disabled));
   } catch (error) {
     // Guests are not system administrators; don't show an admin-only panel.
     if (error.status !== 403 && error.status !== 401) {
@@ -250,10 +252,11 @@ get('update-check').addEventListener('click',async()=>{
     // All information from a public release API is untrusted until its
     // publisher signature and package contents have been verified.
     const version=typeof result.latestVersion==='string'?result.latestVersion:'';
+    state.targetVersion=result.state==='newer_release_advertised'?version:null;
     const messages={
       no_official_release_published:'Er is nog geen publieke officiële Domyro-release beschikbaar.',
       newer_release_advertised:'GitHub vermeldt versie '+version+
-        '. De handtekening is nog niet gecontroleerd. Installatie blijft geblokkeerd.',
+        '. De updater controleert vóór installatie de handtekening en het volledige pakket.',
       already_latest:'GitHub vermeldt dezelfde versie. Dit is geen verificatie van de installatie.',
       github_advertises_older_version:'De door GitHub vermelde versie is ouder dan deze ontwikkelversie.',
       release_check_unavailable:'GitHub-releases zijn tijdelijk niet te controleren. Er is niets geïnstalleerd.',
@@ -261,11 +264,40 @@ get('update-check').addEventListener('click',async()=>{
         String(result.retryAfterSeconds??30)+' seconden opnieuw.',
     };
     output.textContent=messages[result.state]??'De updatecontrole gaf geen bruikbaar resultaat.';
-    get('update-install').disabled=true;
-    get('update-install').setAttribute('aria-disabled','true');
+    await loadUpdateCenter();
   }catch{
     output.textContent='Controle mislukt. Er zijn geen bestanden gedownload of geïnstalleerd.';
   }finally{button.disabled=false;}
+});
+
+get('update-install').addEventListener('click',async()=>{
+  if(!state.csrf||!state.targetVersion||!state.updateStatus?.installAllowed)return;
+  const version=state.targetVersion;
+  if(!window.confirm('Domyro bijwerken naar '+version+'? De webportal wordt kort onderbroken. Eerst wordt een back-up gemaakt en proefhersteld.'))return;
+  get('update-install').disabled=true;
+  const output=get('updates-check-result');
+  try {
+    await api('system/updates/install',{method:'POST',csrf:true,body:{version}});
+    output.textContent='Update aangevraagd. Ondertekening en afhankelijkheden worden gecontroleerd…';
+    const phases={preparing:'Pakket controleren en voorbereiden',stopping:'Webportal stoppen',
+      backing_up:'Back-up maken en proefherstellen',activating:'Nieuwe versie activeren',
+      checking:'Nieuwe versie controleren',recovering:'Vorige versie en gegevens herstellen',
+      recovered:'Vorige versie hersteld',committed:'Update voltooid'};
+    for(let attempt=0;attempt<180;attempt++) {
+      await new Promise(resolve=>setTimeout(resolve,2000));
+      let status;
+      try { status=await api('system/updates'); }
+      catch { output.textContent='Domyro wordt herstart. Verbinding wordt opnieuw geprobeerd…';continue; }
+      output.textContent=phases[status.job?.phase]??'Update wordt verwerkt…';
+      if(status.recoveryRequired) {output.textContent='Herstel vereist aandacht op de server. Een volgende update is geblokkeerd.';break;}
+      if(status.lastError||['committed','recovered'].includes(status.job?.phase)&&!status.busy) {
+        if(status.lastError)output.textContent='Update niet voltooid. '+(phases[status.job?.phase]??'Controleer de updater op de server.');
+        state.targetVersion=null;await loadUpdateCenter();return;
+      }
+    }
+    output.textContent='De update is nog niet bevestigd. Ververs later de status; start niet opnieuw.';
+  }catch {output.textContent='De updateaanvraag kon niet worden bevestigd. Controleer de status voordat je opnieuw probeert.';}
+  await loadUpdateCenter();
 });
 
 get('add-site-form').addEventListener('submit',async event=>{
