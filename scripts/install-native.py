@@ -185,5 +185,14 @@ if __name__ == '__main__':
         main()
     except Exception as error:
         # Do not expose signed URL parameters or authority file contents.
-        print('Domyro bootstrap refused or interrupted: ' + type(error).__name__, file=__import__('sys').stderr)
+        safe = {'unsafe_install_authority', 'installation_gate_closed', 'runtime_redirect_refused',
+                'runtime_download_failed', 'runtime_download_too_large', 'runtime_download_empty',
+                'runtime_checksum_mismatch', 'runtime_archive_unsafe', 'runtime_archive_too_large',
+                'runtime_link_unsafe', 'runtime_executables_missing', 'unsafe_runtime_parent',
+                'unsafe_runtime_directory', 'existing_node_runtime_not_owned', 'existing_node_runtime_changed',
+                'runtime_version_mismatch', 'root_required', 'native_ubuntu_24_04_required',
+                'unsupported_architecture', 'absolute_paths_required', 'release_version_invalid',
+                'publisher_not_configured'}
+        reason = str(error) if str(error) in safe else type(error).__name__
+        print('Domyro bootstrap refused or interrupted: ' + reason, file=__import__('sys').stderr)
         raise SystemExit(1)

@@ -30,6 +30,10 @@ jobs:
           sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client
           sudo systemctl enable --now postgresql.service
           test ! -e /opt/node
+          # Hosted runners may make /opt writable to the runner user. Restore
+          # native-host ownership before the privileged runtime bootstrap.
+          sudo chown root:root /opt
+          sudo chmod 0755 /opt
       - name: Test pinned runtime extraction and refusal cases
         run: sudo python3 -m unittest discover -s tests -p 'native_bootstrap_test.py'
       - name: Signed first install, portal, supervisor, repeat refusal and failure preservation
