@@ -2,7 +2,25 @@
 
 **Prioriteit gewijzigd: de minimale bruikbare oplevering is een eenregelige Ubuntu-installatie, gevolgd door updates vanuit een bestaande Domyro-installatie.** Smart-homefuncties komen daarna. De beveiligingsstop **D-53 is nog gesloten**.
 
-## Voortgang 5 november 2026: eerste installatie vanuit gecontroleerd pakket
+## Voortgang 6 november 2026: zelfstandig installatiebestand en releasevoorbereiding
+
+De releasebouwer maakt nu een zelfstandig ondertekend Python-installatiebestand
+met beide architectuurpakketten en een checksum-gecontroleerd one-line commando.
+Node wordt automatisch met een vaste gecontroleerde versie geïnstalleerd. De
+native CI voert de volledige installatie, login, opslag en portalupdate via dit
+bestand uit, op AMD64 en ARM64. De matrix controleert nu ook installatie wanneer
+PostgreSQL nog ontbreekt. De configuratie voor officiële publicatie blijft dicht;
+er is nog geen publiek installatiecommando beschikbaar.
+
+`tools/setup-release-publisher.mjs` bereidt een nieuwe privésleutel en publieke
+policy voor buiten Git. Secrets instellen in GitHub vereist toegang van de
+repo-eigenaar. De concrete release-, toegangs- en updatestappen staan in
+[INSTALLATION-RELEASE-HANDOFF.md](INSTALLATION-RELEASE-HANDOFF.md). Deze minimale
+oplevering betreft core/portal/updates; smart-homefuncties blijven latere scope.
+De oudere brede productiechecklijst moet bij releasebeoordeling met deze scope
+in overeenstemming worden gebracht, zonder onbewezen functies gereed te noemen.
+
+### Historische voortgang 5 november 2026: eerste installatie vanuit gecontroleerd pakket
 
 De ondertekende native eerste installer is nu beschikbaar als ontwikkelcode:
 hij maakt core, PostgreSQL-rollen, eigenaar en aparte updater samen aan. De
