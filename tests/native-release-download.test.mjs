@@ -113,3 +113,28 @@ test('network errors, missing assets, invalid schemas and future signed releases
   await assert.rejects(fetchVerifiedOfficialSourceRelease(input(future.fetcher)),
     /release_published_in_future/);
 });
+test('signed GitHub asset redirects accept temporary query credentials and still verify all bytes',async t=>{
+  const f=fixture();
+  let redirected=0;
+  const fetcher=async(url,options)=>{
+    const u=new URL(url);
+    if(u.hostname==='github.com')return new Response(null,{status:302,headers:{
+      location:'https://release-assets.githubusercontent.com'+u.pathname+'?sp=r&sig=temporary%2Btoken',
+    }});
+    assert.equal(u.hostname,'release-assets.githubusercontent.com');
+    assert.equal(u.searchParams.get('sig'),'temporary+token');redirected++;
+    return f.fetcher(url,options);
+  };
+  const result=await fetchVerifiedOfficialSourceRelease(input(fetcher));
+  t.after(()=>rm(result.directory,{recursive:true,force:true}));
+  assert.equal(redirected,4);
+  assert.equal(result.allArtifactsVerified,true);
+});
+test('query-bearing redirects still reject untrusted hosts, userinfo, ports and fragments',async()=>{
+  for(const location of ['https://evil.example/file?sig=x',
+    'https://github.com@evil.example/file?sig=x','https://github.com:444/file?sig=x',
+    'https://release-assets.githubusercontent.com/file?sig=x#fragment']) {
+    await assert.rejects(fetchVerifiedOfficialSourceRelease(input(async()=>
+      new Response(null,{status:302,headers:{location}}))),/release_https_source_not_approved/);
+  }
+});

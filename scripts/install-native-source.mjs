@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Offline, signed first-install entry point. No unpublished key or test
 // authorization is generated here. An interrupted install is never overwritten.
-import {readFile,lstat,mkdir,chmod,open} from 'node:fs/promises';
+import {readFile,lstat,mkdir,chmod,open,rm} from 'node:fs/promises';
 import {constants} from 'node:fs';
 import {spawn,spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
@@ -10,6 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {validatePublisherTrustPolicy} from '../src/lifecycle/publisher-trust-policy.mjs';
 import {inspectOfflineNativeSourceRelease} from '../src/lifecycle/native-release-verifier.mjs';
 import {prepareVerifiedNativeSource} from '../src/lifecycle/prepare-native-source.mjs';
+import {fetchVerifiedOfficialSourceRelease,officialReleaseUrl} from '../src/lifecycle/native-release-download.mjs';
 import {assessOwnerInstallationGate} from './check-installation-gate.mjs';
 
 const ROOT='/var/lib/domyro-first-install';
@@ -17,11 +18,16 @@ export function parseFirstInstallArgs(args) {
   if(args[0]!=='--install')throw Error('explicit_install_required');
   const values={};
   for(const arg of args.slice(1)) {
+    if(arg.startsWith('--version=')) {
+      if(values.version)throw Error('first_install_argument_invalid');
+      values.version=arg.slice(10);officialReleaseUrl(values.version);continue;
+    }
     const m=/^--(directory|publisher-policy|readiness)=(\/[^\0\r\n]+)$/.exec(arg);
     if(!m||values[m[1]])throw Error('first_install_argument_invalid');
     values[m[1]]=resolve(m[2]);
   }
-  if(Object.keys(values).length!==3)throw Error('first_install_arguments_missing');
+  if(Object.keys(values).length!==3||!values['publisher-policy']||!values.readiness||
+    Boolean(values.directory)===Boolean(values.version))throw Error('first_install_arguments_missing');
   return values;
 }
 async function privateJson(path) {
@@ -48,6 +54,19 @@ export async function verifyFirstInstallRelease({directory,policy,readiness,arch
     trustedPublicKeyPem:policy.publicKeyPem,expectedPublicKeySha256:policy.publisherFingerprintSha256});
   return verified;
 }
+// Keep download ownership here: only a directory returned by the verified
+// transport is deleted. Caller-supplied offline source is never removed.
+export async function withFirstInstallSource({options,policy,readiness,architecture},install,
+  {download=fetchVerifiedOfficialSourceRelease,remove=rm}={}) {
+  if(!assessOwnerInstallationGate(readiness).ready)throw Error('installation_gate_closed');
+  validatePublisherTrustPolicy({policy});
+  if(options.directory)return install(options.directory);
+  officialReleaseUrl(options.version);
+  const source=await download({version:options.version,architecture,databaseSchema:3,
+    trustedPublicKeyPem:policy.publicKeyPem,expectedPublicKeySha256:policy.publisherFingerprintSha256});
+  try {return await install(source.directory);}
+  finally {await remove(source.directory,{recursive:true,force:true});}
+}
 async function main() {
   const options=parseFirstInstallArgs(process.argv.slice(2));
   if(process.getuid?.()!==0)throw Error('first_install_root_required');
@@ -59,7 +78,8 @@ async function main() {
   const policy=await privateJson(options['publisher-policy']);
   const readiness=await privateJson(options.readiness);
   const architecture={x64:'amd64',arm64:'arm64'}[process.arch];
-  const verified=await verifyFirstInstallRelease({directory:options.directory,policy,readiness,architecture});
+  return withFirstInstallSource({options,policy,readiness,architecture},async directory=>{
+  const verified=await verifyFirstInstallRelease({directory,policy,readiness,architecture});
   for(const path of ['/opt/domyro','/etc/domyro','/etc/domyro-updater',
     '/usr/lib/domyro-updater','/var/lib/domyro-updater','/etc/systemd/system/domyro.service',
     '/etc/systemd/system/domyro-updater.service']) {
@@ -80,7 +100,7 @@ async function main() {
   await exclusivePrivateFile(ROOT+'/authority/publisher.json',JSON.stringify(policy)+'\n');
   await exclusivePrivateFile(ROOT+'/authority/installation-readiness.json',JSON.stringify(readiness)+'\n');
   await syncDir(ROOT+'/authority');await syncDir(ROOT);
-  const staged=await prepareVerifiedNativeSource({directory:options.directory,
+  const staged=await prepareVerifiedNativeSource({directory,
     stageRoot:ROOT+'/source',currentVersion:'0.0.0',architecture,databaseSchema:3,
     trustedPublicKeyPem:policy.publicKeyPem,expectedPublicKeySha256:policy.publisherFingerprintSha256});
   if(staged.signedManifestSha256!==verified.manifestSha256)throw Error('first_install_package_changed');
@@ -107,6 +127,7 @@ async function main() {
     const child=spawn('/bin/bash',[script,'--install-verified-core'],{
       cwd:staged.stageDirectory,stdio:'inherit',env:{PATH:process.env.PATH,LANG:'C.UTF-8'}});
     child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(Error('native_first_install_incomplete')));
+  });
   });
 }
 if(process.argv[1]&&fileURLToPath(import.meta.url)===resolve(process.argv[1]))main().catch(error=>{

@@ -81,3 +81,23 @@ publieke releases worden via de vaste GitHub-releasebron opgehaald.
 Deze proef vult geen officiële productiecontroles automatisch in. Een compleet
 publiek installatiecommando, officiële sleutel, machine-reboot/stroomuitval en
 hardware/integratieherstel vereisen nog afzonderlijk bewijs.
+
+## Versioned online installation transport
+
+The existing trusted installer now accepts `--version=0.1.1` instead of
+`--directory=/absolute/package`. Both modes require the same independently
+provisioned publisher policy and installation-readiness files. They cannot be
+combined. The online mode downloads only the selected official GitHub release,
+checks its Ed25519 signature and both architecture hashes, then enters the same
+verified native installation path. Readiness and publisher trust are checked
+before any download. Temporary downloads are removed on success or installation
+failure; the durable installation receipt and application data are retained.
+
+GitHub's temporary asset redirect query parameters are supported. HTTPS,
+allowlisted hosts, redirect limits, bounded sizes and signed byte verification
+remain required. Tests use independently generated signatures and simulated
+transport; they do not certify a published official release.
+
+This is not yet a public curl bootstrap: Node 22.12+, a trusted checkout of the
+installer, official publisher provisioning and production readiness are still
+required. No official key or production authorization is generated implicitly.

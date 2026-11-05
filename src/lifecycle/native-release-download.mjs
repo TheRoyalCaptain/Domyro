@@ -33,7 +33,7 @@ export function officialReleaseUrl(version) {
 function locationUrl(value,{allowRedirect=false}={}){
   let url;
   try {url=new URL(value);}catch{throw new Error('release_source_url_invalid');}
-  if(url.protocol!=='https:'||url.port||url.username||url.password||url.search||
+  if(url.protocol!=='https:'||url.port||url.username||url.password||(!allowRedirect&&url.search)||
     url.hash||!ALLOWED_REDIRECT_HOSTS.has(url.hostname)){
     throw new Error('release_https_source_not_approved');
   }
