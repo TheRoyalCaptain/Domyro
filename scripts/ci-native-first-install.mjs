@@ -37,8 +37,8 @@ const readiness={...originalGate,checks:Object.fromEntries(Object.keys(originalG
   readyForOwnerInstallation:true,ownerDeploymentConsentRecorded:true};
 await writeFile(tmp+'/publisher.json',JSON.stringify(policy),{mode:0o600});
 await writeFile(tmp+'/readiness.json',JSON.stringify(readiness),{mode:0o600});
-async function build(directory,projectRoot) {
-  const signed=await buildSignedSourceRelease({projectRoot,version:'0.1.1',channel:'stable',
+async function build(directory,projectRoot,version='0.1.1') {
+  const signed=await buildSignedSourceRelease({projectRoot,version,channel:'stable',
     publishedAt:new Date().toISOString().replace(/\.\d{3}Z$/,'Z'),privateKeyPem:pair.privateKey.export({type:'pkcs8',format:'pem'})});
   await writeSignedRelease(directory,signed);
 }
@@ -89,6 +89,25 @@ try {
   for(let n=0;n<40;n++){try{rooms=await api('sites/'+site+'/areas',auth);break;}catch{await new Promise(r=>setTimeout(r,250));}}
   assert(rooms?.body.areas?.some(x=>x.id===room.body.area.id),'first_install_restart_lost_room');
   assert(run('systemctl',['show','--value','-p','MainPID','domyro-updater.service'])===supervisor,'core_restart_stopped_supervisor');
+  // Install a separately signed, preloaded release through the REAL portal,
+  // Unix socket and root systemd worker. No alternate worker or mocked host.
+  await mkdir('/var/lib/domyro-updater/offline',{mode:0o700});
+  await build('/var/lib/domyro-updater/offline/0.1.2',process.cwd(),'0.1.2');
+  const queued=await api('system/updates/install',{...auth,body:{version:'0.1.2'}});
+  assert(queued.status===202,'first_install_portal_update_not_accepted');
+  let updated=false;
+  for(let n=0;n<120;n++) {
+    await new Promise(r=>setTimeout(r,1000));
+    try {
+      const status=await api('system/updates',auth);
+      if(status.status!==200)continue;
+      assert(!status.body.lastError&&!status.body.recoveryRequired,'first_install_portal_update_failed');
+      if(status.body.job?.phase==='committed'&&status.body.currentVersion==='0.1.2'&&!status.body.busy) {updated=true;break;}
+    }catch(error){if(error.message==='first_install_portal_update_failed')throw error;}
+  }
+  assert(updated,'first_install_portal_update_did_not_finish');
+  assert((await api('sites/'+site+'/areas',auth)).body.areas.some(x=>x.id===room.body.area.id),'portal_update_lost_room');
+  assert(run('systemctl',['show','--value','-p','MainPID','domyro-updater.service'])===supervisor,'portal_update_stopped_worker');
   console.log('Signed first install: native core, generated owner, PostgreSQL persistence and independent updater verified.');
   await cleanup();
 

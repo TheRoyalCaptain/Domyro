@@ -8,6 +8,7 @@ import {createNativeUpdateHost} from '../src/lifecycle/native-update-host.mjs';
 import {createUpdateWorkerServer} from '../src/lifecycle/update-worker-ipc.mjs';
 import {assessOwnerInstallationGate} from './check-installation-gate.mjs';
 import {validatePublisherTrustPolicy} from '../src/lifecycle/publisher-trust-policy.mjs';
+import {selectNativeReleasePackage} from '../src/lifecycle/native-release-cache.mjs';
 
 async function privateJson(path) {
   const s=await lstat(path);
@@ -28,7 +29,7 @@ async function main() {
     if(JSON.stringify(fresh)!==JSON.stringify(policy))throw Error('publisher_changed_restart_worker');
   };
   const policy=await privateJson('/etc/domyro-updater/publisher.json');
-  const host=createNativeUpdateHost({...settings.layout,policy,authorize});
+  const host=createNativeUpdateHost({...settings.layout,policy,authorize,download:selectNativeReleasePackage});
   const job=await createNativeUpdateJob({root:'/var/lib/domyro-updater/state',host});
   // Recovery does not require the release gate to remain open: restoring a
   // previously installed release must still work if publishing is disabled.

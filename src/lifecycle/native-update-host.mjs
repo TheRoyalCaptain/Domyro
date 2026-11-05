@@ -109,6 +109,7 @@ export function createNativeUpdateHost({app,config,work,unit,database,serviceUse
         stageRoot:join(root,'signed'),currentVersion:record.previousVersion,...trust}); }
       finally { if(release.directory.startsWith('/tmp/domyro-source-download-'))
         await rm(release.directory,{recursive:true,force:true}); }
+      if(staged.version!==record.version)throw Error('native_update_requested_version_mismatch');
       // Independently compare every migration with installed code. Version
       // ranges in a manifest alone cannot authorize SQL changes.
       const incoming=join(staged.stageDirectory,'src/persistence/migrations');
