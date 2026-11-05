@@ -1,0 +1,42 @@
+name: Native signed first installation
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'tools/build-release.mjs'
+      - 'package*.json'
+      - '.github/workflows/native-first-install.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  first-install:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare native prerequisites on disposable host
+        run: |
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client
+          sudo systemctl enable --now postgresql.service
+          test ! -e /opt/node
+          sudo install -d -m 0755 /opt/node/bin
+          sudo ln -s "$(command -v node)" /opt/node/bin/node
+          sudo ln -s "$(command -v npm)" /opt/node/bin/npm
+      - name: Signed first install, portal, supervisor, repeat refusal and failure preservation
+        run: |
+          sudo env "PATH=/opt/node/bin:$PATH" GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+            "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" DOMYRO_CI_FIRST_INSTALL=1 \
+            node scripts/ci-native-first-install.mjs
+      - name: Keep official installation gate unchanged
+        run: node scripts/check-installation-gate.mjs

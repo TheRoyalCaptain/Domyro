@@ -39,7 +39,7 @@ async function main() {
     if(!s.isSocket()||s.uid!==0)throw Error('update_worker_socket_unsafe');
     await unlink(socket);
   }catch(e){if(e.code!=='ENOENT')throw e;}
-  const server=createUpdateWorkerServer({job,authorize,currentVersion:host.currentVersion});
+  const server=createUpdateWorkerServer({job,authorize:host.authorize,currentVersion:host.currentVersion});
   server.on('error',()=>{process.exitCode=1;});
   server.listen(socket,async()=>{await chmod(socket,0o660);});
   for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>server.close());

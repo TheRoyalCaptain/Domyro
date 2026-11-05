@@ -62,6 +62,7 @@ RuntimeDirectory=domyro-updater
 RuntimeDirectoryMode=0750
 RuntimeDirectoryPreserve=yes
 WorkingDirectory=/usr/lib/domyro-updater
+Environment=PATH=${NODE%/*}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/usr/bin/flock --nonblock /run/domyro-updater/worker.lock $NODE /usr/lib/domyro-updater/scripts/native-update-worker.mjs
 Restart=on-failure
 RestartSec=5
