@@ -227,9 +227,6 @@ for attempt in $(seq 1 30); do
   sleep 1
 done
 [[ "$live" == 1 ]] || die "service not healthy; see journalctl -u $UNIT"
-log "READY: native localhost portal http://127.0.0.1:$PORT"
-log "Login: owner; password: sudo cat $CONF/owner-password.txt"
-log "Access from PC: ssh -L 8844:127.0.0.1:8844 user@server"
 # Verify the generated account and persistent site through the actual API.
 node --input-type=module <<'JS'
 import {readFile} from 'node:fs/promises';
@@ -246,4 +243,7 @@ if(updates.status!==200||(await updates.json()).workerAvailable!==true)throw Err
 JS
 phase installed
 trap - ERR
+log "READY: native localhost portal http://127.0.0.1:$PORT"
+log "Login: owner; password: sudo cat $CONF/owner-password.txt"
+log "Access from PC: ssh -L 8844:127.0.0.1:8844 user@server"
 log "Verified signed core, owner login, database and native update supervisor are running."

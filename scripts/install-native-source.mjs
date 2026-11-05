@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Offline, signed first-install entry point. No unpublished key or test
 // authorization is generated here. An interrupted install is never overwritten.
-import {readFile,lstat,mkdir,writeFile,chmod,open} from 'node:fs/promises';
+import {readFile,lstat,mkdir,chmod,open} from 'node:fs/promises';
+import {constants} from 'node:fs';
 import {spawn,spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -24,10 +25,13 @@ export function parseFirstInstallArgs(args) {
   return values;
 }
 async function privateJson(path) {
-  const s=await lstat(path);
-  if(!s.isFile()||s.isSymbolicLink()||s.nlink!==1||s.uid!==0||
-     (s.mode&0o022)!==0||s.size>65536)throw Error('first_install_policy_unsafe');
-  return JSON.parse(await readFile(path,'utf8'));
+  const fd=await open(path,constants.O_RDONLY|constants.O_NOFOLLOW);
+  try {
+    const s=await fd.stat();
+    if(!s.isFile()||s.nlink!==1||s.uid!==0||(s.mode&0o022)!==0||s.size>65536)
+      throw Error('first_install_policy_unsafe');
+    return JSON.parse(await fd.readFile('utf8'));
+  }finally{await fd.close();}
 }
 async function exclusivePrivateFile(path,value) {
   const fd=await open(path,'wx',0o600);

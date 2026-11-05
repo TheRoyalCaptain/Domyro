@@ -2,6 +2,18 @@
 
 **Prioriteit gewijzigd: de minimale bruikbare oplevering is een eenregelige Ubuntu-installatie, gevolgd door updates vanuit een bestaande Domyro-installatie.** Smart-homefuncties komen daarna. De beveiligingsstop **D-53 is nog gesloten**.
 
+## Voortgang 5 november 2026: eerste installatie vanuit gecontroleerd pakket
+
+De ondertekende native eerste installer is nu beschikbaar als ontwikkelcode:
+hij maakt core, PostgreSQL-rollen, eigenaar en aparte updater samen aan. De
+AMD64/ARM64-proef controleert aanmelding, bewaarde kamers, herstart en behoud
+van gegevens na een afgebroken installatie. Zie
+[NATIVE-SIGNED-FIRST-INSTALL.md](NATIVE-SIGNED-FIRST-INSTALL.md).
+
+Dit is nog niet de publieke bootstrap voor een volledig lege server. Node.js
+moet vooraf aanwezig zijn; officiële sleutel/publicatie en de onafhankelijke
+bootstrap blijven open. De globale productievoorwaarden zijn niet veranderd.
+
 ## Voortgang 4 november 2026: native updateworker
 
 De portalinstallatieroute, afzonderlijke supervisor, ondertekende bronactivatie,
