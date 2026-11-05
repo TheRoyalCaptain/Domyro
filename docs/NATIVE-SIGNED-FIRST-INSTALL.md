@@ -98,6 +98,31 @@ allowlisted hosts, redirect limits, bounded sizes and signed byte verification
 remain required. Tests use independently generated signatures and simulated
 transport; they do not certify a published official release.
 
-This is not yet a public curl bootstrap: Node 22.12+, a trusted checkout of the
-installer, official publisher provisioning and production readiness are still
-required. No official key or production authorization is generated implicitly.
+This is not yet a public curl bootstrap: a trusted checkout of the installer,
+official publisher provisioning and production readiness are still required.
+The Python entry point below supplies Node automatically. No official key or production authorization is generated implicitly.
+
+
+## Automatic native Node prerequisite
+
+`scripts/install-native.py` is the trusted-checkout entry point on Ubuntu 24.04.
+It takes the same `--install`, `--directory` or `--version`, `--publisher-policy`
+and `--readiness` arguments as the Node entry point. Python 3.12 and system CA
+certificates must be present. No pip packages or third-party apt repositories
+are added.
+
+After checking root ownership and readiness, it downloads Node **22.23.4** from
+nodejs.org for the detected AMD64/ARM64 architecture, checks a reviewed pinned
+SHA-256 digest before extraction, bounds archive sizes, rejects path escapes and
+unsafe links, and atomically installs `/opt/node`. The runtime is not replaced
+if an unrelated `/opt/node` already exists. An exact receipt allows reuse after
+a later application-install failure. A process lock prevents concurrent installs.
+The runtime stays installed if application installation fails; application data
+and installation receipts are preserved by the existing installer.
+
+The native-first-install CI now uses this entry point and downloads the actual
+pinned runtime instead of linking the runner's Node into `/opt/node`. It then
+runs the existing login, persistence, update and installation-failure proof.
+The runtime is not automatically upgraded during core updates. Runtime security
+updates require a separately reviewed lifecycle change; publisher trust and
+production readiness remain closed until independently configured.

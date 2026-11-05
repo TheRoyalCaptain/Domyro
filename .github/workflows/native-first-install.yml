@@ -30,9 +30,8 @@ jobs:
           sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client
           sudo systemctl enable --now postgresql.service
           test ! -e /opt/node
-          sudo install -d -m 0755 /opt/node/bin
-          sudo ln -s "$(command -v node)" /opt/node/bin/node
-          sudo ln -s "$(command -v npm)" /opt/node/bin/npm
+      - name: Test pinned runtime extraction and refusal cases
+        run: sudo python3 -m unittest discover -s tests -p 'native_bootstrap_test.py'
       - name: Signed first install, portal, supervisor, repeat refusal and failure preservation
         run: |
           sudo env "PATH=/opt/node/bin:$PATH" GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \

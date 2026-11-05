@@ -43,7 +43,7 @@ async function build(directory,projectRoot,version='0.1.1') {
   await writeSignedRelease(directory,signed);
 }
 function install(directory) {
-  return spawnSync(process.execPath,['scripts/install-native-source.mjs','--install','--directory='+directory,
+  return spawnSync('python3',['scripts/install-native.py','--install','--directory='+directory,
     '--publisher-policy='+tmp+'/publisher.json','--readiness='+tmp+'/readiness.json'],{
     encoding:'utf8',timeout:300000,env:process.env});
 }

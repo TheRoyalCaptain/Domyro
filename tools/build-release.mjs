@@ -13,7 +13,7 @@ import { verifySignedManifest, verifyArtifactBytes } from '../src/lifecycle/rele
 const ROOT_FILES = Object.freeze(['package.json', 'package-lock.json']);
 // Only the explicitly listed setup and lifecycle entry points are shipped.
 // CI scripts, signing tools and test fixtures are NEVER part of a release bundle.
-const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs', 'scripts/install-native-source.mjs', 'scripts/native-core-install.sh', 'scripts/native-update-setup.sh', 'scripts/native-update-worker.mjs', 'scripts/check-installation-gate.mjs']);
+const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs', 'scripts/install-native-source.mjs', 'scripts/install-native.py', 'scripts/native-core-install.sh', 'scripts/native-update-setup.sh', 'scripts/native-update-worker.mjs', 'scripts/check-installation-gate.mjs']);
 const ROOT_DIRS = Object.freeze(['src', 'web']);
 const EXTENSIONS = new Set(['.mjs', '.js', '.json', '.sql', '.html', '.css', '.svg']);
 const FILE_LIMIT = 8 * 1024 * 1024;
