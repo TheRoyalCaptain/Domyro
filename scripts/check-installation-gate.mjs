@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
 export function assessOwnerInstallationGate(record) {
   if (!record || record.schemaVersion !== 1 || record.ownerDecision !== 'D-53' || !record.checks || typeof record.checks !== 'object' || Array.isArray(record.checks)) throw new Error('installation_gate_record_invalid');
@@ -16,7 +17,7 @@ export function assessOwnerInstallationGate(record) {
   return Object.freeze({ releaseReady, ready, ownerConsent: record.ownerDeploymentConsentRecorded, blockers: Object.freeze(blockers) });
 }
 
-const isMain = process.argv[1] && fileURLToPath(import.meta.url) === new URL('file://' + process.argv[1]).href;
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 if (isMain) {
   try {
     if (process.argv.length > 3 || (process.argv[2] && !['--require-ready', '--require-release'].includes(process.argv[2]))) throw new Error('Usage: node scripts/check-installation-gate.mjs [--require-ready|--require-release]');

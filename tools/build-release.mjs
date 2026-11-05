@@ -11,9 +11,9 @@ import { fileURLToPath } from 'node:url';
 import { verifySignedManifest, verifyArtifactBytes } from '../src/lifecycle/release.mjs';
 
 const ROOT_FILES = Object.freeze(['package.json', 'package-lock.json']);
-// Only these two CLI tools are shipped for explicitly approved first-time setup.
+// Only the explicitly listed setup and lifecycle entry points are shipped.
 // CI scripts, signing tools and test fixtures are NEVER part of a release bundle.
-const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs']);
+const RUNTIME_SCRIPTS = Object.freeze(['scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs', 'scripts/install-native-source.mjs', 'scripts/install-native.py', 'scripts/native-core-install.sh', 'scripts/native-update-setup.sh', 'scripts/native-update-worker.mjs', 'scripts/check-installation-gate.mjs']);
 const ROOT_DIRS = Object.freeze(['src', 'web']);
 const EXTENSIONS = new Set(['.mjs', '.js', '.json', '.sql', '.html', '.css', '.svg']);
 const FILE_LIMIT = 8 * 1024 * 1024;
@@ -61,11 +61,48 @@ async function collectFiles(projectRoot) {
     'src/persistence/migrator.mjs', 'src/lifecycle/release.mjs',
     'web/index.html', 'web/login.html', 'web/assets/app.js',
     'web/assets/login.js', 'web/assets/styles.css',
-    'package-lock.json', 'scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs',
+    'package-lock.json', 'scripts/migrate-db.mjs', 'scripts/bootstrap-owner.mjs', 'scripts/domyro-release.mjs', 'scripts/prepare-native-signed-source.mjs',
   ];
   const names = new Set(collected.map(x => x.path));
+  if (names.size !== collected.length) throw new Error('release_duplicate_source_path');
   for (const file of required) if (!names.has(file)) throw new Error('release_missing_required_file:' + file);
   return collected.sort((a,b)=>a.path.localeCompare(b.path,'en'));
+}
+
+/**
+ * Signed release archives need an internally consistent installed version.
+ * The checkout may still be a -dev snapshot while the signed artifact is a
+ * stable release. Rewrite versions in the SNAPSHOT only; never mutate git,
+ * npm lockfile dependencies, or the developer's installed application.
+ */
+function releaseVersionSnapshot(files,version){
+  const find=name=>{
+    const item=files.find(f=>f.path===name);
+    if(!item)throw new Error('source_package_metadata_missing');
+    let data;
+    try{data=JSON.parse(Buffer.from(item.base64,'base64').toString('utf8'));}
+    catch{throw new Error('source_package_metadata_invalid');}
+    return data;
+  };
+  const packageJson=find('package.json');
+  const lock=find('package-lock.json');
+  if(packageJson.name!=='domyro'||typeof packageJson.version!=='string'||
+    lock.name!=='domyro'||lock.lockfileVersion!==3||
+    !lock.packages?.['']||lock.packages[''].name!=='domyro'||
+    lock.version!==packageJson.version||
+    lock.packages[''].version!==packageJson.version){
+    throw new Error('source_package_metadata_inconsistent');
+  }
+  packageJson.version=version;
+  lock.version=version;
+  lock.packages[''].version=version;
+  const serialized=new Map([
+    ['package.json',Buffer.from(JSON.stringify(packageJson,null,2)+'\n').toString('base64')],
+    ['package-lock.json',Buffer.from(JSON.stringify(lock,null,2)+'\n').toString('base64')],
+  ]);
+  return files.map(f=>Object.freeze({
+    path:f.path,base64:serialized.get(f.path)??f.base64,
+  }));
 }
 
 async function currentSourceDatabaseSchema(projectRoot) {
@@ -93,7 +130,7 @@ export async function buildSignedSourceRelease({ projectRoot, version, channel, 
   const key = createPrivateKey(privateKeyPem);
   if (key.asymmetricKeyType !== 'ed25519') throw new Error('ed25519_signing_key_required');
   const resolvedRoot = resolve(projectRoot);
-  const sourceFiles = await collectFiles(resolvedRoot);
+  const sourceFiles = releaseVersionSnapshot(await collectFiles(resolvedRoot),version);
   const databaseSchema = await currentSourceDatabaseSchema(resolvedRoot);
   const artifacts = [], artifactBytes = {};
   for (const arch of ['amd64', 'arm64']) {

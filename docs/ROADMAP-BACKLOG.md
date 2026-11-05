@@ -59,8 +59,8 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 
 - **DOM-030 P0 M (in progress):** Configurable TLS capable MQTT connection, broker health and resubscription. **Implemented:** MQTT.js read-only 3.1.1 client, strictly localhost and opt-in for test broker, subscription and offline status. **Still missing:** authenticated/TLS LAN broker connections, durable reconnect/replay validation, credential vault and real Mosquitto compatibility tests.
 - **DOM-031 P0 M:** Generic MQTT discovery/config and mapping UI. Accept: real or simulated switch read+write with validation.
-- **DOM-032 P0 M (in progress):** Zigbee2MQTT discovery and exposes parser. **Implemented:** read-only bridge inventory and whitelist of observed state fields keyed by IEEE address; duplicate/invalid-message rejection and stable rename identity; site-bound PostgreSQL inventory/observations with cross-site access tests. **Added:** explicit read-only observer-snapshot → site-owned PostgreSQL ingestion proof. **Still missing:** secure automatic broker-to-DB lifecycle, full exposes parser, real battery/lamp mapping and hardware evidence.
-- **DOM-033 P0 M:** Zigbee2MQTT command/acknowledgment and observations. Accept: physical device state confirmed independently.
+- **DOM-032 P0 M (in progress):** Zigbee2MQTT discovery and exposes parser. **Implemented:** read-only bridge inventory and whitelist of observed state fields keyed by IEEE address; duplicate/invalid-message rejection and stable rename identity; site-bound PostgreSQL inventory/observations with cross-site access tests. **Added:** explicit read-only observer-snapshot → site-owned PostgreSQL ingestion proof. **New in CI:** conservative single-endpoint switch/light exposes permission parsing, with immutable device-control metadata and negative tests. **Still missing:** secure automatic broker-to-DB lifecycle, full exposes parser, real battery/lamp mapping and hardware evidence.
+- **DOM-033 P0 M (in progress):** Zigbee2MQTT command/acknowledgment and observations. **Implemented in disposable CI:** explicit operator-confirmed state/brightness command protocol, one pending operation, limited actions and no retries; distinguish MQTT PUBACK from newly observed non-retained state for same IEEE identity, with negative broker/time-out/rename tests. **Missing:** authenticated/live hardware control service, durable command ledger, TLS broker credentials, physical actuator confirmation and operator UI. Accept: physical device state confirmed independently.
 - **DOM-034 P0 M:** Zigbee2MQTT timed pairing and lifecycle. Accept: permit_join ends and rename stable.
 - **DOM-035 P0 S:** E2E hardware proof video/test report. Accept: real bulb+sensor, no HA needed, restart and reconnect pass.
 
@@ -76,7 +76,7 @@ Critical path: M0 -> M1 -> M2 -> M4 -> M5 -> M6; Matter M3 proceeds in parallel 
 ### EPIC UX — Usability and dashboards
 
 - **DOM-050 P0 M:** Tokens, themes, accessible UI component library and responsive shell. Accept: light/dark and keyboard paths.
-- **DOM-051 P0 M:** Resident overview, rooms and favorites. Accept: live device controls with error/pending states.
+- **DOM-051 P0 M (in progress):** Resident overview, rooms and favorites. **Implemented:** real authenticated site-scoped read-only Zigbee inventory API and NL/EN dashboard cards showing saved observed state with quality labels; zero mock devices. **Missing:** authorized live controls, room/favorite mapping, accessible progress/error states and real hardware integration. Accept: live device controls with error/pending states.
 - **DOM-052 P0 M:** Device detail, diagnostic information, filters and editing. Accept: permission-aware views.
 - **DOM-053 P0 L:** Dashboard widget registry, edit/save layout, per-user defaults. Accept: responsive, validated capability-aware widgets.
 - **DOM-054 P0 M:** Scenes creator, preview/run/partial outcome. Accept: scene failure visible per target.

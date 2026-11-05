@@ -1,0 +1,105 @@
+name: Official signed source release (D-53 gated)
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Strict SemVer matching package.json
+        required: true
+        type: string
+      channel:
+        description: Stable or explicitly reviewed beta
+        required: true
+        type: choice
+        options: [stable, beta]
+permissions:
+  contents: read
+concurrency:
+  group: domyro-official-release
+  cancel-in-progress: false
+jobs:
+  release:
+    name: Review-gated signed release draft
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: production-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject incomplete production gates BEFORE any key access
+        run: node scripts/check-installation-gate.mjs --require-ready
+      - name: Verify requested version and committed source version
+        env:
+          VERSION: ${{ inputs.version }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const v=process.env.VERSION, c=process.env.CHANNEL;
+            if(!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[A-Za-z0-9.-]+)?$/.test(v) ||
+               !["stable","beta"].includes(c) ||
+               (c==="stable"&&v.includes("-")) ||
+               fs.readFileSync("package.json","utf8").length>40000 ||
+               JSON.parse(fs.readFileSync("package.json","utf8")).version!==v)
+              throw Error("release_version_or_channel_not_approved");
+          '
+      - name: Install exact checked-in dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Test full suite before signing
+        run: npm run check
+      - name: Sign and reverify both official architecture packages
+        env:
+          RELEASE_PRIVATE_KEY_PEM: ${{ secrets.DOMYRO_RELEASE_ED25519_PRIVATE_KEY_PEM }}
+          RELEASE_KEY_PATH: ${{ runner.temp }}/domyro-publisher-private.pem
+          PUBLIC_KEY_PATH: ${{ runner.temp }}/domyro-publisher-public.pem
+          VERSION: ${{ inputs.version }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$RELEASE_PRIVATE_KEY_PEM" || { echo 'Official signing key missing'; exit 78; }
+          printf '%s' "$RELEASE_PRIVATE_KEY_PEM" > "$RELEASE_KEY_PATH"
+          unset RELEASE_PRIVATE_KEY_PEM
+          trap 'rm -f -- "$RELEASE_KEY_PATH" "$PUBLIC_KEY_PATH"' EXIT
+          node tools/verify-release-publisher.mjs config/release-publisher.json "$RELEASE_KEY_PATH"
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const t=JSON.parse(fs.readFileSync("config/release-publisher.json","utf8"));
+            fs.writeFileSync(process.env.PUBLIC_KEY_PATH,t.publicKeyPem,{mode:0o600,flag:"wx"});
+          '
+          mkdir -p "${RUNNER_TEMP}/domyro-official-source"
+          node tools/build-release.mjs . "${RUNNER_TEMP}/domyro-official-source" \
+            "$VERSION" "$CHANNEL" "$RELEASE_KEY_PATH"
+          FINGERPRINT="$(node -p 'JSON.parse(require("node:fs").readFileSync("config/release-publisher.json","utf8")).publisherFingerprintSha256')"
+          for ARCH in amd64 arm64; do
+            node scripts/verify-native-source-release.mjs \
+              --directory="${RUNNER_TEMP}/domyro-official-source" \
+              --publisher-key="$PUBLIC_KEY_PATH" \
+              --publisher-fingerprint="$FINGERPRINT" --arch="$ARCH" --schema=3 \
+              --channel="$CHANNEL" > /dev/null
+          done
+          node tools/build-bootstrap.mjs "${RUNNER_TEMP}/domyro-official-source" \
+            "${RUNNER_TEMP}/domyro-bootstrap" config/release-publisher.json \
+            config/installation-readiness.json "$RELEASE_KEY_PATH"
+      - name: Create immutable-version release DRAFT for final review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v$RELEASE_VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing overwrite'
+            exit 79
+          fi
+          gh release create "$TAG" "${RUNNER_TEMP}/domyro-official-source/"* "${RUNNER_TEMP}/domyro-bootstrap/"* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Domyro $TAG" \
+            --notes "Signed source package. Manual final release approval required." \
+            --draft

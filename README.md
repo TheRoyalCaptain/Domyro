@@ -31,6 +31,64 @@ Domyro is an open-source, local-first smart-home platform under active developme
 - Home Assistant bridge only for transition and subsequent migration assistance.
 - AI and speech deliberately follow a reliable base.
 
+## Ubuntu SERVER preview: native PostgreSQL + systemd, **no Docker**
+
+Domyro now has a **separate opt-in native Ubuntu 24.04 server preview**.
+It runs the actual web UI, authenticated HTTP backend and persisted
+PostgreSQL 16/17 data without Docker, containers or a Node development
+terminal kept open. PostgreSQL is a regular Ubuntu service, Domyro is a
+hardened `domyro-preview-native.service` that starts on boot.
+
+**This is an explicitly marked server-development preview, NOT the
+production one-line installer and NOT an automatic signed-release updater.**
+It must be deliberately installed on a separate non-production Ubuntu
+24.04 host. Docker is *not* required or used.
+
+Prerequisites installed natively: Node.js >=22.12, npm, systemd, git, sudo and curl. The **opt-in one-command setup** installs PostgreSQL 16+ from Ubuntu's official apt packages if absent, then runs locked npm ci and the restricted native systemd preview installer. It does not install Docker or an unpinned third-party Node runtime. In a normal user's SSH terminal:
+
+```bash
+git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
+cd Domyro
+bash scripts/native-preview-setup.sh --install-native-preview
+```
+
+Access it via a localhost SSH tunnel, with **no public HTTP port**:
+`ssh -L 8844:127.0.0.1:8844 USER@SERVER`, then visit
+`http://127.0.0.1:8844/login` on your PC. Account:
+`native_preview_owner`, password:
+`sudo cat /etc/domyro-preview-native/owner-password.txt` on the server.
+
+For manual cosmetic/backend revisions (no database schema changes):
+`git pull --ff-only`, `npm ci --omit=dev --ignore-scripts --no-audit --no-fund`,
+then `sudo bash scripts/native-preview-refresh.sh --refresh-native-preview`.
+The previous application directory is saved under
+`/opt/domyro-preview-native-history`, with best-effort code rollback
+if the newly restarted service fails health checks.
+
+**Native-only automated acceptance:** a dedicated GitHub Actions workflow
+tests actual Ubuntu AMD64/ARM64 host PostgreSQL and systemd with **no
+Docker**. It verifies login, homes/rooms persisted after restart,
+loopback-only listening, a restricted DB role, manual refresh, and
+pre-existing install refusal. Details:
+[Docker-free native server portal](docs/NATIVE-SERVER-PORTAL-NO-DOCKER.md).
+
+## Visual design portal with a real backend (separate development PC)
+
+**New:** the integration branch has a complete opt-in localhost visual portal, backed by its **own** isolated PostgreSQL 17 Docker container. It is designed for UI review, not for deployment to the owner's production Domyro/Home Assistant host. Docker Engine and Node.js 22.12+ must already be installed on a separate development computer.
+
+```bash
+git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
+cd Domyro
+npm ci --ignore-scripts --no-audit --no-fund
+npm run preview:portal
+```
+
+Open **http://127.0.0.1:8844/** (main dashboard) and **http://127.0.0.1:8844/login** (account portal). The local account is `preview_owner`; see its private, randomly generated password using `cat .domyro-preview/owner-password.txt`. The full local PostgreSQL-backed experience supports login, creating and renaming homes, creating and renaming rooms, site-scoped read-only device observations, and viewing your saved homes/rooms on the dashboard. The application never creates fake devices or claims to control live hardware.
+
+Stop the webserver with Ctrl+C. Stop the separate persistent Docker **development** database using `npm run preview:stop`; its dedicated volume/data remain intact.
+
+The script refuses remote Docker daemons and root execution, binds both PostgreSQL and the webserver to 127.0.0.1, never installs OS packages or modifies systemd, and ignores its `.domyro-preview/` secrets directory in Git. **Do not confuse this development runner with a production one-line Ubuntu installer.** Full instructions: [Local visual design portal](docs/LOCAL-VISUAL-PORTAL.md).
+
 ## Run the development preview (isolated development computer ONLY)
 
 **Do not run these commands on the owner's actual server or Home Assistant environment.** The user explicitly wants to defer any such installation until the complete one-command installer and safe update/recovery system have been independently validated.

@@ -1,0 +1,60 @@
+name: Docker-free native Ubuntu server portal
+on:
+  pull_request:
+    paths:
+      - 'scripts/native-preview-setup.sh'
+      - 'scripts/native-preview-install.sh'
+      - 'scripts/native-preview-refresh.sh'
+      - 'scripts/native-preview-recover.sh'
+      - 'scripts/ci-native-preview-smoke.mjs'
+      - 'scripts/ci-native-signed-update.mjs'
+      - 'scripts/native-update-worker.mjs'
+      - 'src/**'
+      - 'web/**'
+      - 'scripts/migrate-db.mjs'
+      - 'scripts/bootstrap-owner.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/native-preview-host.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-portal:
+    name: Ubuntu host PostgreSQL systemd (NO Docker) / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 24
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    env:
+      DOMYRO_CI_NATIVE_PREVIEW: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare native PostgreSQL on disposable CI host only (NO Docker)
+        run: |
+          set -euo pipefail
+          test -d /run/systemd/system
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-client
+          sudo systemctl enable --now postgresql.service
+          sudo -u postgres psql -X -qAt -d postgres -c "SHOW server_version_num"
+          node --version
+          bash -n scripts/native-preview-setup.sh
+      - name: Reject invalid native setup script before privileged test
+        run: |
+          bash -n scripts/native-preview-setup.sh scripts/native-preview-install.sh scripts/native-preview-refresh.sh scripts/native-preview-recover.sh
+          node --check scripts/ci-native-preview-smoke.mjs
+      - name: Run Docker-free native installation and authenticated portal smoke
+        run: node scripts/ci-native-preview-smoke.mjs
+      - name: Prove signed native update and PostgreSQL/config/code recovery
+        run: |
+          sudo env "PATH=$PATH" GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+            DOMYRO_CI_NATIVE_PREVIEW=1 "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" \
+            node scripts/ci-native-signed-update.mjs
+      - name: Verify dev-only gate stays closed
+        run: node scripts/check-installation-gate.mjs

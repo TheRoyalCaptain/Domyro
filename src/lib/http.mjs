@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { INSTALLED_VERSION } from '../lifecycle/installed-version.mjs';
 
 const assets = new Map([
   ['/', { filename: '../../web/index.html', mime: 'text/html; charset=utf-8' }],
@@ -30,13 +31,20 @@ export function sendJson(response, code, data) {
 }
 
 /** @param {import('node:http').IncomingMessage} request @param {import('node:http').ServerResponse} response */
-export async function handleRequest(request, response, { persistence = null, auth = null } = {}) {
+export async function handleRequest(request, response, { persistence = null, auth = null, maintenanceCheck = async()=>false } = {}) {
   let pathname;
   try {
     pathname = new URL(request.url ?? '/', 'http://domyro.invalid').pathname;
   } catch {
     sendJson(response, 400, { error: 'bad_request' });
     return;
+  }
+  // The updater's root-owned marker persists through core restarts and data
+  // recovery. Reads/status remain available; no user writes can be lost when
+  // a failing candidate is restored to the pre-update snapshot.
+  if(!['GET','HEAD'].includes(request.method??'')&&await maintenanceCheck()) {
+    response.setHeader('retry-after','5');
+    sendJson(response,503,{error:'maintenance_in_progress'});return;
   }
   // Authenticate state-bearing API routes before the GET-only preview fallback.
   if (auth && await auth.route(request, response, pathname)) return;
@@ -59,7 +67,7 @@ export async function handleRequest(request, response, { persistence = null, aut
   if (pathname === '/api/v1/public/status') {
     const db = persistence ? await persistence.inspect() : { ready: false, reason: 'persistence_not_configured' };
     sendJson(response, 200, {
-      service: 'Domyro', version: '0.1.0-dev.1', phase: 'foundation',
+      service: 'Domyro', version: INSTALLED_VERSION, phase: 'foundation',
       core: 'running', persistence: db.ready ? 'ready' : db.reason === 'database_unavailable' ? 'unavailable' : 'not_configured',
       integrations: 'not_configured', devices: 'not_connected',
       productionReady: false,

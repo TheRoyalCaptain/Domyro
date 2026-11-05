@@ -106,3 +106,41 @@ export async function createAreaForUser(db, userId, siteId, displayName) {
   if (!result.rowCount) throw new Error('site_permission_denied');
   return result.rows[0];
 }
+
+/**
+ * Rename only a site whose authenticated user has owner/admin privileges.
+ * No implicit creation, ownership transfer or mutation of other sites.
+ */
+export async function renameSiteForUser(db,userId,siteId,displayName){
+  validateId(userId);validateId(siteId);
+  const name=cleanName(displayName);
+  const result=await db.query(`
+    UPDATE domyro_sites s SET display_name=$3
+    WHERE s.id=$1 AND EXISTS (
+      SELECT 1 FROM domyro_site_memberships m
+      JOIN domyro_users u ON u.id=m.user_id
+      WHERE m.site_id=s.id AND m.user_id=$2
+        AND m.role IN ('owner','admin') AND u.disabled_at IS NULL
+    )
+    RETURNING id,display_name,time_zone,locale
+  `,[siteId,userId,name]);
+  if(result.rowCount!==1)throw new Error('site_permission_denied');
+  return result.rows[0];
+}
+/** Rename a room without affecting its identity, devices, memberships or history. */
+export async function renameAreaForUser(db,userId,siteId,areaId,displayName){
+  validateId(userId);validateId(siteId);validateId(areaId);
+  const name=cleanName(displayName);
+  const result=await db.query(`
+    UPDATE domyro_areas a SET display_name=$4
+    WHERE a.id=$3 AND a.site_id=$2 AND EXISTS (
+      SELECT 1 FROM domyro_site_memberships m
+      JOIN domyro_users u ON u.id=m.user_id
+      WHERE m.site_id=a.site_id AND m.user_id=$1
+        AND m.role IN ('owner','admin','manager') AND u.disabled_at IS NULL
+    )
+    RETURNING id,display_name,sort_order
+  `,[userId,siteId,areaId,name]);
+  if(result.rowCount!==1)throw new Error('site_permission_denied');
+  return result.rows[0];
+}

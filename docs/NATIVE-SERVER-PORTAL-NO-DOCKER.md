@@ -1,0 +1,164 @@
+# Domyro NATIVE serverportal, zonder Docker
+
+**Doel:** Domyro als echte, zelfstandig draaiende webserver op een **aparte Ubuntu 24.04 LTS-server** kunnen bekijken en visueel verbeteren. **Geen Docker, Podman of containers** op de doelserver.
+
+Deze code is een vrijwillig te starten **ontwikkelpreview**. De officiële productie-installatie en automatische release-updates blijven geblokkeerd onder D-53.
+
+## Serverarchitectuur
+
+- Domyro Node.js 22.12+ draait rechtstreeks als een onprivileged systemd-service: `domyro-preview-native.service`.
+- PostgreSQL 16 of 17 draait **native als Ubuntu-dienst**, niet binnen een container. De installatiescript maakt uitsluitend een aparte `domyro_preview_native`-database en twee beperkte roles aan.
+- De service gebruikt een *beperkte runtime-rol*, zonder `CREATE`-rechten op de database of het public-schema. Migraties en eigenaarbootstrap lopen eenmalig via een afzonderlijke migratierol.
+- De applicatiebestanden onder `/opt/domyro-preview-native` zijn root-owned, de geheimen staan in root-only `/etc/domyro-preview-native` (0600).
+- HTTP wordt uitsluitend gebonden aan **127.0.0.1:8844**, zonder firewallpoorten voor het LAN/internet open te zetten. Bezoeken vanaf een andere computer gaat via een SSH-tunnel. Login werkt alleen vanaf loopback.
+- De systemd-service is enabled en wordt na een reboot automatisch opnieuw gestart. PostgreSQL-data blijft behouden.
+
+**Niet uitvoeren op een reeds gebruikte Home Assistant- of Domyro-productiehost.** Dit is voor een aparte Ubuntu-ontwikkelserver of -VM. Zorg voor een snapshot/back-up vóór een nieuw systeemexperiment.
+
+## Wat moet er op de server aanwezig zijn?
+
+Vooraf bewust apart installeren en controleren:
+- Ubuntu Server 24.04 LTS, met systemd.
+- Node.js >=22.12 en npm. Gebruik een betrouwbaar native Ubuntu/Node.js-pakket; niet via Docker.
+- PostgreSQL >=16 als Ubuntu-service. **Als PostgreSQL nog niet is geïnstalleerd**, installeert de nieuwe ontwikkelstarter PostgreSQL uit de officiële Ubuntu 24.04 pakketbron. Hij start geen bestaande, uitgeschakelde PostgreSQL-dienst zonder onderzoek.
+- Git en curl.
+- Een gebruiker met sudo-rechten en SSH-toegang.
+
+De native preview installeert geen OS-pakketten, laat bestaande PostgreSQL-databases met rust en gebruikt geen automatische Docker-installatie.
+
+**Nieuw:** `scripts/native-preview-setup.sh` is één commando **nadat je de broncode hebt gecloned**, uitgevoerd als normale gebruiker. Het script vraagt expliciet sudo-bevoegdheid voor Ubuntu's eigen PostgreSQL-pakketten en de Domyro-preview. Bij een bestaande preview of een onverwachte serverinrichting stopt het. Dit is **niet** een openbare `curl | bash`-productie-installer en het kan geen Node.js downloaden.
+
+## Native ontwikkelpreview installeren
+
+Op de server, in de shell van je normale gebruiker:
+
+```bash
+git clone --branch integration/native-installer-foundation --single-branch https://github.com/TheRoyalCaptain/Domyro.git
+cd Domyro
+bash scripts/native-preview-setup.sh --install-native-preview
+```
+
+**Let op:** het commando met `sudo` maakt een *nieuwe*, afzonderlijke database, twee PostgreSQL-rollen, een eigen systeemgebruiker, bestanden onder `/opt` en `/etc` en een actieve systemd-service. Het is expliciet **niet** bedoeld voor een al in gebruik zijnde Domyro-installatie. Bij bestaande doelpaden/rollen/database/poort weigert het script vóór installatie te beginnen. Bij een onderbroken eerste installatie blijven eventueel reeds aangemaakte onderdelen staan; ze worden **niet** automatisch verwijderd of overschreven.
+
+Eenmalig aangemaakte inlog:
+- **Gebruikersnaam:** `native_preview_owner`.
+- **Wachtwoord:** `sudo cat /etc/domyro-preview-native/owner-password.txt`. Bewaar dit zorgvuldig.
+
+De ontwikkelserver zelf is beschikbaar op `http://127.0.0.1:8844` (alleen binnen die server).
+
+### Open de portal vanaf je eigen computer
+
+Maak op jouw lokale computer een SSH-tunnel. Vervang de laatste twee velden door jouw echte servergegevens:
+
+```bash
+ssh -L 8844:127.0.0.1:8844 <linux-gebruiker>@<server-adres>
+```
+
+Open vervolgens in **je lokale browser**:
+
+- Dashboard: `http://127.0.0.1:8844/`
+- Inloggen en woning-/kamerbeheer: `http://127.0.0.1:8844/login`
+
+De portal en browser-API blijven binnen de SSH-tunnel. Je hoeft geen HTTP-poort naar het publieke internet open te zetten.
+
+## Updatecentrum in de webportal
+
+In het lokale beheerportaal op `/login` kan een eigenaar of beheerder nu
+zelf op **Controleer op nieuwe releases** klikken. De echte Domyro-backend
+bekijkt alleen openbare GitHub-releasegegevens, toont eventueel een
+**niet-geverifieerd** versienummer, en laat de installatieknop uitgeschakeld.
+Voor deze controle wordt geen Docker, achtergrondservice, download naar schijf
+of systeemupdate gebruikt. Zonder een eigenaar- of beheerderssessie én een
+geldig CSRF-token wordt zelfs de netwerkcontrole geweigerd.
+
+De versie wordt gelezen uit het pakket dat daadwerkelijk in de native
+`/opt/domyro-preview-native`-installatie staat. Het dient dus ook
+als functioneel testscherm voor een toekomstige volledige release-updater.
+
+## Dagelijks beheer
+
+```bash
+sudo systemctl status domyro-preview-native
+sudo systemctl restart domyro-preview-native
+sudo journalctl -u domyro-preview-native -n 100 --no-pager
+```
+
+Een herstart behoudt de PostgreSQL-data. Een tweede keer het installatiescript uitvoeren **wordt geweigerd** en overschrijft dus geen bestaande portal. Stoppen zonder verwijderen: `sudo systemctl stop domyro-preview-native`.
+
+### Handmatig webportal/backend-code vernieuwen zonder herinstallatie
+
+Om wijzigingen aan de website of backend te beoordelen hoef je niet meer
+opnieuw een database, gebruiker of systemd-dienst te installeren. Werk de
+ontwikkelcode bij in de eigen checkout en installeer de gelockte Node-modules
+als normale gebruiker:
+
+```bash
+git pull --ff-only
+npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+sudo bash scripts/native-preview-refresh.sh --refresh-native-preview
+```
+
+Deze **handmatige ontwikkelverversing**:
+
+1. Accepteert uitsluitend een bestaande, herkenbare native preview-installatie.
+2. Weigert concurrerende verversingen en onveilige symlinks of permissies.
+3. Kopieert de nieuwe code naar een apart, root-owned stagingpad.
+4. Controleert JavaScript-syntax en of **precies de huidige databasemigraties** voldoen. Nieuwe/gewijzigde schema's worden dus niet automatisch uitgevoerd.
+5. Stopt de Domyro-systemd-dienst, verplaatst de vorige code naar
+   `/opt/domyro-preview-native-history/` en activeert de nieuwe versie.
+6. Controleert opnieuw de lokale HTTP-status. Bij een mislukte service-start
+   wordt een best-effort rollback van **alleen de programmacode** uitgevoerd.
+7. Laat de eigen PostgreSQL-database, de inloggegevens en al je woningen en
+   kamers ongewijzigd.
+
+### Onderbroken update herstellen (zonder Docker)
+
+De ontwikkel-updater schrijft nu **vóór de codewisseling** een privé
+`/opt/domyro-preview-native-history/.pending-refresh`-registratie naar schijf
+en synchroniseert die. Zolang deze registratie bestaat, mag de updater niet
+nogmaals starten. Hij verandert nooit de inhoud van PostgreSQL.
+
+Als de VM of het updateproces onverwacht stopt tijdens een update, kun je
+de oude code expliciet herstellen:
+
+```bash
+cd Domyro
+sudo bash scripts/native-preview-recover.sh --recover-native-preview
+```
+
+Het herstelcommando controleert de identiteiten en eigendomsrechten van de
+bestaande Domyro-preview, pakt de precies geregistreerde oude versie, start
+de eigen systemd-dienst en controleert **zowel de HTTP-liveness als de
+PostgreSQL-migratiestatus**. Een onbekende map, een gewijzigde herstelregistratie
+of een mislukte dienststart wordt geweigerd zonder herstel te claimen.
+Het is geen algemene serverreparatie en verandert geen configuratie,
+andere services of databasegegevens.
+
+Bij een normale fout tijdens het vernieuwen probeert de updater dezelfde
+vorige code direct te herstellen. Als dat niet aantoonbaar lukt, blijft
+de herstelregistratie staan voor handmatige controle. Bij een volledig
+geslaagde update wordt de registratie pas na de echte HTTP- en
+databasecontrole verwijderd.
+
+**Beperkingen:** het terugzetten van een programmaversie is niet hetzelfde
+als een volledig herstel van een productie-installatie. Een
+onverenigbare/onomkeerbare SQL-migratie wordt daarom nog steeds geweigerd.
+De ontwikkel-preview maakt ook nog geen officiële, cryptografisch
+geverifieerde release-update en D-53 blijft gesloten.
+
+De vorige programmaversies worden voorlopig bewust **niet automatisch
+verwijderd**. Ruimtegebruik neemt dus toe met iedere ontwikkelverversing.
+Een plotselinge stroomuitval midden in de omschakeling of een irreversibele
+databasewijziging heeft nog **geen productiegeschikt herstelpad**.
+
+Dit is **niet** de automatische updater voor officieel ondertekende releases,
+niet vanuit de webinterface te bedienen en niet geschikt als veilige
+productie-upgrade. Daarvoor blijft D-53 gesloten.
+
+## Testen zonder Docker
+
+In `.github/workflows/native-preview-host.yml` worden Ubuntu 24.04 (AMD64 + ARM64) wegwerp-VM's gebruikt, met PostgreSQL **rechtstreeks als host-service**. De test voert het echte opt-in installatiescript uit en controleert systemd-hardening, loopbackpoort, inloggen, CSRF, woning-/kameraanmaak, data na een systemd-herstart, het afwijzen van een tweede installer en het gesloten blijven van D-53. Alleen de wegwerp-testmachines worden achteraf opgeruimd.
+
+## Productieveiligheid
+
+Dit is een ontwikkelservervariant, **geen** officiële productie-uitgave. Nog nodig: herkomstgecontroleerde one-line distributie, echte release signing key, TLS/reverse-proxy-authenticatie, hardwareveiligheid, volledige database/config/Matter/Zigbee2MQTT-backup en een geverifieerd updateproces dat fouten zonder gegevensverlies terugdraait. D-53 blijft gesloten.

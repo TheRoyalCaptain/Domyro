@@ -19,12 +19,23 @@ export function createZigbee2MqttMqttPreview({ config, onUpdate = () => {}, conn
   if (typeof onUpdate !== 'function') throw new TypeError('invalid_update_handler');
   const observer = createZigbee2MqttObserver({ baseTopic: validated.baseTopic });
   let client = null, stopped = false;
+  const listeners=new Set();
   function notify() {
-    try { onUpdate(observer.snapshot()); }
+    const snapshot=observer.snapshot();
+    try { onUpdate(snapshot); }
     catch { /* Application observers must never crash the transport. */ }
+    for(const listener of [...listeners]){
+      try{listener(snapshot);}catch{ /* Observation handlers are isolated. */ }
+    }
   }
   return Object.freeze({
     snapshot: () => observer.snapshot(),
+    /** Read-only notification. The caller cannot mutate bridge state. */
+    subscribeUpdates(listener){
+      if(typeof listener!=='function')throw new TypeError('invalid_snapshot_listener');
+      listeners.add(listener);
+      return ()=>listeners.delete(listener);
+    },
     async start({ timeoutMs = 5000 } = {}) {
       if (client) throw new Error('already_started');
       if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 250 || timeoutMs > 30000) throw new TypeError('invalid_timeout');

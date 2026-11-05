@@ -7,3 +7,10 @@ coverage/
 *.log
 .DS_Store
 *.local
+
+# Local preview PostgreSQL secrets, unique Docker instance state and owner password
+.domyro-preview/
+
+# Python bootstrap test caches
+__pycache__/
+*.pyc

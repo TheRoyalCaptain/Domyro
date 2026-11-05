@@ -5,6 +5,7 @@
  * downloads, service restarts, migrations or approval bypass.
  */
 import { compareVersions, verifySignedManifest } from './release.mjs';
+import { INSTALLED_VERSION } from './installed-version.mjs';
 
 const CHANNELS = new Set(['stable', 'beta']);
 const HOURS = new Set([0, 12, 24, 72, 168]);
@@ -97,11 +98,12 @@ export function assessSignedUpdateCandidate({
 }
 
 /** No official key/feed configured until owner-approved release pipeline exists. */
-export function getDevelopmentUpdateStatus({ currentVersion = '0.1.0-dev.1' } = {}) {
+export function getDevelopmentUpdateStatus({ currentVersion = INSTALLED_VERSION } = {}) {
   return Object.freeze({
     service: 'domyro', currentVersion, state: 'release_feed_not_configured',
     targetVersion: null, verifiedPublisherSignature: false,
-    checksImplemented: true, signedFeedConfigured: false,
+    checksImplemented: true, manualReleaseCheckAvailable: true,
+    automaticReleaseCheckRunning: false, signedFeedConfigured: false,
     downloadImplemented: false, manualInstallerImplemented: false,
     installAllowed: false, automaticInstall: false, installationGate: 'D-53',
     blockers: Object.freeze([
