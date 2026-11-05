@@ -154,3 +154,10 @@ CI enters through the generated standalone file, rather than a repository
 installer. This does not configure an official signing key, publish a release,
 or turn the production readiness checks on. Until those are completed, there
 is no public installation command to run on an owner server.
+
+The native CI matrix additionally covers a host with the empty default
+PostgreSQL cluster and packages removed before installation. Only disposable
+GitHub-hosted runners may execute this fixture. It exercises the real apt
+provisioning branch instead of assuming PostgreSQL was preinstalled. Release
+preparation and exact owner-only GitHub steps are documented in
+`docs/INSTALLATION-RELEASE-HANDOFF.md`.

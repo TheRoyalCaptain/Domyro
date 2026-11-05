@@ -28,6 +28,18 @@ for(const path of resources)try{await lstat(path);throw Error('existing_first_in
 assert(pg("SELECT count(*) FROM pg_database WHERE datname='domyro'")==='0','existing_database');
 assert(pg("SELECT count(*) FROM pg_roles WHERE rolname IN ('domyro_app','domyro_migrator')")==='0','existing_roles');
 assert(spawnSync('getent',['passwd','domyro']).status===2,'existing_account');
+if(e.DOMYRO_CI_POSTGRES==='absent') {
+  // Only the disposable hosted runner's empty default cluster is removed.
+  // Never run this cleanup against an owner machine or a populated cluster.
+  assert(pg("SELECT count(*) FROM pg_database WHERE datname NOT IN ('postgres','template0','template1')")==='0','unexpected_ci_database');
+  assert(pg('SHOW server_version_num').startsWith('16'),'unexpected_ci_postgres_version');
+  run('pg_dropcluster',['--stop','16','main']);
+  run('env',['DEBIAN_FRONTEND=noninteractive','apt-get','purge','-y','-qq',
+    'postgresql','postgresql-client','postgresql-16','postgresql-client-16','postgresql-common','postgresql-client-common']);
+  run('systemctl',['daemon-reload']);
+  const unit=spawnSync('systemctl',['show','--value','-p','LoadState','postgresql.service'],{encoding:'utf8'});
+  assert(unit.stdout.trim()==='not-found','postgres_unit_not_removed');
+} else assert(!e.DOMYRO_CI_POSTGRES||e.DOMYRO_CI_POSTGRES==='existing','unknown_ci_postgres_mode');
 await mkdir(tmp,{mode:0o700});
 const pair=generateKeyPairSync('ed25519');
 const policy={schemaVersion:1,configured:true,releaseSource:'github.com/TheRoyalCaptain/Domyro/releases',

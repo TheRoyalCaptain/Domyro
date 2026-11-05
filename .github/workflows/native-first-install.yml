@@ -19,6 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
+        postgres: [existing, absent]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,6 +42,7 @@ jobs:
         run: |
           sudo env "PATH=/opt/node/bin:$PATH" GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
             "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" DOMYRO_CI_FIRST_INSTALL=1 \
+            DOMYRO_CI_POSTGRES=${{ matrix.postgres }} \
             node scripts/ci-native-first-install.mjs
       - name: Keep official installation gate unchanged
         run: node scripts/check-installation-gate.mjs
