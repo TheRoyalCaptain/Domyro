@@ -5,6 +5,7 @@ on:
       - 'src/**'
       - 'scripts/**'
       - 'tools/build-release.mjs'
+      - 'tools/build-bootstrap.mjs'
       - 'package*.json'
       - '.github/workflows/native-first-install.yml'
   workflow_dispatch:

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import test from 'node:test';
+import {spawnSync} from 'node:child_process';
+import {buildBootstrap,writeBootstrap} from '../tools/build-bootstrap.mjs';
 import assert from 'node:assert/strict';
-import {generateKeyPairSync,createHash} from 'node:crypto';
-import {mkdtemp,rm,readFile,writeFile} from 'node:fs/promises';
+import {generateKeyPairSync,createHash,verify} from 'node:crypto';
+import {mkdtemp,rm,readFile,writeFile,mkdir,chmod} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {buildSignedSourceRelease,writeSignedRelease} from '../tools/build-release.mjs';
@@ -30,6 +32,37 @@ test('first-install admission verifies independent publisher, package and readin
     publishedAt:'2026-11-01T00:00:00Z',privateKeyPem:pair.privateKey.export({type:'pkcs8',format:'pem'})});
   const directory=join(root,'package');await writeSignedRelease(directory,signed);
   const args={directory,policy,readiness,architecture:'amd64'};
+  const privateKeyPem=pair.privateKey.export({type:'pkcs8',format:'pem'});
+  const bootstrap=await buildBootstrap({directory,policy,readiness,privateKeyPem});
+  assert.equal(verify(null,bootstrap.bytes,pair.publicKey,Buffer.from(bootstrap.signature.trim(),'base64')),true);
+  assert.equal(createHash('sha256').update(bootstrap.bytes).digest('hex'),bootstrap.sha256);
+  assert.ok(bootstrap.command.includes(bootstrap.sha256));
+  assert.ok(bootstrap.command.includes('/v0.1.1/domyro-install.py'));
+  assert.ok(!bootstrap.bytes.includes(Buffer.from(privateKeyPem)));
+  const output=join(root,'bootstrap');await writeBootstrap(output,bootstrap);
+  const inspection=spawnSync('python3',[join(output,'domyro-install.py'),'--inspect'],{encoding:'utf8'});
+  assert.equal(inspection.status,0,inspection.stderr);
+  assert.equal(JSON.parse(inspection.stdout).publisherFingerprintSha256,policy.publisherFingerprintSha256);
+  assert.notEqual(spawnSync('python3',[join(output,'domyro-install.py'),'--force']).status,0);
+  assert.equal(spawnSync('bash',['-n'],{input:bootstrap.command}).status,0);
+  // Exercise the generated shell command with transport/privilege stubs:
+  // a modified download must never reach sudo or the Python installer.
+  const bin=join(root,'bin');await mkdir(bin);
+  await writeFile(join(bin,'curl'),'#!/bin/sh\nfor arg do last="$arg"; done\ncp "$FIXTURE_SOURCE" "$last"\n');
+  await writeFile(join(bin,'sudo'),'#!/bin/sh\nprintf called > "$FIXTURE_MARKER"\n');
+  for(const file of ['curl','sudo'])await chmod(join(bin,file),0o755);
+  const fixture=join(root,'download.py'),marker=join(root,'sudo-called');
+  const env={...process.env,PATH:bin+':'+process.env.PATH,FIXTURE_SOURCE:fixture,FIXTURE_MARKER:marker};
+  await writeFile(fixture,bootstrap.bytes);
+  assert.equal(spawnSync('bash',['-c',bootstrap.command],{env}).status,0);
+  assert.equal(await readFile(marker,'utf8'),'called');await rm(marker);
+  await writeFile(fixture,Buffer.concat([bootstrap.bytes,Buffer.from('\n# changed\n')]));
+  assert.notEqual(spawnSync('bash',['-c',bootstrap.command],{env}).status,0);
+  await assert.rejects(readFile(marker),/ENOENT/);
+
+  await assert.rejects(buildBootstrap({directory,policy,readiness:gate,privateKeyPem}),/installation_gate_closed/);
+  await assert.rejects(writeBootstrap(output,bootstrap),/EEXIST/);
+
   const online={options:{version:'0.1.1'},policy,readiness,architecture:'amd64'};
   const files=new Map();
   for(const name of ['release-manifest.json','release-manifest.sig',

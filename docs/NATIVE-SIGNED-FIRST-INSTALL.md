@@ -126,3 +126,31 @@ runs the existing login, persistence, update and installation-failure proof.
 The runtime is not automatically upgraded during core updates. Runtime security
 updates require a separately reviewed lifecycle change; publisher trust and
 production readiness remain closed until independently configured.
+
+## Standalone release installer
+
+`tools/build-bootstrap.mjs` packages the already verified multiarch release,
+public publisher policy and approved readiness record into `domyro-install.py`.
+The private signing key is used for the detached installer signature and is
+never included in the payload. The builder refuses closed readiness, mismatched
+signing keys, modified source artifacts and overwriting existing output files.
+
+The output includes a SHA-256 file, an Ed25519 signature and `INSTALL.txt` with
+one shell command. That command downloads the version-specific installer over
+HTTPS, verifies the exact pinned SHA-256, and only then invokes Python via sudo.
+The expected hash must come from an independently trusted publication; fetching
+a script and its checksum from a compromised source is not independent trust.
+`--inspect` prints version and publisher metadata without installing anything.
+
+The standalone installer contains both architecture packages, selects the host
+architecture and creates private temporary source/policy files. It invokes the
+existing runtime/native installer, which rechecks release signatures. Temporary
+bootstrap files are removed on completion or failure. Existing durable native
+installation records and data keep their existing preservation semantics.
+
+The official release workflow now builds these files alongside the signed
+source packages and attaches both sets to its draft release. The native Ubuntu
+CI enters through the generated standalone file, rather than a repository
+installer. This does not configure an official signing key, publish a release,
+or turn the production readiness checks on. Until those are completed, there
+is no public installation command to run on an owner server.

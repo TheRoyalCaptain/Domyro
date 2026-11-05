@@ -5,6 +5,7 @@ import {readFile,writeFile,mkdir,cp,rm,lstat} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {generateKeyPairSync,createHash} from 'node:crypto';
 import {resolve,join} from 'node:path';
+import {buildBootstrap,writeBootstrap} from '../tools/build-bootstrap.mjs';
 import {buildSignedSourceRelease,writeSignedRelease} from '../tools/build-release.mjs';
 
 const e=process.env;
@@ -68,7 +69,11 @@ async function api(path,{body,cookie,csrf}={}) {
 }
 try {
   await build(tmp+'/good',process.cwd());
-  const installed=install(tmp+'/good');
+  const bootstrap=await buildBootstrap({directory:tmp+'/good',policy,readiness,
+    privateKeyPem:pair.privateKey.export({type:'pkcs8',format:'pem'})});
+  await writeBootstrap(tmp+'/bootstrap',bootstrap);
+  const installed=spawnSync('python3',[tmp+'/bootstrap/domyro-install.py','--install'],{
+    encoding:'utf8',timeout:300000,env:process.env});
   assert(installed.status===0,'first_install_failed: '+(installed.stderr??'').slice(-2000)+' '+(installed.stdout??'').slice(-1000));
   assert((await readFile('/var/lib/domyro-first-install/phase','utf8')).trim()==='installed','first_install_phase_missing');
   const password=(await readFile('/etc/domyro/owner-password.txt','utf8')).trim();

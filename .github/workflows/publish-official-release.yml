@@ -83,6 +83,9 @@ jobs:
               --publisher-fingerprint="$FINGERPRINT" --arch="$ARCH" --schema=3 \
               --channel="$CHANNEL" > /dev/null
           done
+          node tools/build-bootstrap.mjs "${RUNNER_TEMP}/domyro-official-source" \
+            "${RUNNER_TEMP}/domyro-bootstrap" config/release-publisher.json \
+            config/installation-readiness.json "$RELEASE_KEY_PATH"
       - name: Create immutable-version release DRAFT for final review
         env:
           GH_TOKEN: ${{ github.token }}
@@ -94,7 +97,7 @@ jobs:
             echo 'Release already exists; refusing overwrite'
             exit 79
           fi
-          gh release create "$TAG" "${RUNNER_TEMP}/domyro-official-source/"* \
+          gh release create "$TAG" "${RUNNER_TEMP}/domyro-official-source/"* "${RUNNER_TEMP}/domyro-bootstrap/"* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Domyro $TAG" \
